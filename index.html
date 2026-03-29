@@ -8,911 +8,32 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- Firebase Compat SDKs -->
+  <!-- Firebase Compat SDKs (Auth + Database) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAek8K6nHzxAUiGM6ZvLfeFmzDsFjt1ABE",
-      authDomain: "my-quiz-platform-c1a08.firebaseapp.com",
-      databaseURL: "https://my-quiz-platform-c1a08-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "my-quiz-platform-c1a08",
-      storageBucket: "my-quiz-platform-c1a08.firebasestorage.app",
-      messagingSenderId: "361533364886",
-      appId: "1:361533364886:web:60875464941f706277c0b7",
-      measurementId: "G-NLKH56HPQ3"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-  </script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
-  <style>
-    /* ============================================================
-       DESIGN TOKENS — DARK MODE (DEFAULT)
-    ============================================================ */
-    :root {
-      --bg:        #0f172a;
-      --bg2:       #0a1020;
-      --surface:   rgba(15,23,42,0.85);
-      --surface2:  rgba(30,41,59,0.75);
-      --surface3:  rgba(51,65,85,0.6);
-      --glass:     rgba(15,23,42,0.65);
-      --glass-border: rgba(251,191,36,0.12);
-      --accent:    #fbbf24;
-      --accent2:   #f59e0b;
-      --accent3:   #d97706;
-      --blue:      #3b82f6;
-      --blue2:     #6366f1;
-      --green:     #10b981;
-      --red:       #ef4444;
-      --text:      #f8fafc;
-      --text2:     #cbd5e1;
-      --text3:     #64748b;
-      --border:    rgba(251,191,36,0.1);
-      --border2:   rgba(148,163,184,0.08);
-      --gold-glow: 0 0 40px rgba(251,191,36,0.12);
-      --radius:    18px;
-      --radius-sm: 12px;
-      --header-h:  66px;
-    }
-
-    /* ============================================================
-       LIGHT MODE OVERRIDES
-    ============================================================ */
-    body.light-mode {
-      --bg:       #f1f5f9;
-      --bg2:      #e2e8f0;
-      --surface:  rgba(255,255,255,0.85);
-      --surface2: rgba(241,245,249,0.9);
-      --surface3: rgba(226,232,240,0.8);
-      --glass:    rgba(255,255,255,0.7);
-      --glass-border: rgba(251,191,36,0.25);
-      --text:     #0f172a;
-      --text2:    #334155;
-      --text3:    #94a3b8;
-      --border:   rgba(251,191,36,0.18);
-      --border2:  rgba(148,163,184,0.2);
-    }
-
-    * { margin:0; padding:0; box-sizing:border-box; }
-
-    body {
-      font-family: 'Tajawal', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-      transition: background .35s, color .35s;
-    }
-
-    body::before {
-      content: '';
-      position: fixed; inset: 0; z-index: -1;
-      background:
-        radial-gradient(ellipse 70% 50% at 15% 10%, rgba(251,191,36,0.06) 0%, transparent 55%),
-        radial-gradient(ellipse 60% 45% at 85% 85%, rgba(59,130,246,0.05) 0%, transparent 55%),
-        radial-gradient(ellipse 80% 80% at 50% 50%, rgba(15,23,42,0.9) 0%, transparent 100%);
-      transition: none;
-    }
-    body.light-mode::before {
-      background:
-        radial-gradient(ellipse 70% 50% at 15% 10%, rgba(251,191,36,0.09) 0%, transparent 55%),
-        radial-gradient(ellipse 60% 45% at 85% 85%, rgba(59,130,246,0.06) 0%, transparent 55%);
-    }
-
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: var(--bg2); }
-    ::-webkit-scrollbar-thumb { background: var(--accent3); border-radius: 3px; }
-
-    /* ============================================================
-       GLASSMORPHISM CARD MIXIN
-    ============================================================ */
-    .glass {
-      background: var(--glass);
-      backdrop-filter: blur(18px) saturate(160%);
-      -webkit-backdrop-filter: blur(18px) saturate(160%);
-      border: 1px solid var(--glass-border);
-    }
-
-    /* ============================================================
-       HEADER
-    ============================================================ */
-    .header {
-      background: var(--glass);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border-bottom: 1px solid var(--glass-border);
-      padding: 0 22px;
-      height: var(--header-h);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky; top: 0; z-index: 200;
-      gap: 12px;
-    }
-
-    .logo {
-      display: flex; align-items: center; gap: 11px;
-      font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 1.15rem;
-      white-space: nowrap;
-    }
-    .logo-icon {
-      width: 40px; height: 40px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--accent), var(--accent3));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(251,191,36,0.35);
-    }
-    .logo-text { background: linear-gradient(135deg, var(--accent), #fff5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    body.light-mode .logo-text { background: linear-gradient(135deg, var(--accent3), var(--bg)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-    .header-nav { display: flex; gap: 5px; align-items: center; flex-wrap: nowrap; }
-
-    .nav-btn {
-      padding: 7px 13px; border-radius: 9px; border: none; cursor: pointer;
-      font-family: 'Cairo', sans-serif; font-size: 0.82rem; font-weight: 700;
-      transition: all .2s; white-space: nowrap;
-    }
-    .nav-btn.ghost {
-      background: transparent; color: var(--text2);
-    }
-    .nav-btn.ghost:hover { background: var(--surface2); color: var(--text); }
-    .nav-btn.gold {
-      background: linear-gradient(135deg, var(--accent), var(--accent3));
-      color: #0f172a; font-weight: 800;
-    }
-    .nav-btn.gold:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(251,191,36,0.35); }
-
-    /* Admin lock btn */
-    .admin-login-btn {
-      background: transparent;
-      border: 1px solid rgba(251,191,36,0.2);
-      color: var(--text3);
-      border-radius: 9px;
-      padding: 7px 11px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all .25s;
-      display: flex; align-items: center; gap: 5px;
-    }
-    .admin-login-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(251,191,36,0.06); }
-    .admin-login-btn.active-admin {
-      background: rgba(251,191,36,0.1);
-      border-color: var(--accent);
-      color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(251,191,36,0.2);
-    }
-
-    /* Theme toggle */
-    .theme-toggle-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border2);
-      color: var(--text2);
-      border-radius: 9px;
-      padding: 7px 11px;
-      cursor: pointer;
-      font-size: 0.95rem;
-      transition: all .25s;
-      display: flex; align-items: center;
-    }
-    .theme-toggle-btn:hover { background: var(--surface3); color: var(--accent); border-color: var(--accent); }
-
-    /* Admin bar */
-    .admin-mode-bar {
-      display: none;
-      background: linear-gradient(90deg, rgba(251,191,36,0.1), rgba(251,191,36,0.04));
-      border-bottom: 1px solid rgba(251,191,36,0.2);
-      padding: 6px 22px;
-      font-size: 0.78rem; color: var(--accent); font-weight: 700;
-      text-align: center; letter-spacing: .04em;
-    }
-    .admin-mode-bar.visible { display: block; }
-
-    /* Admin-only visibility */
-    .admin-only { display: none !important; }
-    body.admin-mode .admin-only { display: flex !important; }
-    .admin-only-block { display: none !important; }
-    body.admin-mode .admin-only-block { display: block !important; }
-
-    /* Pages */
-    .page { display: none; }
-    .page.active { display: block; }
-
-    /* ============================================================
-       HOME HERO
-    ============================================================ */
-    .home-hero { text-align: center; padding: 52px 24px 36px; }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 7px;
-      background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25);
-      border-radius: 999px; padding: 6px 18px; font-size: 0.82rem; color: var(--accent);
-      margin-bottom: 22px; font-family: 'Cairo', sans-serif;
-    }
-    .hero-title {
-      font-family: 'Cairo', sans-serif; font-weight: 900;
-      font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.12;
-      background: linear-gradient(135deg, var(--accent) 0%, #fff 60%, var(--accent2) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      margin-bottom: 14px;
-    }
-    body.light-mode .hero-title {
-      background: linear-gradient(135deg, var(--accent3) 0%, #0f172a 60%, var(--accent2) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .hero-sub { color: var(--text2); font-size: 1rem; margin-bottom: 38px; }
-
-    /* Stats */
-    .stats-bar { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 38px; }
-    .stat-card {
-      background: var(--glass); backdrop-filter: blur(14px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-sm); padding: 15px 22px; text-align: center; min-width: 110px;
-      transition: transform .2s, box-shadow .2s;
-    }
-    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--gold-glow); }
-    .stat-val { font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 1.8rem; color: var(--accent); }
-    .stat-lbl { font-size: 0.74rem; color: var(--text3); margin-top: 2px; }
-
-    /* Section layout */
-    .section { max-width: 900px; margin: 0 auto 28px; padding: 0 20px; }
-    .section-title {
-      font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 1rem;
-      color: var(--text2); margin-bottom: 14px;
-      display: flex; align-items: center; gap: 9px;
-    }
-    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-    /* ============================================================
-       POMODORO
-    ============================================================ */
-    .pomodoro-card {
-      background: var(--glass); backdrop-filter: blur(18px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius); padding: 22px;
-      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
-    }
-    .pomo-display { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .pomo-time { font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 2.5rem; line-height: 1; }
-    .pomo-time.focus { color: var(--accent); }
-    .pomo-time.break { color: var(--green); }
-    .pomo-label { font-size: 0.72rem; font-weight: 700; letter-spacing: .05em; padding: 3px 12px; border-radius: 999px; }
-    .pomo-label.focus { background: rgba(251,191,36,0.12); color: var(--accent); }
-    .pomo-label.break { background: rgba(16,185,129,0.12); color: var(--green); }
-    .pomo-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .pomo-ring { width: 72px; height: 72px; position: relative; flex-shrink: 0; }
-    .pomo-ring svg { transform: rotate(-90deg); }
-    .pomo-ring-bg { fill: none; stroke: var(--surface3); stroke-width: 6; }
-    .pomo-ring-fill { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset .8s linear; }
-    .pomo-ring-fill.focus-ring { stroke: var(--accent); }
-    .pomo-ring-fill.break-ring { stroke: var(--green); }
-    .pomo-sessions { display: flex; gap: 4px; margin-top: 4px; }
-    .pomo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--surface3); transition: background .3s; }
-    .pomo-dot.done { background: var(--accent); }
-    .pomo-info { flex: 1; min-width: 140px; }
-    .pomo-info h4 { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.95rem; margin-bottom: 3px; }
-    .pomo-info p { font-size: 0.8rem; color: var(--text3); }
-    .pomo-settings-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
-    .pomo-input-group { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--text3); }
-    .pomo-input-group input {
-      width: 52px; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 7px; color: var(--text); padding: 4px 8px;
-      font-family: 'Cairo', sans-serif; font-size: 0.82rem; text-align: center; outline: none;
-    }
-
-    /* ============================================================
-       GOAL CARD
-    ============================================================ */
-    .goal-card {
-      background: var(--glass); backdrop-filter: blur(18px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius); padding: 20px;
-      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-    }
-    .goal-icon { font-size: 1.8rem; }
-    .goal-info { flex: 1; min-width: 180px; }
-    .goal-info h3 { font-weight: 700; margin-bottom: 3px; font-size: 0.95rem; }
-    .goal-info p { color: var(--text2); font-size: 0.82rem; }
-    .goal-progress-wrap { flex: 2; min-width: 180px; }
-    .progress-bar-bg { background: var(--surface3); border-radius: 999px; height: 8px; margin-bottom: 6px; overflow: hidden; }
-    .progress-bar-fill {
-      height: 100%; border-radius: 999px;
-      background: linear-gradient(90deg, var(--accent3), var(--accent));
-      transition: width .6s cubic-bezier(.4,0,.2,1);
-    }
-    .progress-labels { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--text3); }
-    .goal-edit-btn {
-      background: var(--surface2); border: 1px solid var(--border2);
-      border-radius: 9px; padding: 8px 14px; cursor: pointer;
-      color: var(--text2); font-family: 'Cairo', sans-serif; font-size: 0.82rem;
-      transition: all .2s;
-    }
-    .goal-edit-btn:hover { background: var(--surface3); color: var(--accent); border-color: var(--accent); }
-
-    /* ============================================================
-       TESTS GRID
-    ============================================================ */
-    .tests-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(264px, 1fr));
-      gap: 14px;
-    }
-    .test-card {
-      background: var(--glass); backdrop-filter: blur(18px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius); padding: 20px; cursor: pointer;
-      transition: all .28s; position: relative; overflow: hidden;
-    }
-    .test-card::before {
-      content: ''; position: absolute; top: 0; right: 0; width: 3px; height: 100%;
-      background: linear-gradient(180deg, var(--accent), var(--accent3));
-      opacity: 0; transition: opacity .25s;
-    }
-    .test-card:hover { border-color: rgba(251,191,36,0.4); transform: translateY(-3px); box-shadow: var(--gold-glow); }
-    .test-card:hover::before { opacity: 1; }
-    .test-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-    .test-num {
-      width: 32px; height: 32px; border-radius: 9px;
-      background: linear-gradient(135deg, var(--accent), var(--accent3));
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.82rem; color: #0f172a;
-    }
-    .test-badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 999px; font-weight: 700; }
-    .badge-new   { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
-    .badge-done  { background: rgba(251,191,36,0.1); color: var(--accent); border: 1px solid rgba(251,191,36,0.25); }
-    .badge-retry { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
-    .test-title  { font-weight: 700; font-size: 0.96rem; margin-bottom: 7px; line-height: 1.4; }
-    .test-meta   { display: flex; gap: 10px; font-size: 0.75rem; color: var(--text3); flex-wrap: wrap; }
-    .test-meta span { display: flex; align-items: center; gap: 3px; }
-    .test-score-bar { margin-top: 10px; height: 3px; background: var(--surface3); border-radius: 999px; overflow: hidden; }
-    .test-score-fill { height: 100%; border-radius: 999px; transition: width .4s; }
-    .fill-green  { background: var(--green); }
-    .fill-yellow { background: var(--accent); }
-    .fill-red    { background: var(--red); }
-    .test-card-del {
-      position: absolute; top: 10px; left: 10px;
-      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
-      border-radius: 7px; padding: 4px 9px; cursor: pointer;
-      font-size: 0.75rem; color: var(--red); opacity: 0; transition: all .2s;
-      z-index: 2; display: none;
-    }
-    body.admin-mode .test-card-del { display: block; }
-    .test-card:hover .test-card-del { opacity: 1; }
-    .test-card-del:hover { background: rgba(239,68,68,0.25); }
-
-    .add-card {
-      background: transparent; border: 2px dashed var(--border);
-      border-radius: var(--radius); padding: 22px; cursor: pointer;
-      transition: all .25s; display: flex; align-items: center;
-      justify-content: center; gap: 10px; color: var(--text3);
-      font-weight: 700; min-height: 120px;
-    }
-    .add-card:hover { border-color: var(--accent); color: var(--accent); }
-
-    .quizzes-empty {
-      grid-column: 1/-1;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 52px 20px; gap: 12px; text-align: center;
-    }
-    .quizzes-empty .empty-icon { font-size: 3.2rem; }
-    .quizzes-empty h3 { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--text2); }
-    .quizzes-empty p { font-size: 0.85rem; color: var(--text3); }
-
-    /* ============================================================
-       ERRORS PAGE
-    ============================================================ */
-    .errors-section { max-width: 900px; margin: 0 auto 40px; padding: 0 20px; }
-    .errors-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-    .practice-panel {
-      background: linear-gradient(135deg, rgba(239,68,68,0.07), rgba(251,191,36,0.04));
-      border: 1px solid rgba(239,68,68,0.18);
-      border-radius: var(--radius); padding: 20px; margin-bottom: 20px;
-    }
-    .practice-panel h3 { font-family: 'Cairo', sans-serif; font-weight: 700; color: var(--red); margin-bottom: 12px; font-size: 1rem; }
-    .practice-settings { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
-    .practice-input-group { display: flex; flex-direction: column; gap: 4px; }
-    .practice-input-group label { font-size: 0.78rem; color: var(--text3); }
-    .practice-input-group input {
-      width: 100px; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 9px; color: var(--text); padding: 8px 12px;
-      font-family: 'Cairo', sans-serif; font-size: 0.88rem; text-align: center; outline: none;
-    }
-    .practice-input-group input:focus { border-color: var(--accent); }
-    .errors-folder {
-      background: var(--glass); backdrop-filter: blur(18px);
-      border: 1px solid rgba(239,68,68,0.18);
-      border-radius: var(--radius); overflow: hidden; margin-bottom: 12px;
-    }
-    .folder-top {
-      background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.04));
-      border-bottom: 1px solid rgba(239,68,68,0.18);
-      padding: 14px 18px; display: flex; align-items: center; cursor: pointer;
-      justify-content: space-between;
-    }
-    .folder-top-left { display: flex; align-items: center; gap: 10px; }
-    .folder-title { font-weight: 700; color: var(--red); font-size: 0.92rem; }
-    .folder-count {
-      background: rgba(239,68,68,0.12); color: var(--red);
-      border-radius: 999px; padding: 2px 10px; font-size: 0.75rem; font-weight: 700;
-      border: 1px solid rgba(239,68,68,0.28);
-    }
-    .folder-actions { display: flex; gap: 7px; align-items: center; }
-    .folder-retake-btn {
-      background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25);
-      color: var(--accent); border-radius: 8px; padding: 4px 12px;
-      font-family: 'Cairo', sans-serif; font-size: 0.78rem; font-weight: 700;
-      cursor: pointer; transition: all .2s;
-    }
-    .folder-retake-btn:hover { background: rgba(251,191,36,0.2); }
-    .folder-body { padding: 14px 18px; }
-    .error-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border2); }
-    .error-item:last-child { border-bottom: none; }
-    .error-q-num {
-      min-width: 26px; height: 26px; background: rgba(239,68,68,0.12);
-      border-radius: 6px; display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; font-weight: 700; color: var(--red);
-    }
-    .error-content { flex: 1; }
-    .error-q { font-size: 0.86rem; font-weight: 600; margin-bottom: 4px; }
-    .error-answers { display: flex; gap: 14px; font-size: 0.78rem; flex-wrap: wrap; }
-    .error-wrong { color: var(--red); }
-    .error-correct { color: var(--green); }
-
-    /* ============================================================
-       QUIZ PAGE
-    ============================================================ */
-    .quiz-page { max-width: 720px; margin: 0 auto; padding: 22px 20px; }
-    .quiz-header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
-    .quiz-back {
-      background: var(--glass); backdrop-filter: blur(12px);
-      border: 1px solid var(--glass-border);
-      border-radius: 9px; padding: 8px 14px; cursor: pointer;
-      color: var(--text2); font-family: 'Cairo', sans-serif;
-      display: flex; align-items: center; gap: 5px; font-size: 0.85rem;
-      transition: all .2s;
-    }
-    .quiz-back:hover { background: var(--surface2); color: var(--text); border-color: var(--accent); }
-    .quiz-title-bar { flex: 1; }
-    .quiz-title-bar h2 { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 1.1rem; }
-    .quiz-title-bar p { color: var(--text3); font-size: 0.8rem; }
-    .timer-pill {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--glass); backdrop-filter: blur(12px);
-      border: 1px solid var(--glass-border);
-      border-radius: 999px; padding: 7px 15px;
-      font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.95rem;
-    }
-    .timer-pill.warning { border-color: rgba(251,191,36,0.4); color: var(--accent); }
-    .timer-pill.danger  { border-color: rgba(239,68,68,0.4); color: var(--red); animation: pulse .5s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
-
-    .quiz-progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .q-progress-bar { flex: 1; height: 6px; background: var(--surface3); border-radius: 999px; overflow: hidden; }
-    .q-progress-fill {
-      height: 100%; border-radius: 999px;
-      background: linear-gradient(90deg, var(--accent3), var(--accent));
-      transition: width .3s;
-    }
-    .q-counter { font-size: 0.8rem; color: var(--text3); white-space: nowrap; }
-
-    .question-card {
-      background: var(--glass); backdrop-filter: blur(18px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius); padding: 28px; margin-bottom: 18px;
-      animation: fadeSlide .3s ease;
-    }
-    @keyframes fadeSlide { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-    .q-num { font-size: 0.76rem; color: var(--accent); font-weight: 700; margin-bottom: 8px; font-family: 'Cairo', sans-serif; }
-    .q-text { font-size: 1.02rem; font-weight: 600; line-height: 1.75; margin-bottom: 22px; }
-
-    .multi-answer-note {
-      background: rgba(251,191,36,0.07); border: 1px solid rgba(251,191,36,0.22);
-      border-radius: 9px; padding: 7px 13px; font-size: 0.78rem; color: var(--accent);
-      margin-bottom: 14px; display: none;
-    }
-    .multi-answer-note.visible { display: block; }
-
-    .choices { display: flex; flex-direction: column; gap: 10px; }
-    .choice {
-      display: flex; align-items: center; gap: 12px;
-      background: var(--surface2); border: 1.5px solid var(--border2);
-      border-radius: var(--radius-sm); padding: 13px 16px;
-      cursor: pointer; transition: all .2s; text-align: right;
-    }
-    .choice:hover:not(.disabled) { border-color: rgba(251,191,36,0.4); background: var(--surface3); }
-    .choice.selected { border-color: var(--accent); background: rgba(251,191,36,0.06); }
-    .choice.selected-correct { border-color: var(--green); background: rgba(16,185,129,0.08); }
-    .choice.disabled { cursor: default; }
-    .choice-letter {
-      min-width: 28px; height: 28px; border-radius: 7px;
-      background: var(--surface3); display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.82rem; color: var(--text3);
-      transition: all .2s; flex-shrink: 0;
-    }
-    .choice.selected .choice-letter { background: var(--accent); color: #0f172a; }
-    .choice.selected-correct .choice-letter { background: var(--green); color: #fff; }
-    .choice-text { flex: 1; font-size: 0.9rem; }
-
-    .quiz-submit-multi {
-      width: 100%; padding: 12px;
-      background: linear-gradient(135deg, var(--accent), var(--accent3));
-      color: #0f172a; border: none; border-radius: 10px;
-      font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 0.92rem;
-      cursor: pointer; margin-bottom: 10px;
-      transition: all .2s; display: none;
-    }
-    .quiz-submit-multi.visible { display: block; }
-    .quiz-submit-multi:hover { opacity: .9; transform: translateY(-1px); }
-
-    .quiz-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; align-items: center; }
-
-    .teacher-note-box {
-      background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.18);
-      border-radius: 11px; padding: 13px 17px; margin-top: 15px;
-      font-size: 0.86rem; color: var(--accent); line-height: 1.65; display: none;
-    }
-    .teacher-note-box.visible { display: block; }
-    .teacher-note-box strong { display: block; margin-bottom: 4px; font-size: 0.76rem; letter-spacing: .05em; }
-
-    /* ============================================================
-       BUTTONS
-    ============================================================ */
-    .btn {
-      padding: 11px 22px; border-radius: 11px; border: none; cursor: pointer;
-      font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.9rem;
-      transition: all .2s;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent3));
-      color: #0f172a;
-    }
-    .btn-primary:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(251,191,36,0.3); }
-    .btn-primary:disabled { opacity: .4; cursor: default; transform: none; }
-    .btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
-    .btn-secondary:hover { background: var(--surface3); color: var(--text); }
-
-    /* ============================================================
-       RESULTS PAGE
-    ============================================================ */
-    .results-page { max-width: 700px; margin: 0 auto; padding: 26px 20px; }
-    .results-hero { text-align: center; margin-bottom: 28px; }
-    .results-icon { font-size: 3.5rem; margin-bottom: 10px; display: block; animation: bounceIn .6s ease; }
-    @keyframes bounceIn { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
-    .results-score {
-      font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 3.2rem; line-height: 1;
-      background: linear-gradient(135deg, var(--accent), var(--accent3));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .results-label { color: var(--text2); margin-top: 6px; font-size: 0.95rem; }
-    .results-grade { display: inline-block; padding: 4px 15px; border-radius: 999px; font-weight: 700; font-size: 0.88rem; margin-top: 8px; }
-    .results-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 22px; }
-    .r-stat {
-      background: var(--glass); backdrop-filter: blur(14px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-sm); padding: 14px 10px; text-align: center;
-    }
-    .r-stat-val { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 1.5rem; }
-    .r-stat-val.green { color: var(--green); }
-    .r-stat-val.red   { color: var(--red); }
-    .r-stat-val.blue  { color: var(--blue); }
-    .r-stat-val.gold  { color: var(--accent); }
-    .r-stat-lbl { font-size: 0.72rem; color: var(--text3); margin-top: 3px; }
-    .score-circle-wrap { display: flex; justify-content: center; margin-bottom: 22px; }
-    .score-circle { position: relative; width: 120px; height: 120px; }
-    .score-circle svg { transform: rotate(-90deg); }
-    .score-arc-bg { fill: none; stroke: var(--surface3); stroke-width: 10; }
-    .score-arc { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
-    .score-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .score-inner .pct { font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 1.6rem; }
-    .score-inner .lbl { font-size: 0.7rem; color: var(--text3); }
-    .breakdown-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(36px,1fr)); gap: 6px; margin-bottom: 24px; }
-    .breakdown-dot { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.74rem; font-weight: 700; cursor: default; }
-    .breakdown-dot.c { background: rgba(16,185,129,0.18); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
-    .breakdown-dot.w { background: rgba(239,68,68,0.14); color: var(--red); border: 1px solid rgba(239,68,68,0.28); }
-    .breakdown-dot.s { background: rgba(100,116,139,0.12); color: var(--text3); border: 1px solid var(--border2); }
-    .results-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
-    .review-list { display: flex; flex-direction: column; gap: 10px; }
-    .review-item {
-      background: var(--glass); backdrop-filter: blur(14px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-sm); padding: 15px;
-    }
-    .review-item.r-wrong { border-color: rgba(239,68,68,0.28); }
-    .review-item.r-correct { border-color: rgba(16,185,129,0.2); }
-    .review-q { font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; }
-    .review-choices { display: flex; flex-direction: column; gap: 5px; }
-    .review-choice { font-size: 0.82rem; padding: 6px 10px; border-radius: 8px; }
-    .r-answer      { background: rgba(16,185,129,0.1); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
-    .r-user-wrong  { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.18); }
-    .review-note {
-      margin-top: 10px; padding: 9px 13px;
-      background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.18);
-      border-radius: 9px; font-size: 0.82rem; color: var(--accent); line-height: 1.65;
-    }
-    .review-note span { font-weight: 700; font-size: 0.74rem; display: block; margin-bottom: 3px; }
-
-    /* ============================================================
-       ADMIN PAGE
-    ============================================================ */
-    .admin-page { max-width: 900px; margin: 0 auto; padding: 26px 20px; }
-    .admin-tabs { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
-    .admin-tab {
-      padding: 9px 18px; border-radius: 9px; border: none; cursor: pointer;
-      font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.85rem;
-      background: var(--surface2); color: var(--text3); transition: all .2s;
-    }
-    .admin-tab.active {
-      background: linear-gradient(135deg, var(--accent), var(--accent3));
-      color: #0f172a;
-    }
-    .admin-tab-content { display: none; }
-    .admin-tab-content.active { display: block; }
-    .form-group { margin-bottom: 16px; }
-    .form-label { display: block; font-size: 0.82rem; color: var(--text2); font-weight: 600; margin-bottom: 7px; }
-    .form-input {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border2);
-      border-radius: 11px; color: var(--text); padding: 10px 14px;
-      font-family: 'Cairo', sans-serif; font-size: 0.9rem;
-      transition: border-color .2s; outline: none;
-    }
-    .form-input:focus { border-color: var(--accent); }
-    .form-input::placeholder { color: var(--text3); }
-    textarea.form-input { resize: vertical; min-height: 80px; }
-
-    /* Settings */
-    .settings-card {
-      background: var(--glass); backdrop-filter: blur(18px);
-      border: 1px solid rgba(251,191,36,0.18);
-      border-radius: var(--radius); padding: 22px; margin-bottom: 24px;
-    }
-    .settings-card h3 { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 16px; color: var(--accent); }
-    .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border2); }
-    .settings-row:last-child { border-bottom: none; }
-    .settings-row-info h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
-    .settings-row-info p { font-size: 0.78rem; color: var(--text3); }
-    .toggle-switch { position: relative; width: 46px; height: 24px; flex-shrink: 0; }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider { position: absolute; inset: 0; background: var(--surface3); border-radius: 999px; cursor: pointer; transition: background .3s; }
-    .toggle-slider::before { content: ''; position: absolute; height: 18px; width: 18px; border-radius: 50%; left: 3px; top: 3px; background: #fff; transition: transform .3s; }
-    .toggle-switch input:checked + .toggle-slider { background: var(--green); }
-    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
-
-    /* Parse tab */
-    .parse-textarea { min-height: 200px; font-size: 0.85rem; line-height: 1.6; }
-    .parse-result-preview {
-      background: var(--surface2); border: 1px solid rgba(16,185,129,0.2);
-      border-radius: 11px; padding: 14px; margin-top: 10px; display: none;
-    }
-    .parse-result-preview h4 { color: var(--green); font-size: 0.85rem; margin-bottom: 10px; }
-    .parsed-q-item { background: var(--surface3); border-radius: 9px; padding: 13px; margin-bottom: 8px; }
-    .parsed-q-item:last-child { margin-bottom: 0; }
-    .parsed-q-text { font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-    .parsed-choices { display: flex; flex-direction: column; gap: 4px; }
-    .parsed-choice-row {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 0.82rem; cursor: pointer; padding: 4px 6px;
-      border-radius: 7px; transition: background .15s;
-    }
-    .parsed-choice-row:hover { background: rgba(251,191,36,0.06); }
-    .parsed-choice-row input[type="checkbox"] {
-      appearance: none; width: 14px; height: 14px; border-radius: 4px;
-      border: 2px solid var(--border2); cursor: pointer; flex-shrink: 0; transition: all .2s;
-    }
-    .parsed-choice-row input[type="checkbox"]:checked { border-color: var(--green); background: var(--green); }
-    .parsed-note-input {
-      margin-top: 8px; width: 100%; background: var(--surface2);
-      border: 1px solid rgba(251,191,36,0.18); border-radius: 9px; color: var(--text);
-      padding: 8px 12px; font-family: 'Cairo', sans-serif; font-size: 0.82rem;
-      outline: none; transition: border-color .2s; resize: none; min-height: 54px;
-    }
-    .parsed-note-input:focus { border-color: var(--accent); }
-    .parsed-note-input::placeholder { color: var(--text3); }
-
-    .answer-bulk {
-      background: var(--surface2); border: 1px solid var(--border2);
-      border-radius: 11px; padding: 13px; margin: 12px 0;
-    }
-    .answer-bulk label { font-size: 0.85rem; color: var(--text2); margin-bottom: 6px; display: block; }
-    .answer-bulk textarea {
-      width: 100%; background: var(--surface3); border: 1px solid var(--border2);
-      border-radius: 9px; padding: 8px; color: var(--text);
-      font-family: 'Cairo', sans-serif; font-size: 0.85rem; resize: vertical;
-    }
-    .answer-bulk small { font-size: 0.7rem; color: var(--text3); display: block; margin-top: 5px; }
-
-    /* Builder */
-    .questions-builder { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-    .q-builder-item {
-      background: var(--glass); backdrop-filter: blur(14px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-sm); padding: 15px;
-    }
-    .q-builder-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .q-builder-num { font-weight: 700; color: var(--accent); font-size: 0.85rem; font-family: 'Cairo', sans-serif; }
-    .q-del-btn {
-      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
-      color: var(--red); border-radius: 7px; padding: 4px 9px;
-      cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 0.78rem; transition: all .2s;
-    }
-    .q-del-btn:hover { background: rgba(239,68,68,0.2); }
-    .choices-builder { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 7px; }
-    .choice-builder-row { display: flex; align-items: center; gap: 7px; }
-    .choice-radio, .choice-checkbox {
-      appearance: none; width: 15px; height: 15px;
-      border: 2px solid var(--border2); cursor: pointer; flex-shrink: 0; transition: all .2s;
-    }
-    .choice-radio { border-radius: 50%; }
-    .choice-checkbox { border-radius: 4px; }
-    .choice-radio:checked, .choice-checkbox:checked { border-color: var(--green); background: var(--green); }
-    .multi-correct-toggle {
-      font-size: 0.78rem; color: var(--text3); margin-bottom: 8px;
-      display: flex; align-items: center; gap: 8px; cursor: pointer;
-    }
-    .multi-correct-toggle input[type="checkbox"] {
-      appearance: none; width: 14px; height: 14px; border-radius: 4px;
-      border: 2px solid var(--border2); cursor: pointer; transition: all .2s;
-    }
-    .multi-correct-toggle input[type="checkbox"]:checked { border-color: var(--accent); background: var(--accent); }
-    .q-note-input {
-      width: 100%; background: var(--surface3); border: 1px solid rgba(251,191,36,0.18);
-      border-radius: 9px; color: var(--text); padding: 8px 12px;
-      font-family: 'Cairo', sans-serif; font-size: 0.83rem; margin-top: 10px;
-      outline: none; resize: none; min-height: 52px; transition: border-color .2s;
-    }
-    .q-note-input:focus { border-color: var(--accent); }
-    .q-note-input::placeholder { color: var(--text3); }
-
-    /* Answer map */
-    .answer-map-section {
-      background: linear-gradient(135deg, rgba(16,185,129,0.05), rgba(251,191,36,0.04));
-      border: 1px solid rgba(16,185,129,0.2);
-      border-radius: var(--radius-sm); padding: 16px; margin-bottom: 14px;
-    }
-    .answer-map-section h4 { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--green); margin-bottom: 4px; }
-    .answer-map-section p { font-size: 0.78rem; color: var(--text3); margin-bottom: 12px; }
-    .answer-map-grid { display: flex; flex-direction: column; gap: 6px; }
-    .answer-map-row { display: flex; align-items: center; gap: 10px; }
-    .answer-map-qnum { min-width: 28px; height: 28px; border-radius: 7px; background: rgba(251,191,36,0.1); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; flex-shrink: 0; }
-    .answer-map-qtext { flex: 1; font-size: 0.82rem; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .answer-map-select { background: var(--surface2); border: 1px solid var(--border2); border-radius: 7px; color: var(--text); padding: 5px 10px; font-family: 'Cairo', sans-serif; font-size: 0.82rem; outline: none; cursor: pointer; min-width: 60px; }
-    .answer-map-select:focus { border-color: var(--green); }
-    .answer-map-select.matched { border-color: rgba(16,185,129,0.5); color: var(--green); }
-
-    /* Manage list */
-    .manage-item {
-      background: var(--glass); backdrop-filter: blur(14px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-sm); padding: 14px 17px;
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; flex-wrap: wrap; transition: border-color .2s;
-    }
-    .manage-item:hover { border-color: rgba(251,191,36,0.3); }
-    .manage-item-info { flex: 1; min-width: 160px; }
-    .manage-item-name { font-weight: 700; font-size: 0.92rem; margin-bottom: 2px; }
-    .manage-item-meta { font-size: 0.78rem; color: var(--text3); }
-    .manage-item-actions { display: flex; gap: 7px; }
-
-    /* ============================================================
-       TOOLS PAGE
-    ============================================================ */
-    .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(285px, 1fr)); gap: 14px; }
-    .tool-card {
-      background: var(--glass); backdrop-filter: blur(18px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius); padding: 22px; position: relative; overflow: hidden;
-    }
-    .tool-card::before { content: ''; position: absolute; top: 0; right: 0; width: 3px; height: 100%; background: linear-gradient(180deg, var(--accent), var(--accent3)); }
-    .tool-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-    .tool-icon { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-    .tool-icon.blue { background: rgba(59,130,246,0.12); }
-    .tool-icon.gold { background: rgba(251,191,36,0.12); }
-    .tool-icon.green { background: rgba(16,185,129,0.12); }
-    .tool-card-header h4 { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.95rem; }
-    .tool-card-header p { font-size: 0.78rem; color: var(--text3); margin-top: 1px; }
-    .tool-body { display: flex; flex-direction: column; gap: 10px; }
-    .tool-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .tool-row label { font-size: 0.8rem; color: var(--text3); min-width: 80px; }
-    .tool-input {
-      flex: 1; min-width: 80px; background: var(--surface2); border: 1px solid var(--border2);
-      border-radius: 9px; color: var(--text); padding: 8px 12px;
-      font-family: 'Cairo', sans-serif; font-size: 0.88rem; text-align: center; outline: none;
-    }
-    .tool-input:focus { border-color: var(--accent); }
-    .tool-unit { font-size: 0.78rem; color: var(--text3); white-space: nowrap; }
-    .tool-display { background: var(--surface2); border: 1px solid var(--border2); border-radius: 11px; padding: 12px 16px; text-align: center; }
-    .tool-timer-val { font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 2rem; color: var(--accent); line-height: 1; }
-    .tool-timer-val.running { color: var(--green); }
-    .tool-timer-val.warning { color: var(--accent); }
-    .tool-timer-val.danger  { color: var(--red); animation: pulse .5s infinite; }
-    .tool-timer-lbl { font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
-    .tool-goal-progress { margin-top: 4px; }
-    .tool-goal-val { font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 1.8rem; color: var(--accent); line-height: 1; text-align: center; }
-    .tool-goal-sub { font-size: 0.75rem; color: var(--text3); text-align: center; margin-top: 2px; }
-
-    /* ============================================================
-       MODAL
-    ============================================================ */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; z-index: 500;
-      background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
-      align-items: center; justify-content: center; padding: 20px;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: var(--glass); backdrop-filter: blur(28px) saturate(180%);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius); padding: 28px; width: 100%; max-width: 450px;
-      animation: modalIn .25s ease;
-    }
-    .modal-wide { max-width: 570px; }
-    @keyframes modalIn { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:scale(1)} }
-    .modal h3 { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 1.15rem; margin-bottom: 18px; }
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; flex-wrap: wrap; }
-    .admin-modal-content { text-align: center; }
-    .admin-modal-icon { font-size: 2.4rem; margin-bottom: 12px; }
-    .admin-modal-input {
-      width: 100%; text-align: center; letter-spacing: .3em; font-size: 1.3rem; font-weight: 700;
-    }
-    .delete-warning {
-      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
-      border-radius: 11px; padding: 14px; margin-bottom: 16px;
-      font-size: 0.88rem; color: var(--red); text-align: center;
-    }
-    .delete-warning strong { display: block; font-size: 1rem; margin-bottom: 4px; }
-
-    /* ============================================================
-       TOAST
-    ============================================================ */
-    .toast-container { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 999; display: flex; flex-direction: column; gap: 8px; }
-    .toast {
-      background: var(--glass); backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: 11px; padding: 10px 20px;
-      font-size: 0.86rem; font-weight: 700; animation: toastIn .3s ease;
-      display: flex; align-items: center; gap: 7px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.35); white-space: nowrap;
-    }
-    @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-    .toast.success { border-color: rgba(16,185,129,0.4); color: var(--green); }
-    .toast.error   { border-color: rgba(239,68,68,0.4); color: var(--red); }
-    .toast.info    { border-color: rgba(251,191,36,0.4); color: var(--accent); }
-
-    /* ============================================================
-       EMPTY STATE
-    ============================================================ */
-    .empty-state { text-align: center; padding: 44px 20px; color: var(--text3); }
-    .empty-state .icon { font-size: 2.8rem; margin-bottom: 10px; }
-    .empty-state p { font-size: 0.88rem; }
-
-    /* ============================================================
-       FOOTER
-    ============================================================ */
-    .site-footer {
-      text-align: center; padding: 24px 20px 34px;
-      font-size: 0.78rem; color: var(--text3);
-      border-top: 1px solid var(--border);
-      margin-top: 50px; line-height: 1.9;
-    }
-    .footer-sep { margin: 0 6px; opacity: .4; }
-
-    /* ============================================================
-       RESPONSIVE
-    ============================================================ */
-    @media(max-width: 640px) {
-      .results-stats { grid-template-columns: 1fr 1fr; }
-      .choices-builder { grid-template-columns: 1fr; }
-      .header-nav .nav-btn span { display: none; }
-      .pomodoro-card { flex-direction: column; align-items: flex-start; }
-      .tools-grid { grid-template-columns: 1fr; }
-      .logo-text { font-size: 1rem; }
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+<!-- ============================================================
+     LOADING SCREEN
+============================================================ -->
+<div id="loading-screen" class="loading-screen">
+  <div class="loading-content">
+    <div class="loading-logo">🏆</div>
+    <div class="loading-title">منصة الوسام التعليمية</div>
+    <div class="loading-bar"><div class="loading-fill"></div></div>
+    <p class="loading-sub">جارٍ تحميل الاختبارات...</p>
+  </div>
+</div>
 
 <!-- Admin Mode Bar -->
 <div class="admin-mode-bar" id="admin-mode-bar">
   <i class="fa-solid fa-unlock-keyhole" style="margin-left:6px"></i>
-  وضع الأدمن مفعّل — تظهر الأدوات الإدارية الآن
+  وضع الأدمن مفعّل
+  <span id="admin-user-email" style="opacity:.6;font-size:0.75rem;margin-right:8px"></span>
 </div>
 
 <header class="header">
@@ -933,16 +54,14 @@
       <i class="fa-solid fa-folder-open" style="font-size:.8rem;margin-left:4px"></i>
       <span>أخطائي</span>
     </button>
-    <!-- Admin add quiz btn (hidden until admin login) -->
-    <button class="nav-btn gold admin-only" style="display:none" onclick="showPage('admin')">
+    <!-- Admin panel button — visible only when authenticated -->
+    <button class="nav-btn gold" id="nav-admin-btn" style="display:none" onclick="showPage('admin')">
       <i class="fa-solid fa-gear" style="font-size:.8rem;margin-left:4px"></i>
       <span>إضافة</span>
     </button>
-    <!-- Theme toggle — visible to ALL users -->
     <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="تبديل المظهر">
       <i class="fa-solid fa-sun" id="theme-icon"></i>
     </button>
-    <!-- Admin lock icon -->
     <button class="admin-login-btn" id="admin-login-btn" onclick="handleAdminLogin()" title="دخول الأدمن">
       <i class="fa-solid fa-lock" id="admin-lock-icon"></i>
     </button>
@@ -974,7 +93,7 @@
       <div class="pomo-ring" id="pomo-ring-wrap">
         <svg width="72" height="72" viewBox="0 0 72 72">
           <circle class="pomo-ring-bg" cx="36" cy="36" r="30"/>
-          <circle class="pomo-ring-fill" id="pomo-ring-fill" cx="36" cy="36" r="30" stroke-dasharray="188.5" stroke-dashoffset="0"/>
+          <circle class="pomo-ring-fill focus-ring" id="pomo-ring-fill" cx="36" cy="36" r="30" stroke-dasharray="188.5" stroke-dashoffset="0"/>
         </svg>
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
           <span id="pomo-sessions-inner" style="font-size:0.74rem;font-weight:700;color:var(--text3)">1/4</span>
@@ -1072,15 +191,15 @@
         <div class="tool-card-header"><div class="tool-icon blue">❓</div><div><h4>مؤقت لكل سؤال</h4><p>حدد وقت للإجابة على كل سؤال</p></div></div>
         <div class="tool-body">
           <div class="tool-row"><label>وقت السؤال</label><input class="tool-input" id="qt-secs" type="number" value="30" min="5" max="300"><span class="tool-unit">ثانية</span></div>
-          <div class="tool-row"><label>عدد الأسئلة</label><input class="tool-input" id="qt-count" type="number" value="10" min="1" max="100"><span class="tool-unit">سؤال</span></div>
+          <div class="tool-row"><label>عدد الأسئلة</label><input class="tool-input" id="qt-count" type="number" value="10" min="1" max="200"></div>
           <div class="tool-display">
             <div class="tool-timer-val" id="qt-display">00:30</div>
-            <div class="tool-timer-lbl" id="qt-label">سؤال 0 / 0</div>
-            <div class="progress-bar-bg" style="margin-top:8px"><div class="progress-bar-fill" id="qt-bar" style="width:100%;background:linear-gradient(90deg,var(--green),var(--accent))"></div></div>
+            <div class="tool-timer-lbl" id="qt-label">جاهز</div>
+            <div class="progress-bar-bg" style="margin-top:8px"><div class="progress-bar-fill" id="qt-bar" style="width:100%"></div></div>
           </div>
           <div class="tool-row" style="justify-content:center;gap:8px">
             <button class="btn btn-primary" id="qt-start-btn" onclick="toggleQTimer()" style="padding:9px 20px;font-size:0.85rem">▶ ابدأ</button>
-            <button class="btn btn-secondary" onclick="nextQTimer()" id="qt-next-btn" disabled style="padding:9px 14px;font-size:0.85rem">⏭ التالي</button>
+            <button class="btn btn-secondary" onclick="nextQTimer()" id="qt-next-btn" disabled style="padding:9px 14px;font-size:0.85rem">التالي ➡️</button>
             <button class="btn btn-secondary" onclick="resetQTimer()" style="padding:9px 14px;font-size:0.85rem">↺</button>
           </div>
         </div>
@@ -1093,23 +212,29 @@
      ERRORS PAGE
 ============================================================ -->
 <div id="page-errors" class="page">
-  <div class="errors-section">
-    <div class="errors-header">
-      <div>
-        <h2 style="font-family:'Cairo',sans-serif;font-weight:700;font-size:1.25rem">🗂️ مجلد الأخطاء</h2>
-        <p style="color:var(--text2);font-size:0.86rem;margin-top:3px">جميع الأسئلة التي أخطأت فيها من كل الاختبارات</p>
+  <div style="max-width:900px;margin:0 auto;padding:26px 20px;">
+    <h2 style="font-family:'Cairo',sans-serif;font-weight:700;margin-bottom:6px">🗂️ مجلد الأخطاء</h2>
+    <p style="color:var(--text2);font-size:0.88rem;margin-bottom:24px">الأسئلة التي أخطأت فيها — مرتبة حسب الصعوبة</p>
+
+    <div id="practice-panel" style="display:none;margin-bottom:20px;">
+      <div style="background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+          <div>
+            <div style="font-weight:700;font-family:'Cairo',sans-serif;font-size:0.95rem">🔁 جلسات التدريب على الأخطاء</div>
+            <div style="font-size:0.78rem;color:var(--text3);margin-top:2px" id="practice-splits-info"></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text2)">
+              عدد الأسئلة/جلسة:
+              <input type="number" id="practice-size" value="10" min="1" max="50" onchange="renderErrors()"
+                style="width:60px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--text);padding:5px;text-align:center;font-family:'Cairo',sans-serif;">
+            </div>
+            <button class="btn btn-primary" onclick="startPracticeSession()" style="font-size:0.82rem;padding:9px 16px">▶ تدريب بالجلسات</button>
+            <button class="btn btn-secondary" onclick="startPracticeSession(true)" style="font-size:0.82rem;padding:9px 16px">📋 كل الأخطاء</button>
+            <button class="btn btn-secondary" onclick="clearErrors()" style="font-size:0.82rem;padding:9px 16px;color:var(--red)">🗑️ مسح الكل</button>
+          </div>
+        </div>
       </div>
-      <button class="btn btn-secondary" onclick="clearErrors()" style="font-size:0.83rem">🗑️ مسح الكل</button>
-    </div>
-    <div class="practice-panel" id="practice-panel" style="display:none">
-      <h3>🔁 التدريب على الأخطاء</h3>
-      <p style="font-size:0.83rem;color:var(--text3);margin-bottom:14px">حدد عدد الأسئلة في كل اختبار وسيتم تقسيم أخطائك تلقائياً إلى جلسات منفصلة.</p>
-      <div class="practice-settings">
-        <div class="practice-input-group"><label>عدد الأسئلة لكل اختبار</label><input type="number" id="practice-size" value="10" min="1"></div>
-        <button class="btn btn-primary" onclick="startPracticeSession(false)" style="font-size:0.85rem;padding:10px 18px">🚀 ابدأ التدريب</button>
-        <button class="btn btn-secondary" onclick="startPracticeSession(true)" style="font-size:0.85rem;padding:10px 18px">📋 اختبار واحد (الكل)</button>
-      </div>
-      <div id="practice-splits-info" style="margin-top:12px;font-size:0.8rem;color:var(--text3)"></div>
     </div>
     <div id="errors-container"></div>
   </div>
@@ -1121,9 +246,14 @@
 <div id="page-quiz" class="page">
   <div class="quiz-page">
     <div class="quiz-header">
-      <button class="quiz-back" onclick="confirmLeaveQuiz()">← رجوع</button>
-      <div class="quiz-title-bar"><h2 id="quiz-title">—</h2><p id="quiz-subtitle"></p></div>
-      <div class="timer-pill" id="timer-pill">⏱️ <span id="timer-display">00:00</span></div>
+      <button class="quiz-exit-btn" onclick="confirmLeaveQuiz()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="quiz-title-wrap">
+        <div class="quiz-title" id="quiz-title"></div>
+        <div class="quiz-subtitle" id="quiz-subtitle"></div>
+      </div>
+      <div class="timer-pill" id="timer-pill">⏱️ <span>00:00</span></div>
     </div>
     <div class="quiz-progress-row">
       <div class="q-progress-bar"><div class="q-progress-fill" id="q-progress-fill" style="width:0%"></div></div>
@@ -1132,10 +262,15 @@
     <div class="question-card" id="question-card">
       <div class="q-num" id="q-num"></div>
       <div class="q-text" id="q-text"></div>
-      <div class="multi-answer-note" id="multi-answer-note">⚠️ هذا السؤال يحتوي على أكثر من إجابة صحيحة — اختر جميع الإجابات الصحيحة</div>
+      <!-- multi-answer-note is intentionally always hidden from student — do not remove element -->
+      <div class="multi-answer-note" id="multi-answer-note" style="display:none!important"></div>
       <div class="choices" id="choices-container"></div>
-      <button class="quiz-submit-multi" id="quiz-submit-multi" onclick="submitMultiAnswer()">✅ تأكيد الإجابات المختارة</button>
-      <div class="teacher-note-box" id="teacher-note-box"><strong>💡 ملاحظة المعلم:</strong><span id="teacher-note-text"></span></div>
+      <!-- submit-multi is intentionally always hidden from student — do not remove element -->
+      <button class="quiz-submit-multi" id="quiz-submit-multi" style="display:none!important" onclick="submitMultiAnswer()">✅ تأكيد</button>
+      <div class="teacher-note-box" id="teacher-note-box">
+        <strong>💡 ملاحظة المعلم:</strong>
+        <span id="teacher-note-text"></span>
+      </div>
     </div>
     <div class="quiz-actions">
       <button class="btn btn-secondary" id="skip-btn" onclick="skipQuestion()">تخطي ⏭️</button>
@@ -1183,12 +318,14 @@
 </div>
 
 <!-- ============================================================
-     ADMIN PAGE (hidden unless admin unlocked)
+     ADMIN PAGE (Auth-protected — Firebase Auth required)
 ============================================================ -->
 <div id="page-admin" class="page">
   <div class="admin-page">
     <h2 style="font-family:'Cairo',sans-serif;font-weight:700;margin-bottom:6px">⚙️ لوحة إدارة الاختبارات</h2>
-    <p style="color:var(--accent);font-size:0.82rem;margin-bottom:18px"><i class="fa-solid fa-unlock-keyhole" style="margin-left:5px"></i>وضع الأدمن مفعّل</p>
+    <p style="color:var(--accent);font-size:0.82rem;margin-bottom:18px">
+      <i class="fa-solid fa-unlock-keyhole" style="margin-left:5px"></i>وضع الأدمن مفعّل
+    </p>
     <div class="admin-tabs">
       <button class="admin-tab active" onclick="switchAdminTab('add',event)">➕ إضافة اختبار</button>
       <button class="admin-tab" onclick="switchAdminTab('parse',event)">🤖 استيراد ذكي</button>
@@ -1198,46 +335,77 @@
 
     <!-- ADD TAB -->
     <div id="admin-add" class="admin-tab-content active">
-      <div class="form-group"><label class="form-label">اسم الاختبار *</label><input class="form-input" id="new-test-name" placeholder="مثال: الزلازل والسكري" /></div>
+      <div class="form-group">
+        <label class="form-label">اسم الاختبار *</label>
+        <input class="form-input" id="new-test-name" placeholder="مثال: الزلازل والسكري" />
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-group"><label class="form-label">المادة / الموضوع</label><input class="form-input" id="new-test-subject" placeholder="مثال: العلوم" /></div>
-        <div class="form-group"><label class="form-label">⏱️ وقت الاختبار (بالدقائق) — 0 = بدون حد</label><input class="form-input" id="new-test-time" type="number" min="0" value="10" /></div>
+        <div class="form-group">
+          <label class="form-label">المادة / الموضوع</label>
+          <input class="form-input" id="new-test-subject" placeholder="مثال: العلوم" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">⏱️ وقت الاختبار (بالدقائق) — 0 = بدون حد</label>
+          <input class="form-input" id="new-test-time" type="number" min="0" value="10" />
+        </div>
       </div>
       <div class="section-title" style="margin-bottom:10px;font-size:0.88rem">الأسئلة</div>
       <div class="questions-builder" id="questions-builder"></div>
-      <button class="btn btn-secondary" onclick="addQuestionBuilder()" style="margin-bottom:18px;width:100%">➕ إضافة سؤال يدوياً</button>
+      <button class="btn btn-secondary" onclick="addQuestionBuilder()" style="margin-bottom:18px;width:100%">
+        ➕ إضافة سؤال يدوياً
+      </button>
       <div class="answer-map-section" id="answer-map-section" style="display:none">
         <h4>✅ تحديد الإجابات الصحيحة</h4>
         <p>بدلاً من اختيار كل إجابة يدوياً في كل سؤال، يمكنك تحديد الإجابات الصحيحة هنا دفعةً واحدة.</p>
         <div class="answer-map-grid" id="answer-map-grid"></div>
       </div>
-      <button class="btn btn-primary" onclick="saveTest()" style="width:100%">💾 حفظ الاختبار</button>
+      <button class="btn btn-primary" id="save-test-btn" onclick="saveTest()" style="width:100%">💾 حفظ الاختبار</button>
     </div>
 
     <!-- PARSE TAB -->
     <div id="admin-parse" class="admin-tab-content">
       <div style="background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.18);border-radius:11px;padding:14px;margin-bottom:18px;">
-        <p style="font-size:0.84rem;color:var(--text2);line-height:1.7">📋 <strong style="color:var(--accent)">الاستيراد الذكي:</strong> الصق نصاً يحتوي على أسئلة وخيارات وسيتم تحليله تلقائياً. يدعم الصيغ التالية: <code style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:0.8rem">س: / Q:</code> للسؤال و <code style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:0.8rem">أ/ ب/ ج/ أو A) B) C)</code> للخيارات.</p>
+        <p style="font-size:0.84rem;color:var(--text2);line-height:1.7">
+          📋 <strong style="color:var(--accent)">الاستيراد الذكي:</strong>
+          الصق نصاً يحتوي على أسئلة وخيارات وسيتم تحليله تلقائياً.
+          يدعم: <code style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:0.8rem">س: / Q:</code>
+          للسؤال و <code style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:0.8rem">أ/ ب/ أو A) B)</code> للخيارات.
+        </p>
       </div>
-      <div class="form-group"><label class="form-label">اسم الاختبار *</label><input class="form-input" id="parse-test-name" placeholder="مثال: درس الجملة الاسمية" /></div>
+      <div class="form-group">
+        <label class="form-label">اسم الاختبار *</label>
+        <input class="form-input" id="parse-test-name" placeholder="مثال: درس الجملة الاسمية" />
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-group"><label class="form-label">المادة</label><input class="form-input" id="parse-test-subject" placeholder="مثال: اللغة العربية" /></div>
-        <div class="form-group"><label class="form-label">⏱️ وقت الاختبار (دقائق)</label><input class="form-input" id="parse-test-time" type="number" min="0" value="10" /></div>
+        <div class="form-group">
+          <label class="form-label">المادة</label>
+          <input class="form-input" id="parse-test-subject" placeholder="مثال: اللغة العربية" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">⏱️ وقت الاختبار (دقائق)</label>
+          <input class="form-input" id="parse-test-time" type="number" min="0" value="10" />
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">📝 الصق نص الأسئلة هنا</label>
-        <textarea class="form-input parse-textarea" id="parse-input" rows="8" placeholder="مثال:&#10;س1: ما هو أكبر كوكب في المجموعة الشمسية؟&#10;أ) الأرض&#10;ب) المريخ&#10;ج) المشتري&#10;د) زحل"></textarea>
+        <textarea class="form-input parse-textarea" id="parse-input" rows="8"
+          placeholder="مثال:&#10;س1: ما هو أكبر كوكب في المجموعة الشمسية؟&#10;أ) الأرض&#10;ب) المريخ&#10;ج) المشتري&#10;د) زحل"></textarea>
       </div>
       <div class="answer-bulk">
-        <label>✍️ الإجابات الصحيحة (اختياري) — أدخلها بشكل تسلسلي مفصولة بفواصل:</label>
-        <textarea id="bulk-answers-input" rows="2" placeholder="مثال: ج, ب   أو   C,B   أو   3,2   (حسب رقم الخيار)"></textarea>
-        <small>مثال: إذا أردت أن يكون السؤال الأول جوابه "ج" والثاني "ب"، اكتب: ج, ب   أو   C,B   أو   3,2.</small>
+        <label>✍️ الإجابات الصحيحة (اختياري) — أدخلها مفصولة بمسافة أو فاصلة:</label>
+        <textarea id="bulk-answers-input" rows="2"
+          placeholder="مثال: ج ب أ د   أو   C B A D   أو   3 2 1 4   (يدعم المسافة والفاصلة)"></textarea>
+        <small>مثال: إذا الأول جوابه "ج" والثاني "ب": اكتب ج ب   أو   C B   أو   3 2</small>
       </div>
-      <button class="btn btn-primary" onclick="parseQuestions()" style="width:100%;margin-bottom:14px">🔍 تحليل النص</button>
+      <button class="btn btn-primary" onclick="parseQuestions()" style="width:100%;margin-bottom:14px">
+        🔍 تحليل النص
+      </button>
       <div class="parse-result-preview" id="parse-preview">
         <h4 id="parse-preview-title">✅ تم التحليل — حدد الإجابات الصحيحة</h4>
         <div id="parse-questions-list"></div>
-        <button class="btn btn-primary" onclick="saveParsedTest()" style="width:100%;margin-top:14px">💾 حفظ الاختبار</button>
+        <button class="btn btn-primary" id="save-parsed-btn" onclick="saveParsedTest()" style="width:100%;margin-top:14px">
+          💾 حفظ الاختبار
+        </button>
       </div>
     </div>
 
@@ -1253,27 +421,53 @@
         <div class="settings-row">
           <div class="settings-row-info">
             <h4>تتبع الأخطاء حسب اسم الاختبار</h4>
-            <p>تفعيل تتبع الأخطاء حسب اسم الاختبار — يتيح للطلاب إعادة التدريب على أخطاء اختبار محدد</p>
+            <p>تفعيل تتبع الأخطاء حسب الاختبار — يتيح إعادة التدريب على أخطاء اختبار محدد</p>
           </div>
-          <label class="toggle-switch"><input type="checkbox" id="setting-categorized-errors" onchange="saveAdminSettings()"><span class="toggle-slider"></span></label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-categorized-errors" onchange="saveAdminSettings()">
+            <span class="toggle-slider"></span>
+          </label>
         </div>
         <div class="settings-row">
           <div class="settings-row-info">
             <h4>عرض ملاحظات المعلم فور الإجابة</h4>
             <p>إظهار ملاحظات المعلم مباشرةً بعد إجابة الطالب على كل سؤال</p>
           </div>
-          <label class="toggle-switch"><input type="checkbox" id="setting-show-notes-live" checked onchange="saveAdminSettings()"><span class="toggle-slider"></span></label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-show-notes-live" checked onchange="saveAdminSettings()">
+            <span class="toggle-slider"></span>
+          </label>
         </div>
       </div>
       <div class="settings-card" style="border-color:rgba(239,68,68,0.2)">
-        <h3 style="color:var(--red)">🔒 الأمان</h3>
+        <h3 style="color:var(--red)">🔒 الأمان — Firebase Authentication</h3>
         <div class="settings-row">
           <div class="settings-row-info">
-            <h4>تسجيل الخروج من وضع الأدمن</h4>
-            <p>إلغاء تفعيل وضع الأدمن وإخفاء جميع الأدوات الإدارية</p>
+            <h4>الجلسة الحالية</h4>
+            <p id="admin-user-email-settings">—</p>
           </div>
-          <button class="btn btn-secondary" onclick="logoutAdmin()" style="font-size:0.83rem;color:var(--red)">تسجيل الخروج 🔒</button>
+          <button class="btn btn-secondary" onclick="logoutAdmin()" style="font-size:0.83rem;color:var(--red)">
+            تسجيل الخروج 🔒
+          </button>
         </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <h4>📋 قواعد Firebase المطلوبة</h4>
+            <p>انسخ هذه القواعد إلى Firebase Console ← Realtime Database ← Rules</p>
+          </div>
+        </div>
+        <div style="background:var(--surface2);border-radius:9px;padding:14px;font-size:0.75rem;font-family:monospace;color:var(--green);line-height:1.8;white-space:pre-wrap;overflow-x:auto">{
+  "rules": {
+    "quizzes": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "analytics": {
+      ".read": "auth != null",
+      ".write": true
+    }
+  }
+}</div>
       </div>
     </div>
   </div>
@@ -1286,6 +480,8 @@
   جميع الحقوق محفوظة
   <span class="footer-sep">|</span>
   تطوير تقني: أحمد محسن
+  <span class="footer-sep">|</span>
+  <span style="color:var(--green);font-size:0.72rem">🔒 محمي بـ Firebase Authentication</span>
 </footer>
 
 <!-- ============================================================
@@ -1294,27 +490,45 @@
 <div class="modal-overlay" id="goal-modal">
   <div class="modal">
     <h3>🎯 تحديد الهدف</h3>
-    <div class="form-group"><label class="form-label">اسم الهدف</label><input class="form-input" id="goal-name-input" placeholder="مثال: أكمل جميع الاختبارات هذا الأسبوع" /></div>
-    <div class="form-group"><label class="form-label">عدد الاختبارات المستهدفة</label><input class="form-input" id="goal-target-input" type="number" min="1" placeholder="مثال: 20" /></div>
-    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('goal-modal')">إلغاء</button><button class="btn btn-primary" onclick="saveGoal()">حفظ</button></div>
+    <div class="form-group">
+      <label class="form-label">اسم الهدف</label>
+      <input class="form-input" id="goal-name-input" placeholder="مثال: أكمل جميع الاختبارات هذا الأسبوع" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">عدد الاختبارات المستهدفة</label>
+      <input class="form-input" id="goal-target-input" type="number" min="1" placeholder="مثال: 20" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('goal-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveGoal()">حفظ</button>
+    </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="leave-modal">
   <div class="modal">
     <h3>⚠️ هل تريد المغادرة؟</h3>
-    <p style="color:var(--text2);font-size:0.9rem">سيتم فقدان تقدمك في الاختبار الحالي.</p>
-    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('leave-modal')">تراجع</button><button class="btn btn-primary" onclick="leaveQuiz()">مغادرة</button></div>
+    <p style="color:var(--text2);font-size:0.9rem">سيتم حفظ تقدمك — يمكنك الاستمرار لاحقاً.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('leave-modal')">تراجع</button>
+      <button class="btn btn-primary" onclick="leaveQuiz()">مغادرة</button>
+    </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="delete-modal">
   <div class="modal">
     <h3>🗑️ تأكيد الحذف</h3>
-    <div class="delete-warning"><strong id="delete-modal-name">اسم الاختبار</strong>سيتم حذف هذا الاختبار وجميع درجاته نهائياً ولا يمكن التراجع.</div>
+    <div class="delete-warning">
+      <strong id="delete-modal-name">اسم الاختبار</strong>
+      سيتم حذف هذا الاختبار وجميع درجاته نهائياً ولا يمكن التراجع.
+    </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('delete-modal')">إلغاء</button>
-      <button class="btn" onclick="confirmDeleteTest()" style="background:var(--red);color:#fff;padding:11px 22px;border-radius:11px;font-family:'Cairo',sans-serif;font-weight:700;border:none;cursor:pointer;">حذف نهائياً</button>
+      <button class="btn" onclick="confirmDeleteTest()"
+        style="background:var(--red);color:#fff;padding:11px 22px;border-radius:11px;font-family:'Cairo',sans-serif;font-weight:700;border:none;cursor:pointer;">
+        حذف نهائياً
+      </button>
     </div>
   </div>
 </div>
@@ -1324,1248 +538,56 @@
     <h3>🔁 جلسات التدريب على الأخطاء</h3>
     <p style="color:var(--text3);font-size:0.85rem;margin-bottom:16px" id="practice-modal-desc"></p>
     <div id="practice-sessions-list" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;"></div>
-    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('practice-modal')">إغلاق</button></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('practice-modal')">إغلاق</button>
+    </div>
   </div>
 </div>
 
-<!-- Admin Login Modal -->
+<!-- ============================================================
+     ADMIN LOGIN MODAL — Firebase Authentication
+     NO PASSWORDS IN CODE. Credentials verified server-side.
+============================================================ -->
 <div class="modal-overlay" id="admin-login-modal">
-  <div class="modal" style="max-width:370px">
+  <div class="modal" style="max-width:400px">
     <div class="admin-modal-content">
       <div class="admin-modal-icon"><i class="fa-solid fa-lock" style="color:var(--accent)"></i></div>
-      <h3 style="margin-bottom:10px">دخول الأدمن</h3>
-      <p style="font-size:0.83rem;color:var(--text3);margin-bottom:18px">أدخل كلمة المرور للوصول إلى لوحة الإدارة</p>
+      <h3 style="margin-bottom:8px">دخول الأدمن</h3>
+      <p style="font-size:0.83rem;color:var(--text3);margin-bottom:18px">
+        تسجيل الدخول عبر Firebase Authentication
+      </p>
       <div class="form-group">
-        <input type="password" class="form-input admin-modal-input" id="admin-password-input" placeholder="••••" onkeydown="if(event.key==='Enter')verifyAdminPassword()" autocomplete="off">
+        <input type="email" class="form-input" id="admin-email-input"
+          placeholder="البريد الإلكتروني"
+          style="text-align:right;margin-bottom:10px"
+          autocomplete="email">
       </div>
-      <div id="admin-login-error" style="color:var(--red);font-size:0.82rem;display:none;margin-bottom:8px">❌ كلمة المرور غير صحيحة</div>
+      <div class="form-group">
+        <input type="password" class="form-input admin-modal-input" id="admin-password-input"
+          placeholder="كلمة المرور"
+          autocomplete="current-password">
+      </div>
+      <div id="admin-login-error"
+        style="color:var(--red);font-size:0.82rem;display:none;margin-top:8px;padding:8px 12px;background:rgba(239,68,68,0.08);border-radius:8px;border:1px solid rgba(239,68,68,0.2)">
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('admin-login-modal')">إلغاء</button>
-      <button class="btn btn-primary" onclick="verifyAdminPassword()">دخول</button>
+      <button class="btn btn-primary" id="admin-login-submit-btn" onclick="verifyAdminLogin()">دخول</button>
     </div>
   </div>
 </div>
 
+<!-- Toast Container -->
 <div class="toast-container" id="toast-container"></div>
 
-<script>
-/* ============================================================
-   CONSTANTS
-============================================================ */
-const ADMIN_KEY = "7788";
+<!-- ============================================================
+     SCRIPTS — Loaded in dependency order
+============================================================ -->
+<script src="js/firebase.js"></script>
+<script src="js/app.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/quiz.js"></script>
 
-/* ============================================================
-   HTML ESCAPE
-============================================================ */
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-
-/* ============================================================
-   STATE
-============================================================ */
-let tests   = [];
-let errors  = JSON.parse(localStorage.getItem('quizErrors')  || '[]');
-let goal    = JSON.parse(localStorage.getItem('quizGoal')    || 'null');
-let scores  = JSON.parse(localStorage.getItem('quizScores')  || '{}');
-let adminSettings = JSON.parse(localStorage.getItem('adminSettings') || '{"categorizedErrors":false,"showNotesLive":true}');
-let isAdminMode   = sessionStorage.getItem('adminMode') === '1';
-
-let currentTest   = null;
-let currentQ      = 0;
-let userAnswers   = [];
-let answered      = false;
-let timerInterval = null;
-let elapsedSecs   = 0;
-
-let builderQuestions = [];
-let parsedQuestions  = [];
-let pendingDeleteId  = null;
-let deleteMode       = 'test';
-
-const pomodoro = {
-  running: false, phase: 'focus', focusMins: 25, breakMins: 5,
-  totalSessions: 4, currentSession: 1, completedSessions: 0,
-  remaining: 25*60, interval: null
-};
-
-const tools = {
-  cd: { running:false, interval:null, remaining:0, total:0 },
-  sw: { running:false, interval:null, elapsed:0, laps:[] },
-  qt: { running:false, interval:null, remaining:0, qIdx:0, total:0, perQ:0 }
-};
-
-/* ============================================================
-   THEME (Dark/Light) — available to ALL users
-============================================================ */
-function initTheme() {
-  const saved = localStorage.getItem('sitetheme') || 'dark';
-  applyTheme(saved);
-}
-function applyTheme(t) {
-  const icon = document.getElementById('theme-icon');
-  if (t === 'light') {
-    document.body.classList.add('light-mode');
-    if (icon) { icon.className = 'fa-solid fa-moon'; }
-    localStorage.setItem('sitetheme', 'light');
-  } else {
-    document.body.classList.remove('light-mode');
-    if (icon) { icon.className = 'fa-solid fa-sun'; }
-    localStorage.setItem('sitetheme', 'dark');
-  }
-}
-function toggleTheme() {
-  const isLight = document.body.classList.contains('light-mode');
-  applyTheme(isLight ? 'dark' : 'light');
-}
-
-/* ============================================================
-   ADMIN MODE
-============================================================ */
-function applyAdminMode() {
-  const bar      = document.getElementById('admin-mode-bar');
-  const loginBtn = document.getElementById('admin-login-btn');
-  const lockIcon = document.getElementById('admin-lock-icon');
-  if (isAdminMode) {
-    document.body.classList.add('admin-mode');
-    bar.classList.add('visible');
-    loginBtn.classList.add('active-admin');
-    if (lockIcon) lockIcon.className = 'fa-solid fa-unlock';
-    loginBtn.title = 'وضع الأدمن مفعّل — انقر للخروج';
-  } else {
-    document.body.classList.remove('admin-mode');
-    bar.classList.remove('visible');
-    loginBtn.classList.remove('active-admin');
-    if (lockIcon) lockIcon.className = 'fa-solid fa-lock';
-    loginBtn.title = 'دخول الأدمن';
-  }
-}
-function handleAdminLogin() {
-  if (isAdminMode) {
-    if (confirm('هل تريد تسجيل الخروج من وضع الأدمن؟')) logoutAdmin();
-    return;
-  }
-  document.getElementById('admin-password-input').value = '';
-  document.getElementById('admin-login-error').style.display = 'none';
-  document.getElementById('admin-login-modal').classList.add('open');
-  setTimeout(() => document.getElementById('admin-password-input').focus(), 120);
-}
-function verifyAdminPassword() {
-  const pw = document.getElementById('admin-password-input').value;
-  if (pw === ADMIN_KEY) {
-    isAdminMode = true;
-    sessionStorage.setItem('adminMode', '1');
-    closeModal('admin-login-modal');
-    applyAdminMode();
-    showToast('✅ مرحباً بك في وضع الأدمن', 'success');
-  } else {
-    document.getElementById('admin-login-error').style.display = 'block';
-    document.getElementById('admin-password-input').value = '';
-    document.getElementById('admin-password-input').focus();
-  }
-}
-function logoutAdmin() {
-  isAdminMode = false;
-  sessionStorage.removeItem('adminMode');
-  applyAdminMode();
-  showPage('home');
-  showToast('🔒 تم تسجيل الخروج من وضع الأدمن', 'info');
-}
-
-/* ============================================================
-   ADMIN SETTINGS
-============================================================ */
-function loadAdminSettings() {
-  const s     = adminSettings;
-  const catEl = document.getElementById('setting-categorized-errors');
-  const notEl = document.getElementById('setting-show-notes-live');
-  if (catEl) catEl.checked = !!s.categorizedErrors;
-  if (notEl) notEl.checked = s.showNotesLive !== false;
-}
-function saveAdminSettings() {
-  adminSettings.categorizedErrors = document.getElementById('setting-categorized-errors').checked;
-  adminSettings.showNotesLive     = document.getElementById('setting-show-notes-live').checked;
-  localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
-  showToast('تم حفظ الإعدادات ✓', 'success');
-}
-
-/* ============================================================
-   UTILITIES
-============================================================ */
-function fmtTime(s) {
-  return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
-}
-function showToast(msg, type = 'success') {
-  const tc = document.getElementById('toast-container');
-  const t  = document.createElement('div');
-  t.className = 'toast ' + type;
-  t.textContent = msg;
-  tc.appendChild(t);
-  setTimeout(() => t.remove(), 3200);
-}
-function persistScoresAndErrors() {
-  localStorage.setItem('quizScores', JSON.stringify(scores));
-  localStorage.setItem('quizErrors', JSON.stringify(errors));
-}
-
-/* ============================================================
-   FIREBASE SYNC
-============================================================ */
-function attachFirebaseListener() {
-  db.ref('quizzes').on('value', snapshot => {
-    const data = snapshot.val();
-    tests = data
-      ? Object.entries(data).map(([fid, qd]) => ({ ...qd, firebaseId: fid, id: fid }))
-      : [];
-    renderHome();
-    const adminManage = document.getElementById('admin-manage');
-    if (document.getElementById('page-admin').classList.contains('active') &&
-        adminManage && adminManage.classList.contains('active')) {
-      renderManageList();
-    }
-  }, err => {
-    showToast('خطأ في الاتصال بقاعدة البيانات', 'error');
-    console.error('Firebase error:', err);
-  });
-}
-
-/* ============================================================
-   NAVIGATION
-============================================================ */
-function showPage(name) {
-  if (name === 'admin' && !isAdminMode) { handleAdminLogin(); return; }
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  if (name === 'home')   renderHome();
-  if (name === 'errors') renderErrors();
-  if (name === 'admin')  { renderManageList(); loadAdminSettings(); }
-  if (name === 'tools')  initToolsPage();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-});
-
-/* ============================================================
-   HOME
-============================================================ */
-function renderHome() {
-  const done = Object.keys(scores).length;
-  const vals = Object.values(scores);
-  const avg  = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
-  document.getElementById('stat-total').textContent  = tests.length;
-  document.getElementById('stat-done').textContent   = done;
-  document.getElementById('stat-avg').textContent    = avg !== null ? avg + '%' : '—';
-  document.getElementById('stat-errors').textContent = errors.length;
-  renderGoal(done);
-  renderTestsGrid();
-}
-function renderGoal(done) {
-  if (!goal) return;
-  const pct = goal.target ? Math.min(100, Math.round(done / goal.target * 100)) : 0;
-  document.getElementById('goal-title').textContent      = escapeHtml(goal.name || 'هدفي');
-  document.getElementById('goal-desc').textContent       = `${pct}% من الهدف مكتمل`;
-  document.getElementById('goal-bar').style.width        = pct + '%';
-  document.getElementById('goal-done-lbl').textContent   = done + ' مكتمل';
-  document.getElementById('goal-target-lbl').textContent = 'الهدف: ' + (goal.target || '—');
-}
-function renderTestsGrid() {
-  const grid     = document.getElementById('tests-grid');
-  const fragment = document.createDocumentFragment();
-
-  if (!tests.length) {
-    const empty = document.createElement('div');
-    empty.className = 'quizzes-empty';
-    empty.innerHTML = `<div class="empty-icon">📭</div><h3>لا توجد اختبارات بعد</h3><p>أضف اختباراً جديداً من لوحة الإدارة</p>`;
-    fragment.appendChild(empty);
-    if (isAdminMode) {
-      const add = document.createElement('div');
-      add.className = 'add-card';
-      add.onclick = () => showPage('admin');
-      add.innerHTML = `<span style="font-size:1.4rem">➕</span><span>أضف اختباراً جديداً</span>`;
-      fragment.appendChild(add);
-    }
-    grid.innerHTML = '';
-    grid.appendChild(fragment);
-    return;
-  }
-
-  tests.forEach((t, idx) => {
-    const sc = scores[t.id];
-    let badge = '<span class="test-badge badge-new">جديد</span>';
-    let scoreBarHtml = '';
-    if (sc !== undefined) {
-      badge = sc >= 70
-        ? '<span class="test-badge badge-done">مكتمل ✓</span>'
-        : '<span class="test-badge badge-retry">راجع أخطاءك</span>';
-      const cls = sc >= 80 ? 'fill-green' : sc >= 60 ? 'fill-yellow' : 'fill-red';
-      scoreBarHtml = `<div class="test-score-bar"><div class="test-score-fill ${cls}" style="width:${sc}%"></div></div>`;
-    }
-    const qCount = t.questions ? t.questions.length : 0;
-    const time   = t.timeLimit ? t.timeLimit + ' دقيقة' : 'بلا حد';
-    const card   = document.createElement('div');
-    card.className = 'test-card';
-    card.onclick   = () => startQuiz(t.firebaseId);
-    card.innerHTML = `
-      <button class="test-card-del" onclick="event.stopPropagation();requestDeleteTest('${t.firebaseId}')">🗑️ حذف</button>
-      <div class="test-card-top"><div class="test-num">${idx+1}</div>${badge}</div>
-      <div class="test-title">${escapeHtml(t.name)}</div>
-      <div class="test-meta">
-        <span>📝 ${qCount} سؤال</span><span>⏱️ ${time}</span>
-        ${t.subject ? `<span>📚 ${escapeHtml(t.subject)}</span>` : ''}
-        ${sc !== undefined ? `<span style="color:${sc>=70?'var(--green)':sc>=50?'var(--accent)':'var(--red)'}">🎯 ${sc}%</span>` : ''}
-      </div>${scoreBarHtml}
-    `;
-    fragment.appendChild(card);
-  });
-
-  if (isAdminMode) {
-    const add = document.createElement('div');
-    add.className = 'add-card';
-    add.onclick = () => showPage('admin');
-    add.innerHTML = `<span style="font-size:1.4rem">➕</span><span>أضف اختباراً جديداً</span>`;
-    fragment.appendChild(add);
-  }
-
-  grid.innerHTML = '';
-  grid.appendChild(fragment);
-}
-
-/* ============================================================
-   GOAL
-============================================================ */
-function openGoalModal() {
-  if (goal) {
-    document.getElementById('goal-name-input').value   = goal.name   || '';
-    document.getElementById('goal-target-input').value = goal.target || '';
-  }
-  document.getElementById('goal-modal').classList.add('open');
-}
-function saveGoal() {
-  const name   = document.getElementById('goal-name-input').value.trim();
-  const target = parseInt(document.getElementById('goal-target-input').value) || 0;
-  goal = { name: name || 'هدفي', target };
-  localStorage.setItem('quizGoal', JSON.stringify(goal));
-  closeModal('goal-modal');
-  renderHome();
-  showToast('تم حفظ هدفك ✓', 'success');
-}
-
-/* ============================================================
-   DELETE
-============================================================ */
-function requestDeleteTest(firebaseId) {
-  const test = tests.find(t => t.firebaseId === firebaseId);
-  if (!test) return;
-  pendingDeleteId = firebaseId;
-  deleteMode = 'test';
-  document.getElementById('delete-modal-name').textContent = test.name;
-  document.getElementById('delete-modal').classList.add('open');
-}
-function clearErrors() {
-  if (!errors.length) return;
-  deleteMode = 'errors';
-  document.getElementById('delete-modal-name').textContent = 'جميع الأخطاء المسجّلة';
-  document.getElementById('delete-modal').classList.add('open');
-}
-function confirmDeleteTest() {
-  if (deleteMode === 'test' && pendingDeleteId) {
-    db.ref('quizzes/' + pendingDeleteId).remove()
-      .then(() => {
-        delete scores[pendingDeleteId];
-        errors = errors.filter(e => e.testId !== pendingDeleteId);
-        persistScoresAndErrors();
-        showToast('تم حذف الاختبار نهائياً', 'success');
-      })
-      .catch(() => showToast('فشل الحذف', 'error'));
-  } else if (deleteMode === 'errors') {
-    errors = [];
-    localStorage.setItem('quizErrors', JSON.stringify(errors));
-    renderErrors();
-    renderHome();
-    showToast('تم مسح مجلد الأخطاء', 'success');
-  }
-  closeModal('delete-modal');
-  pendingDeleteId = null;
-}
-
-/* ============================================================
-   QUIZ LOGIC — Multiple Correct Answers
-============================================================ */
-function isMultiAnswer(q) {
-  return Array.isArray(q.correctAnswers) && q.correctAnswers.length > 1;
-}
-function getCorrectAnswers(q) {
-  if (Array.isArray(q.correctAnswers) && q.correctAnswers.length) return q.correctAnswers;
-  if (typeof q.correct === 'number') return [q.correct];
-  return [];
-}
-function isAnswerCorrect(q, userAnswer) {
-  const correct = getCorrectAnswers(q);
-  if (isMultiAnswer(q)) {
-    if (!Array.isArray(userAnswer) || !userAnswer.length) return false;
-    return JSON.stringify([...correct].sort()) === JSON.stringify([...userAnswer].sort());
-  }
-  return userAnswer === correct[0];
-}
-
-function startQuiz(firebaseId) {
-  const test = tests.find(t => t.firebaseId === firebaseId);
-  if (!test || !test.questions || !test.questions.length) {
-    showToast('هذا الاختبار لا يحتوي على أسئلة!', 'error'); return;
-  }
-  currentTest   = test;
-  currentQ      = 0;
-  userAnswers   = new Array(test.questions.length).fill(null);
-  answered      = false;
-  elapsedSecs   = 0;
-  showPage('quiz');
-  document.getElementById('quiz-title').textContent    = escapeHtml(test.name);
-  document.getElementById('quiz-subtitle').textContent = (test.subject ? escapeHtml(test.subject) : '') + ' • ' + test.questions.length + ' سؤال';
-  startTimer();
-  renderQuestion();
-}
-function startCustomQuiz(questions, title) {
-  if (!questions.length) { showToast('لا توجد أسئلة', 'error'); return; }
-  currentTest   = { id:'__practice__', firebaseId:'__practice__', name:title, subject:'تدريب الأخطاء', timeLimit:0, questions };
-  currentQ      = 0;
-  userAnswers   = new Array(questions.length).fill(null);
-  answered      = false;
-  elapsedSecs   = 0;
-  showPage('quiz');
-  document.getElementById('quiz-title').textContent    = escapeHtml(title);
-  document.getElementById('quiz-subtitle').textContent = 'تدريب الأخطاء • ' + questions.length + ' سؤال';
-  startTimer();
-  renderQuestion();
-}
-function startTimer() {
-  clearInterval(timerInterval);
-  const limit = (currentTest.timeLimit || 0) * 60;
-  const pill  = document.getElementById('timer-pill');
-  timerInterval = setInterval(() => {
-    elapsedSecs++;
-    if (limit > 0) {
-      const rem = limit - elapsedSecs;
-      if (rem <= 0) { clearInterval(timerInterval); finishQuiz(); return; }
-      pill.className = 'timer-pill' + (rem <= 60 ? ' danger' : rem <= 120 ? ' warning' : '');
-      pill.innerHTML = `⏱️ <span>${fmtTime(rem)}</span>`;
-    } else {
-      pill.innerHTML = `⏱️ <span>${fmtTime(elapsedSecs)}</span>`;
-    }
-  }, 1000);
-}
-function renderQuestion() {
-  const q   = currentTest.questions[currentQ];
-  const pct = (currentQ / currentTest.questions.length) * 100;
-  document.getElementById('q-progress-fill').style.width  = pct + '%';
-  document.getElementById('q-counter').textContent        = (currentQ+1) + ' / ' + currentTest.questions.length;
-  document.getElementById('q-num').textContent            = 'السؤال ' + (currentQ+1);
-  document.getElementById('q-text').textContent           = q.text;
-
-  const multi         = isMultiAnswer(q);
-  const multiNote     = document.getElementById('multi-answer-note');
-  const submitMultiBtn= document.getElementById('quiz-submit-multi');
-  multiNote.className     = 'multi-answer-note' + (multi ? ' visible' : '');
-  submitMultiBtn.className= 'quiz-submit-multi'  + (multi ? ' visible' : '');
-
-  const letters   = ['أ','ب','ج','د','هـ','و'];
-  const container = document.getElementById('choices-container');
-  const frag      = document.createDocumentFragment();
-  q.choices.forEach((c, i) => {
-    const div     = document.createElement('div');
-    div.className = 'choice';
-    div.id        = 'choice-' + i;
-    div.onclick   = multi ? () => toggleMultiChoice(i) : () => selectAnswer(i);
-    div.innerHTML = `<div class="choice-letter">${letters[i]||(i+1)}</div><div class="choice-text">${escapeHtml(c)}</div>`;
-    frag.appendChild(div);
-  });
-  container.innerHTML = '';
-  container.appendChild(frag);
-
-  const nextBtn    = document.getElementById('next-btn');
-  nextBtn.disabled = true;
-  nextBtn.textContent = currentQ === currentTest.questions.length - 1 ? 'إنهاء ✓' : 'التالي ←';
-  document.getElementById('skip-btn').style.display = '';
-  document.getElementById('teacher-note-box').className = 'teacher-note-box';
-  answered = false;
-
-  if (userAnswers[currentQ] !== null) {
-    if (multi) {
-      const ua = Array.isArray(userAnswers[currentQ]) ? userAnswers[currentQ] : [];
-      ua.forEach(i => document.getElementById('choice-'+i)?.classList.add('selected'));
-      document.querySelectorAll('.choice').forEach(el => el.classList.add('disabled'));
-      nextBtn.disabled = false;
-      document.getElementById('skip-btn').style.display = 'none';
-      submitMultiBtn.className = 'quiz-submit-multi';
-      answered = true;
-    } else {
-      markAnswer(userAnswers[currentQ]);
-      answered = true;
-    }
-    maybeShowTeacherNote(q);
-  }
-}
-function toggleMultiChoice(i) {
-  if (answered) return;
-  document.getElementById('choice-' + i)?.classList.toggle('selected');
-}
-function submitMultiAnswer() {
-  if (answered) return;
-  const selected = [];
-  document.querySelectorAll('.choice.selected').forEach(el => {
-    const idx = parseInt(el.id.replace('choice-',''));
-    if (!isNaN(idx)) selected.push(idx);
-  });
-  if (!selected.length) { showToast('اختر إجابة واحدة على الأقل', 'error'); return; }
-  answered = true;
-  userAnswers[currentQ] = selected;
-  document.querySelectorAll('.choice').forEach(el => el.classList.add('disabled'));
-  document.getElementById('quiz-submit-multi').className = 'quiz-submit-multi';
-  document.getElementById('next-btn').disabled = false;
-  document.getElementById('skip-btn').style.display = 'none';
-  maybeShowTeacherNote(currentTest.questions[currentQ]);
-}
-function selectAnswer(i) {
-  if (answered) return;
-  answered = true;
-  userAnswers[currentQ] = i;
-  markAnswer(i);
-  document.getElementById('next-btn').disabled = false;
-  document.getElementById('skip-btn').style.display = 'none';
-  maybeShowTeacherNote(currentTest.questions[currentQ]);
-}
-function markAnswer(selected) {
-  document.querySelectorAll('.choice').forEach(el => el.classList.add('disabled'));
-  document.getElementById('choice-' + selected)?.classList.add('selected');
-}
-
-/* Teacher Notes: shown after answering if setting enabled */
-function maybeShowTeacherNote(q) {
-  if (!q.note || !q.note.trim()) return;
-  if (adminSettings.showNotesLive !== false) {
-    document.getElementById('teacher-note-text').textContent = q.note;
-    document.getElementById('teacher-note-box').className = 'teacher-note-box visible';
-  }
-}
-function skipQuestion() { userAnswers[currentQ] = -1; nextQuestion(); }
-function nextQuestion() {
-  if (currentQ < currentTest.questions.length - 1) { currentQ++; answered = false; renderQuestion(); }
-  else finishQuiz();
-}
-function confirmLeaveQuiz() { document.getElementById('leave-modal').classList.add('open'); }
-function leaveQuiz() { clearInterval(timerInterval); closeModal('leave-modal'); showPage('home'); }
-
-/* ============================================================
-   FINISH & RESULTS
-============================================================ */
-function finishQuiz() {
-  clearInterval(timerInterval);
-  const qs        = currentTest.questions;
-  let correct     = 0, skipped = 0;
-  const wrongList = [];
-
-  qs.forEach((q, i) => {
-    const ua = userAnswers[i];
-    if (ua === -1 || ua === null) { skipped++; }
-    else if (isAnswerCorrect(q, ua)) { correct++; }
-    else { wrongList.push({ testName: currentTest.name, testId: currentTest.id, qIndex: i, q, userAnswer: ua }); }
-  });
-
-  const pct = Math.round(correct / qs.length * 100);
-  if (currentTest.id !== '__practice__') {
-    scores[currentTest.id] = pct;
-    localStorage.setItem('quizScores', JSON.stringify(scores));
-  }
-
-  /* Error tracking — by quiz name if enabled */
-  if (adminSettings.categorizedErrors) {
-    const catKey   = 'quizErrors_' + (currentTest.id || 'general');
-    let catErrors  = JSON.parse(localStorage.getItem(catKey) || '[]');
-    wrongList.forEach(w => { if (!catErrors.find(e => e.testId===w.testId && e.qIndex===w.qIndex)) catErrors.push(w); });
-    catErrors = catErrors.filter(e => e.testId !== currentTest.id || !isAnswerCorrect(e.q, userAnswers[e.qIndex]));
-    localStorage.setItem(catKey, JSON.stringify(catErrors));
-    errors = errors.filter(e => e.testId !== currentTest.id);
-    wrongList.forEach(w => { if (!errors.find(e => e.testId===w.testId && e.qIndex===w.qIndex)) errors.push(w); });
-  } else {
-    wrongList.forEach(w => { if (!errors.find(e => e.testId===w.testId && e.qIndex===w.qIndex)) errors.push(w); });
-    errors = errors.filter(e => e.testId !== currentTest.id || !isAnswerCorrect(e.q, userAnswers[e.qIndex]));
-  }
-  localStorage.setItem('quizErrors', JSON.stringify(errors));
-
-  showResults(pct, correct, skipped, qs.length, elapsedSecs);
-}
-function showResults(pct, correct, skipped, total, elapsed) {
-  showPage('results');
-  const wrong    = total - correct - skipped;
-  const icon     = pct >= 90 ? '🏆' : pct >= 70 ? '🎉' : pct >= 50 ? '📚' : '💪';
-  const grade    = pct >= 90 ? 'ممتاز' : pct >= 80 ? 'جيد جداً' : pct >= 70 ? 'جيد' : pct >= 60 ? 'مقبول' : 'راجع المادة';
-  const gColor   = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--accent)' : 'var(--red)';
-  const arcColor = pct >= 70 ? '#10b981' : pct >= 50 ? '#fbbf24' : '#ef4444';
-
-  document.getElementById('results-icon').textContent  = icon;
-  document.getElementById('results-score').textContent = pct + '%';
-  document.getElementById('score-pct').textContent     = pct + '%';
-  document.getElementById('results-label').textContent = escapeHtml(currentTest.name);
-  document.getElementById('results-grade').textContent = grade;
-  document.getElementById('results-grade').style.cssText = `background:${gColor}22;color:${gColor};border:1px solid ${gColor}44`;
-  document.getElementById('r-correct').textContent  = correct;
-  document.getElementById('r-wrong').textContent    = wrong;
-  document.getElementById('r-skipped').textContent  = skipped;
-  document.getElementById('r-time').textContent     = fmtTime(elapsed);
-
-  const arc    = document.getElementById('score-arc');
-  const circum = 326.7;
-  arc.style.stroke = arcColor;
-  setTimeout(() => { arc.style.strokeDashoffset = circum - (circum * pct / 100); }, 100);
-
-  const qs     = currentTest.questions;
-  const bdFrag = document.createDocumentFragment();
-  qs.forEach((q, i) => {
-    const ua  = userAnswers[i];
-    const dot = document.createElement('div');
-    let cls = 's', sym = '⏭';
-    if (ua !== null && ua !== -1 && isAnswerCorrect(q, ua)) { cls = 'c'; sym = i+1; }
-    else if (ua !== null && ua !== -1) { cls = 'w'; sym = i+1; }
-    dot.className = `breakdown-dot ${cls}`;
-    dot.title     = `سؤال ${i+1}`;
-    dot.textContent = sym;
-    bdFrag.appendChild(dot);
-  });
-  const bdGrid = document.getElementById('breakdown-grid');
-  bdGrid.innerHTML = '';
-  bdGrid.appendChild(bdFrag);
-
-  const letters = ['أ','ب','ج','د','هـ','و'];
-  const rvFrag  = document.createDocumentFragment();
-  qs.forEach((q, i) => {
-    const ua             = userAnswers[i];
-    const correctAnswers = getCorrectAnswers(q);
-    const isCorrect      = ua !== null && ua !== -1 && isAnswerCorrect(q, ua);
-    const item           = document.createElement('div');
-    item.className       = `review-item ${isCorrect ? 'r-correct' : 'r-wrong'}`;
-
-    let choicesHtml = '';
-    q.choices.forEach((c, ci) => {
-      const isCorrectChoice = correctAnswers.includes(ci);
-      const isUserChoice    = Array.isArray(ua) ? ua.includes(ci) : ua === ci;
-      let cls2 = '';
-      if (isCorrectChoice) cls2 = 'r-answer';
-      else if (isUserChoice && !isCorrectChoice) cls2 = 'r-user-wrong';
-      if (cls2) choicesHtml += `<div class="review-choice ${cls2}">${isCorrectChoice?'✅':'❌'} ${letters[ci]||ci+1}. ${escapeHtml(c)}</div>`;
-    });
-
-    /* Teacher Note revealed in review — always shown here */
-    const noteHtml = q.note ? `<div class="review-note"><span>💡 ملاحظة المعلم</span>${escapeHtml(q.note)}</div>` : '';
-
-    item.innerHTML = `
-      <div class="review-q">${i+1}. ${escapeHtml(q.text)}</div>
-      <div class="review-choices">${choicesHtml}</div>
-      ${noteHtml}
-    `;
-    rvFrag.appendChild(item);
-  });
-  const rvList = document.getElementById('review-list');
-  rvList.innerHTML = '';
-  rvList.appendChild(rvFrag);
-}
-function retryQuiz() {
-  if (currentTest.firebaseId !== '__practice__') startQuiz(currentTest.firebaseId);
-  else startCustomQuiz(currentTest.questions, currentTest.name);
-}
-
-/* ============================================================
-   ERRORS PAGE
-============================================================ */
-function renderErrors() {
-  const container = document.getElementById('errors-container');
-  const panel     = document.getElementById('practice-panel');
-  if (!errors.length) {
-    panel.style.display = 'none';
-    container.innerHTML = `<div class="empty-state"><div class="icon">🎉</div><p>لا توجد أخطاء مسجّلة — أحسنت!</p></div>`;
-    return;
-  }
-  panel.style.display = 'block';
-  const size   = parseInt(document.getElementById('practice-size').value) || 10;
-  const splits = Math.ceil(errors.length / size);
-  document.getElementById('practice-splits-info').textContent = `${errors.length} خطأ مسجّل • سيتم تقسيمها إلى ${splits} جلسة (${size} سؤال لكل جلسة)`;
-
-  const grouped = {};
-  errors.forEach(e => {
-    const key = adminSettings.categorizedErrors ? (e.testId || 'general') : 'all';
-    if (!grouped[key]) grouped[key] = { name: e.testName || 'الكل', items: [] };
-    grouped[key].items.push(e);
-  });
-
-  const letters = ['أ','ب','ج','د','هـ','و'];
-  const frag    = document.createDocumentFragment();
-
-  Object.entries(grouped).forEach(([key, g]) => {
-    const folder = document.createElement('div');
-    folder.className = 'errors-folder';
-    const bodyId = 'errfolder_' + key.replace(/[^a-z0-9]/gi,'_');
-    let itemsHtml = '';
-    g.items.forEach((e, idx) => {
-      const ua          = e.userAnswer;
-      const correctIdxs = getCorrectAnswers(e.q);
-      const correctText = correctIdxs.map(ci => `${letters[ci]||ci+1}. ${escapeHtml(e.q.choices[ci]||'—')}`).join(' ، ');
-      const uaText      = Array.isArray(ua)
-        ? ua.map(ci => `${letters[ci]||ci+1}. ${escapeHtml(e.q.choices[ci]||'—')}`).join(' ، ')
-        : (ua >= 0 ? `${letters[ua]||'?'}. ${escapeHtml(e.q.choices[ua]||'—')}` : null);
-      itemsHtml += `<div class="error-item"><div class="error-q-num">${idx+1}</div><div class="error-content"><div class="error-q">${escapeHtml(e.q.text)}</div><div class="error-answers">${uaText ? `<span class="error-wrong">❌ إجابتك: ${uaText}</span>` : '<span class="error-wrong">⏭️ تم التخطي</span>'}<span class="error-correct">✅ الصحيح: ${correctText}</span></div></div></div>`;
-    });
-    folder.innerHTML = `
-      <div class="folder-top" onclick="const b=document.getElementById('${bodyId}');b.style.display=b.style.display==='none'?'block':'none'">
-        <div class="folder-top-left"><span>📁</span><span class="folder-title">${escapeHtml(g.name)}</span></div>
-        <div class="folder-actions">
-          <button class="folder-retake-btn" onclick="event.stopPropagation();retakeErrorsForQuiz('${key}')">🔁 إعادة التدريب</button>
-          <span class="folder-count">${g.items.length} خطأ</span>
-        </div>
-      </div>
-      <div class="folder-body" id="${bodyId}">${itemsHtml}</div>
-    `;
-    frag.appendChild(folder);
-  });
-  container.innerHTML = '';
-  container.appendChild(frag);
-}
-
-function retakeErrorsForQuiz(key) {
-  const subset = key === 'all' ? errors : errors.filter(e => e.testId === key);
-  if (!subset.length) { showToast('لا توجد أخطاء لهذا الاختبار', 'error'); return; }
-  const qs   = subset.map(e => ({...e.q}));
-  const name = subset[0]?.testName || 'تدريب الأخطاء';
-  startCustomQuiz(qs, `تدريب أخطاء: ${name}`);
-}
-
-function startPracticeSession(all = false) {
-  if (!errors.length) { showToast('لا توجد أخطاء للتدريب', 'error'); return; }
-  const questions = errors.map(e => ({...e.q}));
-  if (all) { startCustomQuiz(questions, 'تدريب الأخطاء — كل الأسئلة'); return; }
-  const size   = parseInt(document.getElementById('practice-size').value) || 10;
-  const splits = [];
-  for (let i = 0; i < questions.length; i += size) splits.push(questions.slice(i, i + size));
-  if (splits.length === 1) { startCustomQuiz(splits[0], 'تدريب الأخطاء — جلسة 1'); return; }
-  document.getElementById('practice-modal-desc').textContent = `${questions.length} سؤال مقسّم على ${splits.length} جلسات (${size} سؤال لكل جلسة)`;
-  let listHtml = '';
-  splits.forEach((chunk, i) => {
-    listHtml += `<div class="manage-item"><div class="manage-item-info"><div class="manage-item-name">الجلسة ${i+1}</div><div class="manage-item-meta">${chunk.length} سؤال</div></div><button class="btn btn-primary" style="font-size:0.82rem;padding:8px 14px" onclick="closeModal('practice-modal');startCustomQuiz(practiceChunks[${i}],'تدريب الأخطاء — جلسة ${i+1}')">▶ ابدأ</button></div>`;
-  });
-  document.getElementById('practice-sessions-list').innerHTML = listHtml;
-  window.practiceChunks = splits;
-  document.getElementById('practice-modal').classList.add('open');
-}
-
-/* ============================================================
-   SMART PARSE
-============================================================ */
-function smartParseText(raw) {
-  let txt = raw.replace(/\r\n|\r/g,'\n')
-    .replace(/[\u200B-\u200D\uFEFF]/g,'')
-    .replace(/[أإآ]/g,'أ').replace(/ﻻ/g,'لا')
-    .replace(/[١٢٣٤٥٦٧٨٩٠]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
-    .replace(/\t/g,' ').replace(/ {2,}/g,' ');
-  const lines = txt.split('\n').map(l=>l.trim());
-  const RX_Q  = /^(?:س(?:ؤال)?\s*\d*\s*[:.)]\s*|Q\s*\d*\s*[:.)]\s*|\d+\s*[.)]\s*(?!\s*[أبجدهوABCDa-f]\s*[.)]))(.+)/i;
-  const RX_C  = /^(?:([أبجدهوABCDEFa-f])\s*[.):\-]\s*|(\d+)\s*[.)\-]\s*([أبجدهو])\s*[.):\-]?\s*|[•▪▸\-*]\s*)(.+)/i;
-  const questions = [];
-  let current = null;
-  function pushCurrent() { if (current && current.text.trim() && current.choices.length >= 2) questions.push(current); current = null; }
-  lines.forEach(line => {
-    if (!line) return;
-    const qMatch = line.match(RX_Q), cMatch = line.match(RX_C);
-    const qText  = qMatch ? qMatch[1].trim() : (line.endsWith('؟')||line.endsWith('?')) ? line : null;
-    const cText  = cMatch ? cMatch[cMatch.length-1].trim() : null;
-    if (qText && !cText) { pushCurrent(); current = { text:qText, choices:[], correctAnswers:[0], note:'' }; }
-    else if (cText && current) current.choices.push(cText);
-    else if (cText && !current && questions.length) questions[questions.length-1].choices.push(cText);
-    else if (current) {
-      if (current.choices.length === 0) current.text += ' ' + line;
-      else if (line.length < 120 && !line.match(RX_Q)) current.choices[current.choices.length-1] += ' ' + line;
-    } else if (line.endsWith('؟')||line.endsWith('?')) { pushCurrent(); current = { text:line, choices:[], correctAnswers:[0], note:'' }; }
-  });
-  pushCurrent();
-  return questions.filter(q => q.choices.length >= 2).map(q => ({
-    ...q, text: q.text.trim(), choices: q.choices.map(c=>c.trim()).filter(c=>c.length>0)
-  }));
-}
-
-function parseQuestions() {
-  const raw = document.getElementById('parse-input').value.trim();
-  if (!raw) { showToast('الصق نصاً أولاً', 'error'); return; }
-  parsedQuestions = smartParseText(raw);
-  if (!parsedQuestions.length) { showToast('لم يتم التعرف على أسئلة. تأكد من الصيغة', 'error'); return; }
-  const bulk = document.getElementById('bulk-answers-input').value.trim();
-  if (bulk) {
-    const parts = bulk.split(',').map(p=>p.trim());
-    for (let i = 0; i < parsedQuestions.length && i < parts.length; i++) {
-      let ans = parts[i].toLowerCase(), idx = -1;
-      if (ans==='أ'||ans==='ا'||ans==='1'||ans==='a') idx=0;
-      else if (ans==='ب'||ans==='2'||ans==='b') idx=1;
-      else if (ans==='ج'||ans==='3'||ans==='c') idx=2;
-      else if (ans==='د'||ans==='4'||ans==='d') idx=3;
-      else if (ans==='ه'||ans==='5'||ans==='e') idx=4;
-      else if (ans==='و'||ans==='6'||ans==='f') idx=5;
-      else { let num=parseInt(ans); if (!isNaN(num)&&num>=1) idx=num-1; }
-      if (idx>=0) { parsedQuestions[i].correctAnswers=[idx]; parsedQuestions[i].correct=idx; }
-    }
-    showToast('تم تعيين الإجابات تلقائياً ✓','success');
-  }
-  renderParsedQuestions();
-  showToast(`تم التعرف على ${parsedQuestions.length} سؤال ✓`, 'success');
-}
-
-function renderParsedQuestions() {
-  const preview = document.getElementById('parse-preview');
-  const list    = document.getElementById('parse-questions-list');
-  const letters = ['أ','ب','ج','د','هـ','و'];
-  preview.style.display = 'block';
-  document.getElementById('parse-preview-title').textContent = `✅ تم التحليل — حدد الإجابة الصحيحة لكل سؤال (${parsedQuestions.length} سؤال)`;
-  const frag = document.createDocumentFragment();
-  parsedQuestions.forEach((q, qi) => {
-    const item = document.createElement('div');
-    item.className = 'parsed-q-item';
-    let choicesHtml = '';
-    q.choices.forEach((c, ci) => {
-      const checked = (q.correctAnswers||[q.correct||0]).includes(ci) ? 'checked' : '';
-      choicesHtml += `<label class="parsed-choice-row"><input type="checkbox" data-qi="${qi}" data-ci="${ci}" ${checked} onchange="toggleParsedCorrect(${qi},${ci},this.checked)"><span>${letters[ci]||ci+1}. ${escapeHtml(c)}</span></label>`;
-    });
-    item.innerHTML = `
-      <div class="parsed-q-text">${qi+1}. ${escapeHtml(q.text)}</div>
-      <div class="parsed-choices">${choicesHtml}</div>
-      <textarea class="parsed-note-input" placeholder="ملاحظة المعلم (تظهر للطالب بعد الانتهاء)..." oninput="parsedQuestions[${qi}].note=this.value">${escapeHtml(q.note||'')}</textarea>
-    `;
-    frag.appendChild(item);
-  });
-  list.innerHTML = '';
-  list.appendChild(frag);
-}
-
-function toggleParsedCorrect(qi, ci, checked) {
-  const q = parsedQuestions[qi]; if (!q) return;
-  if (!Array.isArray(q.correctAnswers)) q.correctAnswers = [q.correct||0];
-  if (checked) { if (!q.correctAnswers.includes(ci)) q.correctAnswers.push(ci); }
-  else { q.correctAnswers = q.correctAnswers.filter(x=>x!==ci); if (!q.correctAnswers.length) q.correctAnswers=[ci]; }
-  q.correct = q.correctAnswers[0];
-}
-
-/* Save Parsed Test to Firebase */
-function saveParsedTest() {
-  const name = document.getElementById('parse-test-name').value.trim();
-  if (!name) { showToast('أدخل اسم الاختبار', 'error'); return; }
-  if (!parsedQuestions.length) { showToast('لا توجد أسئلة محللة', 'error'); return; }
-  const testData = {
-    name,
-    subject:   document.getElementById('parse-test-subject').value.trim(),
-    timeLimit: parseInt(document.getElementById('parse-test-time').value) || 0,
-    questions: parsedQuestions.map(q => ({
-      text:          q.text,
-      choices:       [...q.choices],
-      correctAnswers: q.correctAnswers || [q.correct||0],
-      correct:       (q.correctAnswers||[q.correct||0])[0],
-      note:          q.note || ''
-    })),
-    createdAt: Date.now()
-  };
-  db.ref('quizzes').push(testData)
-    .then(() => {
-      showToast(`تم حفظ "${name}" بـ ${testData.questions.length} سؤال ✓`, 'success');
-      document.getElementById('parse-input').value        = '';
-      document.getElementById('bulk-answers-input').value = '';
-      document.getElementById('parse-test-name').value    = '';
-      document.getElementById('parse-test-subject').value = '';
-      document.getElementById('parse-preview').style.display = 'none';
-      parsedQuestions = [];
-      setTimeout(() => showPage('home'), 900);
-    })
-    .catch(err => { console.error(err); showToast('حدث خطأ أثناء الحفظ', 'error'); });
-}
-
-/* ============================================================
-   BUILDER (Manual question builder)
-============================================================ */
-function saveTest() {
-  const name = document.getElementById('new-test-name').value.trim();
-  if (!name) { showToast('أدخل اسم الاختبار', 'error'); return; }
-  if (!builderQuestions.length) { showToast('أضف سؤالاً على الأقل', 'error'); return; }
-  if (!builderQuestions.every(q => q.text.trim() && q.choices.every(c=>c.trim()))) {
-    showToast('أكمل جميع الأسئلة والخيارات', 'error'); return;
-  }
-  const testData = {
-    name,
-    subject:   document.getElementById('new-test-subject').value.trim(),
-    timeLimit: parseInt(document.getElementById('new-test-time').value) || 0,
-    questions: builderQuestions.map(q => ({
-      text:          q.text,
-      choices:       [...q.choices],
-      correctAnswers: q.correctAnswers && q.correctAnswers.length ? q.correctAnswers : [q.correct],
-      correct:       q.correctAnswers && q.correctAnswers.length ? q.correctAnswers[0] : q.correct,
-      note:          q.note || ''
-    })),
-    createdAt: Date.now()
-  };
-  db.ref('quizzes').push(testData)
-    .then(() => {
-      showToast('تم حفظ الاختبار ✓', 'success');
-      document.getElementById('new-test-name').value    = '';
-      document.getElementById('new-test-subject').value = '';
-      document.getElementById('new-test-time').value    = '10';
-      builderQuestions = [];
-      renderBuilder();
-      setTimeout(() => showPage('home'), 900);
-    })
-    .catch(err => { console.error(err); showToast('حدث خطأ أثناء الحفظ', 'error'); });
-}
-
-function addQuestionBuilder(data) {
-  builderQuestions.push(data || { text:'', choices:['','','',''], correct:0, correctAnswers:[0], multiCorrect:false, note:'' });
-  renderBuilder();
-}
-
-function renderBuilder() {
-  const container = document.getElementById('questions-builder');
-  const letters   = ['أ','ب','ج','د'];
-  const frag      = document.createDocumentFragment();
-  builderQuestions.forEach((q, qi) => {
-    const item    = document.createElement('div');
-    item.className = 'q-builder-item';
-    const isMulti = q.multiCorrect;
-    let choicesHtml = '';
-    q.choices.forEach((c, ci) => {
-      const iType    = isMulti ? 'checkbox' : 'radio';
-      const iClass   = isMulti ? 'choice-checkbox' : 'choice-radio';
-      const isChecked= isMulti
-        ? (Array.isArray(q.correctAnswers) && q.correctAnswers.includes(ci))
-        : (q.correct === ci);
-      choicesHtml += `<div class="choice-builder-row"><input type="${iType}" class="${iClass}" name="correct-${qi}" ${isChecked?'checked':''} onchange="builderSetCorrect(${qi},${ci},this.checked,${isMulti})"/><input class="form-input" placeholder="${letters[ci]||ci+1}..." value="${escapeHtml(c||'')}" oninput="builderQuestions[${qi}].choices[${ci}]=this.value;updateAnswerMapForQuestion(${qi})" style="flex:1"/></div>`;
-    });
-    item.innerHTML = `
-      <div class="q-builder-header"><span class="q-builder-num">سؤال ${qi+1}</span><button class="q-del-btn" onclick="deleteBuilderQ(${qi})">حذف</button></div>
-      <input class="form-input" placeholder="نص السؤال..." value="${escapeHtml(q.text||'')}" oninput="builderQuestions[${qi}].text=this.value;updateAnswerMapForQuestion(${qi})" style="margin-bottom:9px"/>
-      <label class="multi-correct-toggle"><input type="checkbox" ${isMulti?'checked':''} onchange="builderToggleMulti(${qi},this.checked)"> إجابات صحيحة متعددة</label>
-      <div class="choices-builder" id="choices-builder-${qi}">${choicesHtml}</div>
-      <textarea class="q-note-input" placeholder="ملاحظة المعلم للطلاب (تظهر بعد الانتهاء من الاختبار)..." oninput="builderQuestions[${qi}].note=this.value">${escapeHtml(q.note||'')}</textarea>
-    `;
-    frag.appendChild(item);
-  });
-  container.innerHTML = '';
-  container.appendChild(frag);
-  renderAnswerMap();
-}
-
-function builderToggleMulti(qi, isMulti) {
-  builderQuestions[qi].multiCorrect   = isMulti;
-  builderQuestions[qi].correctAnswers = [builderQuestions[qi].correct||0];
-  renderBuilder();
-}
-function builderSetCorrect(qi, ci, checked, isMulti) {
-  const q = builderQuestions[qi];
-  if (isMulti) {
-    if (!Array.isArray(q.correctAnswers)) q.correctAnswers = [];
-    if (checked) { if (!q.correctAnswers.includes(ci)) q.correctAnswers.push(ci); }
-    else { q.correctAnswers = q.correctAnswers.filter(x=>x!==ci); if (!q.correctAnswers.length) q.correctAnswers=[ci]; }
-    q.correct = q.correctAnswers[0];
-  } else {
-    q.correct = ci; q.correctAnswers = [ci];
-  }
-  updateAnswerMapForQuestion(qi);
-}
-function updateAnswerMapForQuestion(qi) {
-  const q = builderQuestions[qi]; if (!q) return;
-  const row = document.querySelector(`.answer-map-row[data-qidx="${qi}"]`);
-  if (row) {
-    const sel = row.querySelector('.answer-map-select');
-    if (sel && q.correct !== undefined) { sel.value = q.correct; if (q.correct >= 0) sel.classList.add('matched'); }
-  } else { renderAnswerMap(); }
-}
-function deleteBuilderQ(i) { builderQuestions.splice(i,1); renderBuilder(); }
-
-function renderAnswerMap() {
-  const section = document.getElementById('answer-map-section');
-  const grid    = document.getElementById('answer-map-grid');
-  const letters = ['أ','ب','ج','د','هـ','و'];
-  if (!builderQuestions.length) { section.style.display = 'none'; return; }
-  section.style.display = 'block';
-  const frag = document.createDocumentFragment();
-  builderQuestions.forEach((q, qi) => {
-    const hasChoices = q.choices.some(c=>c.trim());
-    const row = document.createElement('div');
-    row.className     = 'answer-map-row';
-    row.dataset.qidx  = qi;
-    let optionsHtml   = '';
-    q.choices.forEach((c,ci) => { optionsHtml += `<option value="${ci}" ${q.correct===ci?'selected':''}>${letters[ci]||ci+1}</option>`; });
-    if (!hasChoices) optionsHtml += `<option disabled>—</option>`;
-    row.innerHTML = `
-      <div class="answer-map-qnum">${qi+1}</div>
-      <div class="answer-map-qtext">${escapeHtml(q.text||'(بدون نص بعد)')}</div>
-      <select class="answer-map-select ${q.correct>=0?'matched':''}" onchange="builderQuestions[${qi}].correct=parseInt(this.value);builderQuestions[${qi}].correctAnswers=[parseInt(this.value)];syncBuilderRadio(${qi})">${optionsHtml}</select>
-    `;
-    frag.appendChild(row);
-  });
-  grid.innerHTML = '';
-  grid.appendChild(frag);
-}
-function syncBuilderRadio(qi) {
-  const correct = builderQuestions[qi].correct;
-  document.querySelectorAll(`input[name="correct-${qi}"]`).forEach((r,ci) => { r.checked = (ci===correct); });
-  renderAnswerMap();
-}
-
-/* ============================================================
-   MANAGE LIST
-============================================================ */
-function renderManageList() {
-  const container = document.getElementById('manage-list');
-  if (!tests.length) { container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>لا توجد اختبارات بعد</p></div>`; return; }
-  const frag    = document.createDocumentFragment();
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
-  tests.forEach(t => {
-    const sc   = scores[t.id];
-    const item = document.createElement('div');
-    item.className = 'manage-item';
-    item.innerHTML = `
-      <div class="manage-item-info">
-        <div class="manage-item-name">${escapeHtml(t.name)}</div>
-        <div class="manage-item-meta">${t.questions?.length||0} سؤال • ${t.timeLimit||0} دقيقة${sc!==undefined?' • آخر درجة: '+sc+'%':''}</div>
-      </div>
-      <div class="manage-item-actions">
-        <button onclick="startQuiz('${t.firebaseId}')" class="btn btn-primary" style="font-size:0.8rem;padding:8px 12px">▶️ تشغيل</button>
-        <button onclick="requestDeleteTest('${t.firebaseId}')" class="btn btn-secondary" style="font-size:0.8rem;padding:8px 12px;color:var(--red)">🗑️ حذف</button>
-      </div>
-    `;
-    wrapper.appendChild(item);
-  });
-  frag.appendChild(wrapper);
-  container.innerHTML = '';
-  container.appendChild(frag);
-}
-
-function switchAdminTab(tab, ev) {
-  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
-  if (ev && ev.target) ev.target.classList.add('active');
-  document.getElementById('admin-' + tab).classList.add('active');
-  if (tab === 'manage')   renderManageList();
-  if (tab === 'settings') loadAdminSettings();
-}
-
-/* ============================================================
-   POMODORO
-============================================================ */
-function updatePomoSettings() {
-  if (pomodoro.running) return;
-  pomodoro.focusMins     = parseInt(document.getElementById('pomo-focus-input').value)    || 25;
-  pomodoro.breakMins     = parseInt(document.getElementById('pomo-break-input').value)    || 5;
-  pomodoro.totalSessions = parseInt(document.getElementById('pomo-sessions-input').value) || 4;
-  pomodoro.remaining     = pomodoro.focusMins * 60;
-  pomodoro.phase         = 'focus';
-  updatePomoDisplay();
-}
-function togglePomodoro() {
-  if (pomodoro.running) {
-    clearInterval(pomodoro.interval); pomodoro.running = false;
-    document.getElementById('pomo-start-btn').textContent    = '▶ ابدأ';
-    document.getElementById('pomo-status-text').textContent  = 'متوقف مؤقتاً';
-  } else {
-    pomodoro.running = true;
-    document.getElementById('pomo-start-btn').textContent = '⏸ إيقاف';
-    pomodoro.interval = setInterval(tickPomo, 1000);
-  }
-}
-function tickPomo() {
-  pomodoro.remaining--;
-  if (pomodoro.remaining <= 0) {
-    if (pomodoro.phase === 'focus') {
-      pomodoro.completedSessions++; pomodoro.phase = 'break';
-      pomodoro.remaining = pomodoro.breakMins * 60;
-      showToast('🍅 وقت الاستراحة!', 'info');
-    } else {
-      pomodoro.phase = 'focus'; pomodoro.remaining = pomodoro.focusMins * 60;
-      pomodoro.currentSession = Math.min(pomodoro.currentSession + 1, pomodoro.totalSessions);
-      if (pomodoro.completedSessions >= pomodoro.totalSessions) {
-        showToast('🏆 انتهت جميع الجلسات! أحسنت', 'success'); resetPomodoro(); return;
-      }
-      showToast('✏️ وقت التركيز!', 'info');
-    }
-  }
-  updatePomoDisplay();
-}
-function skipPomoPhase() { pomodoro.remaining = 0; tickPomo(); }
-function resetPomodoro() {
-  clearInterval(pomodoro.interval); pomodoro.running = false; pomodoro.phase = 'focus';
-  pomodoro.currentSession = 1; pomodoro.completedSessions = 0;
-  pomodoro.remaining = pomodoro.focusMins * 60;
-  document.getElementById('pomo-start-btn').textContent = '▶ ابدأ'; updatePomoDisplay();
-}
-function updatePomoDisplay() {
-  const isFocus = pomodoro.phase === 'focus';
-  const total   = (isFocus ? pomodoro.focusMins : pomodoro.breakMins) * 60;
-  const circum  = 188.5;
-  const offset  = circum - (circum * pomodoro.remaining / total);
-  document.getElementById('pomo-display').textContent     = fmtTime(pomodoro.remaining);
-  document.getElementById('pomo-display').className       = 'pomo-time ' + (isFocus ? 'focus' : 'break');
-  document.getElementById('pomo-label').textContent       = isFocus ? 'تركيز' : 'استراحة';
-  document.getElementById('pomo-label').className         = 'pomo-label ' + (isFocus ? 'focus' : 'break');
-  const ring = document.getElementById('pomo-ring-fill');
-  ring.style.strokeDashoffset = offset;
-  ring.className = 'pomo-ring-fill ' + (isFocus ? 'focus-ring' : 'break-ring');
-  document.getElementById('pomo-sessions-inner').textContent = pomodoro.currentSession + '/' + pomodoro.totalSessions;
-  document.getElementById('pomo-status-text').textContent    = pomodoro.running ? (isFocus ? '⏳ جلسة تركيز جارية...' : '☕ استرح قليلاً...') : 'ابدأ جلسة دراسة منتجة';
-  let dotsHtml = '';
-  for (let i = 0; i < pomodoro.totalSessions; i++) dotsHtml += `<div class="pomo-dot ${i < pomodoro.completedSessions ? 'done' : ''}"></div>`;
-  document.getElementById('pomo-dots').innerHTML = dotsHtml;
-}
-
-/* ============================================================
-   TOOLS
-============================================================ */
-function initToolsPage() {
-  const tg = JSON.parse(localStorage.getItem('toolGoal') || 'null');
-  if (tg) {
-    document.getElementById('tool-goal-name').value   = tg.name   || '';
-    document.getElementById('tool-goal-target').value = tg.target || 20;
-    document.getElementById('tool-goal-done').value   = tg.done   || 0;
-    updateToolGoal();
-  }
-  updateCdDisplay(); updateQtDisplay();
-}
-function toggleCountdown() {
-  if (tools.cd.running) {
-    clearInterval(tools.cd.interval); tools.cd.running = false;
-    document.getElementById('cd-start-btn').textContent = '▶ ابدأ';
-    document.getElementById('cd-label').textContent     = 'متوقف';
-  } else {
-    if (!tools.cd.remaining) {
-      const m = parseInt(document.getElementById('cd-mins').value) || 0;
-      const s = parseInt(document.getElementById('cd-secs').value) || 0;
-      tools.cd.total = tools.cd.remaining = m*60+s;
-      if (!tools.cd.remaining) { showToast('حدد وقتاً أولاً','error'); return; }
-    }
-    tools.cd.running = true;
-    document.getElementById('cd-start-btn').textContent = '⏸ إيقاف';
-    document.getElementById('cd-label').textContent     = 'يعدّ...';
-    tools.cd.interval = setInterval(() => {
-      tools.cd.remaining--; updateCdDisplay();
-      if (tools.cd.remaining <= 0) {
-        clearInterval(tools.cd.interval); tools.cd.running = false;
-        document.getElementById('cd-start-btn').textContent = '▶ ابدأ';
-        document.getElementById('cd-label').textContent     = '✅ انتهى الوقت!';
-        showToast('⏰ انتهى الوقت!','info');
-      }
-    }, 1000);
-  }
-}
-function updateCdDisplay() {
-  const el  = document.getElementById('cd-display');
-  const rem = tools.cd.remaining;
-  el.textContent = fmtTime(rem);
-  el.className   = 'tool-timer-val' + (rem<=10&&rem>0?' danger':rem<=30?' warning':(tools.cd.running?' running':''));
-}
-function resetCountdown() {
-  clearInterval(tools.cd.interval); tools.cd.running = false; tools.cd.remaining = 0;
-  document.getElementById('cd-start-btn').textContent = '▶ ابدأ';
-  document.getElementById('cd-label').textContent     = 'جاهز للبدء'; updateCdDisplay();
-}
-function toggleStopwatch() {
-  if (tools.sw.running) {
-    clearInterval(tools.sw.interval); tools.sw.running = false;
-    document.getElementById('sw-start-btn').textContent  = '▶ ابدأ';
-    document.getElementById('sw-label').textContent      = 'متوقفة';
-    document.getElementById('sw-lap-btn').disabled       = true;
-  } else {
-    tools.sw.running = true;
-    document.getElementById('sw-start-btn').textContent  = '⏸ إيقاف';
-    document.getElementById('sw-label').textContent      = 'تعمل...';
-    document.getElementById('sw-lap-btn').disabled       = false;
-    tools.sw.interval = setInterval(() => { tools.sw.elapsed++; document.getElementById('sw-display').textContent = fmtTime(tools.sw.elapsed); }, 1000);
-  }
-}
-function lapStopwatch() {
-  tools.sw.laps.push(tools.sw.elapsed);
-  const lapsEl = document.getElementById('sw-laps');
-  const div = document.createElement('div');
-  div.style.cssText = 'background:var(--surface2);border-radius:6px;padding:4px 10px;font-size:0.78rem;color:var(--text3);display:flex;justify-content:space-between';
-  div.innerHTML = `<span>لفة ${tools.sw.laps.length}</span><span style="color:var(--accent);font-weight:700">${fmtTime(tools.sw.elapsed)}</span>`;
-  lapsEl.appendChild(div); lapsEl.scrollTop = lapsEl.scrollHeight;
-}
-function resetStopwatch() {
-  clearInterval(tools.sw.interval); tools.sw.running = false; tools.sw.elapsed = 0; tools.sw.laps = [];
-  document.getElementById('sw-display').textContent    = '00:00';
-  document.getElementById('sw-start-btn').textContent  = '▶ ابدأ';
-  document.getElementById('sw-label').textContent      = 'متوقفة';
-  document.getElementById('sw-lap-btn').disabled       = true;
-  document.getElementById('sw-laps').innerHTML         = '';
-}
-function updateToolGoal() {
-  const target = parseInt(document.getElementById('tool-goal-target').value) || 1;
-  const done   = parseInt(document.getElementById('tool-goal-done').value)   || 0;
-  const pct    = Math.min(100, Math.round(done/target*100));
-  document.getElementById('tool-goal-pct').textContent  = pct + '%';
-  document.getElementById('tool-goal-bar').style.width  = pct + '%';
-  document.getElementById('tool-goal-sub').textContent  = `${done} من ${target}`;
-  document.getElementById('tool-goal-pct').style.color  = pct>=100?'var(--green)':pct>=60?'var(--accent)':'var(--blue)';
-}
-function incrementGoalDone() {
-  const inp = document.getElementById('tool-goal-done');
-  inp.value = (parseInt(inp.value)||0)+1; updateToolGoal();
-}
-function saveToolGoal() {
-  const tg = { name:document.getElementById('tool-goal-name').value.trim(), target:parseInt(document.getElementById('tool-goal-target').value)||20, done:parseInt(document.getElementById('tool-goal-done').value)||0 };
-  localStorage.setItem('toolGoal', JSON.stringify(tg)); showToast('تم حفظ الهدف ✓','success');
-}
-function toggleQTimer() {
-  if (tools.qt.running) {
-    clearInterval(tools.qt.interval); tools.qt.running = false;
-    document.getElementById('qt-start-btn').textContent  = '▶ ابدأ';
-    document.getElementById('qt-next-btn').disabled      = true;
-  } else {
-    if (!tools.qt.qIdx) {
-      tools.qt.perQ  = parseInt(document.getElementById('qt-secs').value)  || 30;
-      tools.qt.total = parseInt(document.getElementById('qt-count').value) || 10;
-      tools.qt.qIdx = 1; tools.qt.remaining = tools.qt.perQ;
-    }
-    tools.qt.running = true;
-    document.getElementById('qt-start-btn').textContent = '⏸ إيقاف';
-    document.getElementById('qt-next-btn').disabled     = false;
-    tools.qt.interval = setInterval(() => { tools.qt.remaining--; updateQtDisplay(); if (tools.qt.remaining<=0) nextQTimer(); }, 1000);
-  }
-}
-function nextQTimer() {
-  tools.qt.qIdx++;
-  if (tools.qt.qIdx > tools.qt.total) {
-    clearInterval(tools.qt.interval); tools.qt.running = false; tools.qt.qIdx = 0;
-    document.getElementById('qt-start-btn').textContent = '▶ ابدأ';
-    document.getElementById('qt-next-btn').disabled     = true;
-    document.getElementById('qt-label').textContent     = '✅ انتهت الأسئلة!';
-    showToast('✅ انتهت جميع الأسئلة!','success'); return;
-  }
-  tools.qt.remaining = tools.qt.perQ;
-  showToast(`➡️ السؤال ${tools.qt.qIdx}`,'info'); updateQtDisplay();
-}
-function updateQtDisplay() {
-  const rem = tools.qt.remaining, tot = tools.qt.perQ||1, pct = Math.max(0, rem/tot*100);
-  const el  = document.getElementById('qt-display');
-  el.textContent = fmtTime(rem);
-  el.className   = 'tool-timer-val' + (rem<=5?' danger':rem<=10?' warning':'');
-  document.getElementById('qt-label').textContent  = tools.qt.qIdx ? `سؤال ${tools.qt.qIdx} / ${tools.qt.total}` : 'جاهز';
-  document.getElementById('qt-bar').style.width    = pct + '%';
-}
-function resetQTimer() {
-  clearInterval(tools.qt.interval); tools.qt.running=false; tools.qt.qIdx=0; tools.qt.remaining=0;
-  document.getElementById('qt-start-btn').textContent = '▶ ابدأ';
-  document.getElementById('qt-next-btn').disabled     = true; updateQtDisplay();
-}
-
-/* ============================================================
-   INIT
-============================================================ */
-initTheme();
-applyAdminMode();
-updatePomoSettings();
-attachFirebaseListener();
-</script>
 </body>
 </html>
