@@ -1,1572 +1,1475 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="dark">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>منجَز | نظّم إنجازك وتقدّمك</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js" rel="preload" as="script">
-<style>
-/* ══════════════════════════════════════
-   APP COLORS (unchanged from original)
-══════════════════════════════════════ */
-:root {
-  --bg:#f4f6fb; --bg2:#eaecf4; --card:#fff; --nav-bg:#fff;
-  --border:#d8dce8; --text:#1a1c2e; --muted:#6b7280;
-  --accent:#1abc9c; --accent2:#16a085;
-  --empty:#fff; --empty-border:#c5c9d8;
-  --f1:#1abc9c;--f2:#e74c3c;--f3:#9b59b6;--f4:#f39c12;
-  --f5:#2980b9;--f6:#e67e22;--f7:#1dd1a1;--f8:#fd79a8;
-  --f9:#6c5ce7;--f10:#00b894;--f11:#f0c040;--f12:#a29bfe;
-  --t:.45s cubic-bezier(.4,0,.2,1);
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منصة الاختبارات المتقدمة | إيهاب عبدالعظيم</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Firebase SDKs (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAek8K6nHzxAUiGM6ZvLfeFmzDsFjt1ABE",
+      authDomain: "my-quiz-platform-c1a08.firebaseapp.com",
+      databaseURL: "https://my-quiz-platform-c1a08-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "my-quiz-platform-c1a08",
+      storageBucket: "my-quiz-platform-c1a08.firebasestorage.app",
+      messagingSenderId: "361533364886",
+      appId: "1:361533364886:web:60875464941f706277c0b7",
+      measurementId: "G-NLKH56HPQ3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  </script>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1a2235;
+      --surface3: #1f2d42;
+      --accent: #3b82f6;
+      --accent2: #6366f1;
+      --accent3: #8b5cf6;
+      --gold: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --text: #f1f5f9;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --border: rgba(59,130,246,0.15);
+      --glow: 0 0 40px rgba(59,130,246,0.15);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content:'';
+      position:fixed; inset:0; z-index:-1;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(59,130,246,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    }
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--accent); border-radius:3px; }
 
-  /* ── Landing Page brand colors (light mode) ── */
-  --lp-bg:#F8FAFC;
-  --lp-card:#FFFFFF;
-  --lp-text:#0F172A;
-  --lp-muted:#475569;
-  --lp-primary:#4F46E5;
-  --lp-primary2:#7C3AED;
-  --lp-btn:#2563EB;
-  --lp-border:#E2E8F0;
-  --lp-hero-grad:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%);
-}
-[data-theme="dark"]{
-  --bg:#0c0e15;--bg2:#12141d;--card:#181b26;--nav-bg:#13151f;
-  --border:#252836;--text:#e2e5f0;--muted:#7a8099;
-  --empty:#1a1d2a;--empty-border:#2e3245;
-  --f1:#0d9e82;--f2:#c0392b;--f3:#8e44ad;--f4:#d68910;
-  --f5:#1b6b9e;--f6:#ca6f1e;--f7:#17a589;--f8:#e91e8c;
-  --f9:#5f27cd;--f10:#00897b;--f11:#e6b800;--f12:#7c4dff;
+    /* Header */
+    .header {
+      background: rgba(17,24,39,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top:0; z-index:100;
+    }
+    .logo {
+      display:flex; align-items:center; gap:10px;
+      font-family:'Tajawal',sans-serif; font-weight:900; font-size:1.2rem;
+    }
+    .logo-icon {
+      width:36px; height:36px; border-radius:10px;
+      background: linear-gradient(135deg,var(--accent),var(--accent3));
+      display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+    }
+    .header-nav { display:flex; gap:6px; align-items:center; }
+    .nav-btn {
+      padding:7px 14px; border-radius:8px; border:none; cursor:pointer;
+      font-family:'Cairo',sans-serif; font-size:0.82rem; font-weight:600;
+      transition: all .2s;
+    }
+    .nav-btn.ghost { background:transparent; color:var(--text2); }
+    .nav-btn.ghost:hover { background:var(--surface2); color:var(--text); }
+    .nav-btn.primary {
+      background: linear-gradient(135deg,var(--accent),var(--accent2));
+      color:#fff;
+    }
+    .nav-btn.primary:hover { opacity:0.9; transform:translateY(-1px); }
 
-  /* ── Landing Page brand colors (dark mode) ── */
-  --lp-bg:#0F172A;
-  --lp-card:#1E293B;
-  --lp-text:#F8FAFC;
-  --lp-muted:#CBD5E1;
-  --lp-primary:#8B5CF6;
-  --lp-primary2:#3B82F6;
-  --lp-btn:#818CF8;
-  --lp-border:#334155;
-  --lp-hero-grad:linear-gradient(135deg,#312E81 0%,#1E1B4B 100%);
-}
+    /* Pages */
+    .page { display:none; }
+    .page.active { display:block; }
 
-/* Number contrast per fill color */
-.f1  .num-label,.f7 .num-label,.f10 .num-label{color:#004d3a!important;}
-.f2  .num-label{color:#fff!important;}
-.f3  .num-label{color:#f0e6ff!important;}
-.f4  .num-label{color:#4a2d00!important;}
-.f5  .num-label{color:#e8f4ff!important;}
-.f6  .num-label{color:#3a1800!important;}
-.f8  .num-label{color:#4a0025!important;}
-.f9  .num-label,.f12 .num-label{color:#e8e4ff!important;}
-.f11 .num-label{color:#3a2d00!important;}
+    /* Home hero */
+    .home-hero { text-align:center; padding:50px 24px 32px; }
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:6px;
+      background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3);
+      border-radius:999px; padding:6px 16px; font-size:0.8rem; color:var(--accent);
+      margin-bottom:20px;
+    }
+    .hero-title {
+      font-family:'Tajawal',sans-serif; font-weight:900;
+      font-size:clamp(2rem,5vw,3.5rem); line-height:1.1;
+      background: linear-gradient(135deg,#fff 0%,#93c5fd 50%,#c4b5fd 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      margin-bottom:12px;
+    }
+    .hero-sub { color:var(--text2); font-size:1rem; margin-bottom:36px; }
 
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);
-  transition:background var(--t),color var(--t);min-height:100vh;display:flex;flex-direction:column;}
+    /* Stats */
+    .stats-bar {
+      display:flex; justify-content:center; gap:16px; flex-wrap:wrap;
+      margin-bottom:36px;
+    }
+    .stat-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:14px 20px; text-align:center;
+      min-width:110px;
+    }
+    .stat-val { font-family:'Tajawal',sans-serif; font-weight:900; font-size:1.7rem; color:var(--accent); }
+    .stat-lbl { font-size:0.75rem; color:var(--text3); margin-top:2px; }
 
-/* ══════════════════════════════════════
-   LANDING PAGE — HEADER
-══════════════════════════════════════ */
-#landingPage {
-  display:flex;
-  flex-direction:column;
-  background:var(--lp-bg);
-  color:var(--lp-text);
-  transition:background var(--t),color var(--t);
-  min-height:100vh;
-}
-#landingPage.hidden { display:none; }
+    /* Pomodoro */
+    .pomodoro-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:20px;
+      display:flex; align-items:center; gap:20px; flex-wrap:wrap;
+    }
+    .pomo-display {
+      display:flex; flex-direction:column; align-items:center; gap:4px;
+    }
+    .pomo-time {
+      font-family:'Tajawal',sans-serif; font-weight:900; font-size:2.4rem;
+      line-height:1;
+    }
+    .pomo-time.focus { color:var(--accent); }
+    .pomo-time.break { color:var(--green); }
+    .pomo-label {
+      font-size:0.75rem; font-weight:600; letter-spacing:.05em;
+      padding:3px 12px; border-radius:999px;
+    }
+    .pomo-label.focus { background:rgba(59,130,246,0.15); color:var(--accent); }
+    .pomo-label.break { background:rgba(16,185,129,0.15); color:var(--green); }
+    .pomo-controls { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .pomo-ring {
+      width:70px; height:70px; position:relative; flex-shrink:0;
+    }
+    .pomo-ring svg { transform:rotate(-90deg); }
+    .pomo-ring-bg { fill:none; stroke:var(--surface3); stroke-width:6; }
+    .pomo-ring-fill { fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset .8s linear; }
+    .pomo-ring-fill.focus-ring { stroke:var(--accent); }
+    .pomo-ring-fill.break-ring { stroke:var(--green); }
+    .pomo-sessions { display:flex; gap:4px; margin-top:4px; }
+    .pomo-dot {
+      width:8px; height:8px; border-radius:50%;
+      background:var(--surface3); transition: background .3s;
+    }
+    .pomo-dot.done { background:var(--accent); }
+    .pomo-info { flex:1; min-width:140px; }
+    .pomo-info h4 { font-family:'Tajawal',sans-serif; font-weight:700; font-size:0.95rem; margin-bottom:3px; }
+    .pomo-info p { font-size:0.8rem; color:var(--text3); }
+    .pomo-settings-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px; }
+    .pomo-input-group { display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text3); }
+    .pomo-input-group input {
+      width:52px; background:var(--surface2); border:1px solid var(--border);
+      border-radius:6px; color:var(--text); padding:4px 8px;
+      font-family:'Cairo',sans-serif; font-size:0.82rem; text-align:center;
+    }
 
-.lp-header {
-  position:sticky;
-  top:0;
-  z-index:200;
-  background:rgba(248,250,252,0.85);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--lp-border);
-  padding:0 24px;
-  height:68px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:1rem;
-  transition:background var(--t),border-color var(--t);
-}
-[data-theme="dark"] .lp-header {
-  background:rgba(15,23,42,0.85);
-}
-.lp-logo {
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-size:1.25rem;
-  font-weight:900;
-  color:var(--lp-text);
-  text-decoration:none;
-  white-space:nowrap;
-}
-.lp-logo-icon {
-  width:38px;height:38px;
-  background:var(--lp-hero-grad);
-  border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;
-  box-shadow:0 4px 14px rgba(79,70,229,.35);
-}
-.lp-nav {
-  display:flex;
-  gap:6px;
-  align-items:center;
-}
-.lp-nav a {
-  padding:7px 14px;
-  border-radius:8px;
-  font-size:.88rem;
-  font-weight:600;
-  color:var(--lp-muted);
-  text-decoration:none;
-  transition:background .2s,color .2s;
-}
-.lp-nav a:hover { background:var(--lp-border); color:var(--lp-text); }
-.lp-header-actions { display:flex;align-items:center;gap:10px; }
-.lp-btn-outline {
-  padding:9px 20px;
-  border-radius:24px;
-  border:1.5px solid var(--lp-primary);
-  background:transparent;
-  font-family:'Cairo',sans-serif;
-  font-size:.88rem;
-  font-weight:700;
-  color:var(--lp-primary);
-  cursor:pointer;
-  transition:all .2s;
-  white-space:nowrap;
-}
-.lp-btn-outline:hover { background:var(--lp-primary);color:#fff; }
-.lp-btn-primary {
-  padding:9px 22px;
-  border-radius:24px;
-  border:none;
-  background:var(--lp-primary);
-  font-family:'Cairo',sans-serif;
-  font-size:.88rem;
-  font-weight:700;
-  color:#fff;
-  cursor:pointer;
-  transition:all .2s;
-  white-space:nowrap;
-  box-shadow:0 4px 14px rgba(79,70,229,.3);
-}
-.lp-btn-primary:hover { background:var(--lp-primary2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(79,70,229,.4); }
-.lp-theme-btn {
-  width:36px;height:36px;border-radius:50%;
-  border:1.5px solid var(--lp-border);
-  background:var(--lp-card);
-  cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.95rem;
-  transition:all .2s;
-}
-.lp-theme-btn:hover { border-color:var(--lp-primary); }
+    /* Sections */
+    .section { max-width:900px; margin:0 auto 28px; padding:0 20px; }
+    .section-title {
+      font-family:'Tajawal',sans-serif; font-weight:700; font-size:1.05rem;
+      color:var(--text2); margin-bottom:14px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
 
-/* ══════════════════════════════════════
-   HERO SECTION
-══════════════════════════════════════ */
-.lp-hero {
-  padding:90px 24px 80px;
-  max-width:1200px;
-  margin:0 auto;
-  width:100%;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:60px;
-  align-items:center;
-}
-.lp-hero-text { animation:lpFadeUp .6s ease both; }
-.lp-badge {
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  background:linear-gradient(135deg,rgba(79,70,229,.12),rgba(124,58,237,.12));
-  border:1px solid rgba(79,70,229,.25);
-  border-radius:999px;
-  padding:5px 14px;
-  font-size:.8rem;
-  font-weight:700;
-  color:var(--lp-primary);
-  margin-bottom:1.4rem;
-}
-.lp-hero h1 {
-  font-size:clamp(36px,4.5vw,54px);
-  font-weight:900;
-  line-height:1.22;
-  color:var(--lp-text);
-  margin-bottom:1.2rem;
-}
-.lp-hero h1 span {
-  background:var(--lp-hero-grad);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-}
-.lp-hero p {
-  font-size:1.05rem;
-  line-height:1.75;
-  color:var(--lp-muted);
-  margin-bottom:2rem;
-  max-width:480px;
-}
-.lp-hero-btns { display:flex;gap:12px;flex-wrap:wrap; }
-.lp-hero-btns .lp-btn-primary { padding:13px 28px;font-size:1rem;border-radius:12px; }
-.lp-hero-btns .lp-btn-outline  { padding:13px 28px;font-size:1rem;border-radius:12px; }
+    /* Goal card */
+    .goal-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:18px;
+      display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    }
+    .goal-icon { font-size:1.8rem; }
+    .goal-info { flex:1; min-width:180px; }
+    .goal-info h3 { font-weight:700; margin-bottom:3px; font-size:0.95rem; }
+    .goal-info p { color:var(--text2); font-size:0.82rem; }
+    .goal-progress-wrap { flex:2; min-width:180px; }
+    .progress-bar-bg { background:var(--surface3); border-radius:999px; height:8px; margin-bottom:6px; overflow:hidden; }
+    .progress-bar-fill {
+      height:100%; border-radius:999px;
+      background: linear-gradient(90deg,var(--accent),var(--accent3));
+      transition: width .6s cubic-bezier(.4,0,.2,1);
+    }
+    .progress-labels { display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text3); }
+    .goal-edit-btn {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:8px; padding:7px 12px; cursor:pointer;
+      color:var(--text2); font-family:'Cairo',sans-serif; font-size:0.82rem;
+      transition: all .2s;
+    }
+    .goal-edit-btn:hover { background:var(--surface3); color:var(--text); }
 
-/* ── Hero Visual / Mockup ── */
-.lp-hero-visual {
-  animation:lpFadeUp .6s .18s ease both;
-  position:relative;
-}
-.lp-mockup {
-  background:var(--lp-card);
-  border:1px solid var(--lp-border);
-  border-radius:20px;
-  padding:20px;
-  box-shadow:0 24px 60px rgba(79,70,229,.13);
-  position:relative;
-  overflow:hidden;
-}
-[data-theme="dark"] .lp-mockup { box-shadow:0 24px 60px rgba(0,0,0,.4); }
-.lp-mockup-bar {
-  display:flex;gap:6px;margin-bottom:16px;
-}
-.lp-mockup-dot { width:10px;height:10px;border-radius:50%; }
-.lp-mockup-grid {
-  display:grid;
-  grid-template-columns:repeat(10,1fr);
-  gap:5px;
-  margin-bottom:14px;
-}
-.lp-mockup-cell {
-  aspect-ratio:1;
-  border-radius:50%;
-  border:1.5px solid var(--lp-border);
-  transition:all .3s;
-}
-.lp-mockup-cell.filled { border-color:transparent; }
-.mc1{background:#4F46E5;} .mc2{background:#7C3AED;} .mc3{background:#10B981;}
-.mc4{background:#F59E0B;} .mc5{background:#EF4444;} .mc6{background:#3B82F6;}
-.lp-mockup-label {
-  font-size:.72rem;
-  font-weight:700;
-  color:var(--lp-muted);
-  margin-bottom:6px;
-}
-.lp-mockup-bar2 {
-  height:7px;
-  border-radius:999px;
-  background:var(--lp-border);
-  overflow:hidden;
-  margin-bottom:10px;
-}
-.lp-mockup-fill {
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg,#4F46E5,#7C3AED);
-}
-.lp-float-card {
-  position:absolute;
-  bottom:-16px;
-  left:-20px;
-  background:var(--lp-card);
-  border:1px solid var(--lp-border);
-  border-radius:14px;
-  padding:12px 16px;
-  box-shadow:0 8px 28px rgba(0,0,0,.12);
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width:160px;
-  font-size:.82rem;
-  font-weight:700;
-  color:var(--lp-text);
-  animation:lpFloat 3s ease-in-out infinite;
-}
-.lp-float-icon {
-  width:32px;height:32px;
-  border-radius:8px;
-  background:linear-gradient(135deg,#10B981,#059669);
-  display:flex;align-items:center;justify-content:center;
-  font-size:.95rem;
-  flex-shrink:0;
-}
+    /* Tests grid */
+    .tests-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px,1fr));
+      gap:14px;
+    }
+    .test-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:18px; cursor:pointer;
+      transition: all .25s; position:relative; overflow:hidden;
+    }
+    .test-card::before {
+      content:''; position:absolute; top:0; right:0; width:3px; height:100%;
+      background: linear-gradient(180deg,var(--accent),var(--accent3));
+      opacity:0; transition: opacity .25s;
+    }
+    .test-card:hover { border-color:rgba(59,130,246,0.4); transform:translateY(-2px); box-shadow:var(--glow); }
+    .test-card:hover::before { opacity:1; }
+    .test-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+    .test-num {
+      width:30px; height:30px; border-radius:7px;
+      background: linear-gradient(135deg,var(--accent),var(--accent2));
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:0.82rem;
+    }
+    .test-badge { font-size:0.7rem; padding:3px 9px; border-radius:999px; font-weight:600; }
+    .badge-new { background:rgba(16,185,129,0.15); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+    .badge-done { background:rgba(59,130,246,0.1); color:var(--accent); border:1px solid rgba(59,130,246,0.2); }
+    .badge-retry { background:rgba(239,68,68,0.1); color:var(--red); border:1px solid rgba(239,68,68,0.2); }
+    .test-title { font-weight:700; font-size:0.96rem; margin-bottom:6px; line-height:1.4; }
+    .test-meta { display:flex; gap:10px; font-size:0.76rem; color:var(--text3); flex-wrap:wrap; }
+    .test-meta span { display:flex; align-items:center; gap:3px; }
+    .test-score-bar { margin-top:10px; height:3px; background:var(--surface3); border-radius:999px; overflow:hidden; }
+    .test-score-fill { height:100%; border-radius:999px; transition: width .4s; }
+    .fill-green { background:var(--green); }
+    .fill-yellow { background:var(--gold); }
+    .fill-red { background:var(--red); }
+    .test-card-del {
+      position:absolute; top:10px; left:10px;
+      background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2);
+      border-radius:6px; padding:4px 8px; cursor:pointer;
+      font-size:0.75rem; color:var(--red); opacity:0; transition: all .2s;
+      z-index:2;
+    }
+    .test-card:hover .test-card-del { opacity:1; }
+    .test-card-del:hover { background:rgba(239,68,68,0.25); }
 
-/* ══════════════════════════════════════
-   SECTION SHARED
-══════════════════════════════════════ */
-.lp-section {
-  padding:90px 24px;
-  max-width:1200px;
-  margin:0 auto;
-  width:100%;
-}
-.lp-section-header {
-  text-align:center;
-  margin-bottom:56px;
-}
-.lp-section-header h2 {
-  font-size:clamp(26px,3.5vw,38px);
-  font-weight:900;
-  color:var(--lp-text);
-  margin-bottom:.8rem;
-  line-height:1.3;
-}
-.lp-section-header p {
-  font-size:1rem;
-  color:var(--lp-muted);
-  max-width:540px;
-  margin:0 auto;
-  line-height:1.7;
-}
+    .add-card {
+      background:transparent; border:2px dashed var(--border);
+      border-radius:var(--radius); padding:20px; cursor:pointer;
+      transition: all .25s; display:flex; align-items:center;
+      justify-content:center; gap:10px; color:var(--text3);
+      font-weight:600; min-height:120px;
+    }
+    .add-card:hover { border-color:var(--accent); color:var(--accent); }
 
-/* ══════════════════════════════════════
-   FEATURES
-══════════════════════════════════════ */
-.lp-features-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:20px;
-}
-.lp-feat-card {
-  background:var(--lp-card);
-  border:1px solid var(--lp-border);
-  border-radius:18px;
-  padding:28px 24px;
-  transition:border-color .25s,transform .2s,box-shadow .25s;
-  cursor:default;
-}
-.lp-feat-card:hover {
-  border-color:var(--lp-primary);
-  transform:translateY(-4px);
-  box-shadow:0 12px 36px rgba(79,70,229,.1);
-}
-.lp-feat-icon {
-  width:48px;height:48px;
-  border-radius:13px;
-  background:linear-gradient(135deg,rgba(79,70,229,.15),rgba(124,58,237,.15));
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.4rem;
-  margin-bottom:16px;
-}
-.lp-feat-card h3 {
-  font-size:1rem;
-  font-weight:700;
-  color:var(--lp-text);
-  margin-bottom:8px;
-}
-.lp-feat-card p {
-  font-size:.88rem;
-  color:var(--lp-muted);
-  line-height:1.65;
-}
+    /* Errors page */
+    .errors-section { max-width:900px; margin:0 auto 40px; padding:0 20px; }
+    .errors-header {
+      display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;
+    }
+    .practice-panel {
+      background: linear-gradient(135deg,rgba(239,68,68,0.08),rgba(59,130,246,0.05));
+      border:1px solid rgba(239,68,68,0.2);
+      border-radius:var(--radius); padding:20px; margin-bottom:20px;
+    }
+    .practice-panel h3 { font-family:'Tajawal',sans-serif; font-weight:700; color:var(--red); margin-bottom:12px; font-size:1rem; }
+    .practice-settings {
+      display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;
+    }
+    .practice-input-group { display:flex; flex-direction:column; gap:4px; }
+    .practice-input-group label { font-size:0.78rem; color:var(--text3); }
+    .practice-input-group input {
+      width:100px; background:var(--surface2); border:1px solid var(--border);
+      border-radius:8px; color:var(--text); padding:8px 12px;
+      font-family:'Cairo',sans-serif; font-size:0.88rem; text-align:center; outline:none;
+    }
+    .practice-input-group input:focus { border-color:var(--accent); }
 
-/* ══════════════════════════════════════
-   BENEFITS
-══════════════════════════════════════ */
-.lp-benefits-wrap {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:60px;
-  align-items:center;
-}
-.lp-benefits-text h2 {
-  font-size:clamp(24px,3vw,36px);
-  font-weight:900;
-  color:var(--lp-text);
-  margin-bottom:1rem;
-  line-height:1.3;
-}
-.lp-benefits-text p {
-  font-size:.95rem;
-  color:var(--lp-muted);
-  line-height:1.75;
-  margin-bottom:1.6rem;
-}
-.lp-benefits-list {
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-.lp-benefit-item {
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-size:.92rem;
-  font-weight:600;
-  color:var(--lp-text);
-}
-.lp-benefit-check {
-  width:28px;height:28px;
-  border-radius:8px;
-  background:linear-gradient(135deg,#10B981,#059669);
-  display:flex;align-items:center;justify-content:center;
-  font-size:.8rem;
-  flex-shrink:0;
-  color:#fff;
-}
-.lp-benefits-visual {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-}
-.lp-stat-card {
-  background:var(--lp-card);
-  border:1px solid var(--lp-border);
-  border-radius:16px;
-  padding:22px 18px;
-  text-align:center;
-  transition:border-color .2s;
-}
-.lp-stat-card:hover { border-color:var(--lp-primary); }
-.lp-stat-card .stat-num {
-  font-size:1.8rem;
-  font-weight:900;
-  background:var(--lp-hero-grad);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-  display:block;
-  margin-bottom:4px;
-}
-.lp-stat-card .stat-lbl {
-  font-size:.78rem;
-  color:var(--lp-muted);
-  font-weight:600;
-}
-.lp-stat-card.big { grid-column:span 2; }
+    .errors-folder {
+      background:var(--surface); border:1px solid rgba(239,68,68,0.2);
+      border-radius:var(--radius); overflow:hidden; margin-bottom:12px;
+    }
+    .folder-top {
+      background: linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05));
+      border-bottom:1px solid rgba(239,68,68,0.2);
+      padding:14px 18px; display:flex; align-items:center; cursor:pointer;
+      justify-content:space-between;
+    }
+    .folder-top-left { display:flex; align-items:center; gap:10px; }
+    .folder-title { font-weight:700; color:var(--red); font-size:0.92rem; }
+    .folder-count {
+      background:rgba(239,68,68,0.15); color:var(--red);
+      border-radius:999px; padding:2px 10px; font-size:0.75rem; font-weight:700;
+      border:1px solid rgba(239,68,68,0.3);
+    }
+    .folder-body { padding:14px 18px; }
+    .error-item {
+      display:flex; align-items:flex-start; gap:10px; padding:10px 0;
+      border-bottom:1px solid var(--border);
+    }
+    .error-item:last-child { border-bottom:none; }
+    .error-q-num {
+      min-width:26px; height:26px; background:rgba(239,68,68,0.15);
+      border-radius:6px; display:flex; align-items:center; justify-content:center;
+      font-size:0.76rem; font-weight:700; color:var(--red);
+    }
+    .error-content { flex:1; }
+    .error-q { font-size:0.86rem; font-weight:600; margin-bottom:4px; }
+    .error-answers { display:flex; gap:14px; font-size:0.78rem; flex-wrap:wrap; }
+    .error-wrong { color:var(--red); }
+    .error-correct { color:var(--green); }
 
-/* ══════════════════════════════════════
-   CTA
-══════════════════════════════════════ */
-.lp-cta-wrap {
-  background:var(--lp-hero-grad);
-  border-radius:24px;
-  padding:70px 40px;
-  text-align:center;
-  position:relative;
-  overflow:hidden;
-  margin:0 24px 80px;
-  max-width:1152px;
-  margin-left:auto;
-  margin-right:auto;
-}
-.lp-cta-wrap::before {
-  content:'';
-  position:absolute;
-  top:-60px;right:-60px;
-  width:220px;height:220px;
-  border-radius:50%;
-  background:rgba(255,255,255,.07);
-}
-.lp-cta-wrap::after {
-  content:'';
-  position:absolute;
-  bottom:-80px;left:-40px;
-  width:280px;height:280px;
-  border-radius:50%;
-  background:rgba(255,255,255,.05);
-}
-.lp-cta-wrap h2 {
-  font-size:clamp(24px,3.5vw,40px);
-  font-weight:900;
-  color:#fff;
-  margin-bottom:1rem;
-  position:relative;z-index:1;
-}
-.lp-cta-wrap p {
-  font-size:1rem;
-  color:rgba(255,255,255,.8);
-  margin-bottom:2rem;
-  max-width:480px;
-  margin-left:auto;margin-right:auto;
-  line-height:1.7;
-  position:relative;z-index:1;
-}
-.lp-cta-btn {
-  display:inline-block;
-  padding:15px 38px;
-  border-radius:14px;
-  border:none;
-  background:#fff;
-  font-family:'Cairo',sans-serif;
-  font-size:1.05rem;
-  font-weight:700;
-  color:var(--lp-primary);
-  cursor:pointer;
-  transition:all .2s;
-  position:relative;z-index:1;
-  box-shadow:0 8px 28px rgba(0,0,0,.2);
-}
-.lp-cta-btn:hover { transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.28); }
+    /* Quiz */
+    .quiz-page { max-width:720px; margin:0 auto; padding:20px; }
+    .quiz-header {
+      display:flex; align-items:center; gap:14px; margin-bottom:20px; flex-wrap:wrap;
+    }
+    .quiz-back {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:8px; padding:8px 12px; cursor:pointer;
+      color:var(--text2); font-family:'Cairo',sans-serif;
+      display:flex; align-items:center; gap:5px; font-size:0.85rem;
+      transition: all .2s;
+    }
+    .quiz-back:hover { background:var(--surface2); color:var(--text); }
+    .quiz-title-bar { flex:1; }
+    .quiz-title-bar h2 { font-family:'Tajawal',sans-serif; font-weight:700; font-size:1.15rem; }
+    .quiz-title-bar p { color:var(--text3); font-size:0.8rem; }
 
-/* ══════════════════════════════════════
-   FOOTER
-══════════════════════════════════════ */
-.lp-footer {
-  background:var(--lp-card);
-  border-top:1px solid var(--lp-border);
-  padding:48px 24px 28px;
-  transition:background var(--t);
-}
-.lp-footer-inner {
-  max-width:1200px;
-  margin:0 auto;
-  display:grid;
-  grid-template-columns:1.6fr 1fr 1fr;
-  gap:40px;
-  margin-bottom:36px;
-}
-.lp-footer-brand .lp-logo { margin-bottom:12px; }
-.lp-footer-brand p {
-  font-size:.85rem;
-  color:var(--lp-muted);
-  line-height:1.7;
-  max-width:260px;
-}
-.lp-footer-col h4 {
-  font-size:.88rem;
-  font-weight:700;
-  color:var(--lp-text);
-  margin-bottom:14px;
-}
-.lp-footer-col a {
-  display:block;
-  font-size:.84rem;
-  color:var(--lp-muted);
-  text-decoration:none;
-  margin-bottom:9px;
-  transition:color .2s;
-}
-.lp-footer-col a:hover { color:var(--lp-primary); }
-.lp-footer-bottom {
-  max-width:1200px;
-  margin:0 auto;
-  border-top:1px solid var(--lp-border);
-  padding-top:22px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  flex-wrap:wrap;
-  gap:10px;
-  font-size:.78rem;
-  color:var(--lp-muted);
-}
-.lp-footer-bottom span {
-  font-weight:600;
-  color:var(--lp-primary);
-}
+    .timer-pill {
+      display:flex; align-items:center; gap:6px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:999px; padding:7px 14px;
+      font-family:'Tajawal',sans-serif; font-weight:700; font-size:0.95rem;
+    }
+    .timer-pill.warning { border-color:rgba(245,158,11,0.4); color:var(--gold); }
+    .timer-pill.danger { border-color:rgba(239,68,68,0.4); color:var(--red); animation:pulse .5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
 
-/* ══════════════════════════════════════
-   DIVIDER STRIP between sections
-══════════════════════════════════════ */
-.lp-section-alt {
-  background:var(--lp-card);
-  transition:background var(--t);
-}
+    .quiz-progress-row { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+    .q-progress-bar { flex:1; height:6px; background:var(--surface3); border-radius:999px; overflow:hidden; }
+    .q-progress-fill {
+      height:100%; border-radius:999px;
+      background: linear-gradient(90deg,var(--accent),var(--accent3));
+      transition: width .3s;
+    }
+    .q-counter { font-size:0.8rem; color:var(--text3); white-space:nowrap; }
 
-/* ══════════════════════════════════════
-   ANIMATIONS
-══════════════════════════════════════ */
-@keyframes lpFadeUp  {from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-@keyframes lpFloat   {0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .question-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:26px; margin-bottom:18px;
+      animation: fadeSlide .3s ease;
+    }
+    @keyframes fadeSlide {
+      from { opacity:0; transform:translateY(8px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .q-num { font-size:0.76rem; color:var(--accent); font-weight:700; margin-bottom:8px; }
+    .q-text { font-size:1.02rem; font-weight:600; line-height:1.7; margin-bottom:22px; }
 
-/* ══════════════════════════════════════
-   APP NAV (unchanged)
-══════════════════════════════════════ */
-nav{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:0 1rem;height:54px;
-  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;
-  transition:background var(--t),border-color var(--t);gap:.6rem;}
-.nav-logo{display:flex;align-items:center;gap:7px;font-size:1rem;font-weight:900;color:var(--text);text-decoration:none;white-space:nowrap;}
-.logo-dot{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;box-shadow:0 0 10px rgba(26,188,156,.4);}
-.nav-center{display:flex;gap:3px;overflow-x:auto;max-width:50vw;}
-.nav-center::-webkit-scrollbar{height:3px;}
-.nav-center::-webkit-scrollbar-thumb{background:var(--accent);border-radius:9px;}
-.nav-tab{padding:4px 11px;border-radius:7px;border:none;background:none;font-family:'Cairo',sans-serif;font-size:.78rem;font-weight:600;color:var(--muted);cursor:pointer;transition:background .2s,color .2s;white-space:nowrap;}
-.nav-tab:hover{background:var(--bg2);color:var(--text);}
-.nav-tab.active{background:var(--accent);color:#fff;}
-.nav-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-.btn{padding:5px 12px;border-radius:18px;border:1px solid var(--border);background:var(--bg2);font-family:'Cairo',sans-serif;font-size:.76rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;}
-.btn:hover{border-color:var(--accent);color:var(--accent);}
-.btn-accent{background:var(--accent);border-color:var(--accent);color:#fff!important;}
-.btn-accent:hover{background:var(--accent2);border-color:var(--accent2);}
-.btn-on{background:var(--accent)!important;border-color:var(--accent)!important;color:#fff!important;}
-.btn-danger{border-color:#e74c3c;color:#e74c3c;}
-.btn-danger:hover{background:#e74c3c;color:#fff;}
+    .choices { display:flex; flex-direction:column; gap:9px; }
+    .choice {
+      display:flex; align-items:center; gap:12px;
+      background:var(--surface2); border:1.5px solid var(--border);
+      border-radius:var(--radius-sm); padding:13px 16px;
+      cursor:pointer; transition: all .2s; text-align:right;
+    }
+    .choice:hover:not(.disabled) { border-color:rgba(59,130,246,0.5); background:var(--surface3); }
+    .choice.selected { border-color:var(--accent); background:rgba(59,130,246,0.08); }
+    .choice.disabled { cursor:default; }
+    .choice-letter {
+      min-width:26px; height:26px; border-radius:6px;
+      background:var(--surface3); display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:0.8rem; color:var(--text3);
+      transition: all .2s; flex-shrink:0;
+    }
+    .choice.selected .choice-letter { background:var(--accent); color:#fff; }
+    .choice-text { flex:1; font-size:0.9rem; }
 
-/* ══ APP ANIMATIONS ══ */
-@keyframes slideInRight{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
-@keyframes slideInLeft {from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
-@keyframes fadeInUp   {from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes popIn      {from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
-@keyframes fadeIn     {to{opacity:1}}
-@keyframes clickPop   {0%{transform:scale(1)}40%{transform:scale(1.22)}100%{transform:scale(1)}}
-@keyframes gp         {0%,100%{box-shadow:0 0 0 3px rgba(0,210,255,.7),0 0 18px rgba(0,210,255,.5),0 0 38px rgba(0,210,255,.28)}50%{box-shadow:0 0 0 5px rgba(0,210,255,.9),0 0 32px rgba(0,210,255,.7),0 0 60px rgba(0,210,255,.4)}}
+    .quiz-actions { display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; align-items:center; }
 
-/* ══ APP PAGES ══ */
-.page{display:none;flex:1;flex-direction:column;}
-.page.active{display:flex;}
-.page.active.anim-right{animation:slideInRight .32s ease;}
-.page.active.anim-left {animation:slideInLeft  .32s ease;}
+    .btn {
+      padding:11px 22px; border-radius:10px; border:none; cursor:pointer;
+      font-family:'Cairo',sans-serif; font-weight:700; font-size:0.9rem;
+      transition: all .2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg,var(--accent),var(--accent2));
+      color:#fff;
+    }
+    .btn-primary:hover { opacity:.9; transform:translateY(-1px); box-shadow:0 4px 20px rgba(59,130,246,0.3); }
+    .btn-primary:disabled { opacity:.4; cursor:default; transform:none; }
+    .btn-secondary { background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+    .btn-secondary:hover { background:var(--surface3); color:var(--text); }
 
-/* ══ HOME ══ */
-.home-wrap{padding:1.4rem;max-width:960px;margin:0 auto;width:100%;animation:fadeInUp .35s ease;}
-.home-wrap h2{font-size:1rem;font-weight:700;margin-bottom:1rem;}
-.page-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:11px;}
-.page-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:1rem;cursor:pointer;transition:border-color .2s,transform .15s,box-shadow .2s;animation:popIn .3s ease;position:relative;}
-.page-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 7px 22px rgba(26,188,156,.11);}
-.pc-lock{position:absolute;top:10px;left:10px;font-size:.85rem;opacity:.7;}
-.pc-title{font-size:.92rem;font-weight:700;margin-bottom:3px;padding-left:20px;}
-.pc-sub{font-size:.73rem;color:var(--muted);margin-bottom:8px;}
-.pbar-wrap{background:var(--bg2);border-radius:999px;height:6px;overflow:hidden;}
-.pbar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),#9b59b6);transition:width .5s;}
-.pbar-label{font-size:.7rem;color:var(--muted);margin-top:3px;}
-.add-card{background:var(--card);border:2px dashed var(--border);border-radius:13px;padding:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;color:var(--muted);font-size:.83rem;font-weight:600;transition:border-color .2s,color .2s;min-height:100px;animation:popIn .3s ease;}
-.add-card:hover{border-color:var(--accent);color:var(--accent);}
+    /* Results */
+    .results-page { max-width:700px; margin:0 auto; padding:24px 20px; }
+    .results-hero { text-align:center; margin-bottom:28px; }
+    .results-icon {
+      font-size:3.5rem; margin-bottom:10px;
+      display:block; animation:bounceIn .6s ease;
+    }
+    @keyframes bounceIn {
+      0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)}
+    }
+    .results-score {
+      font-family:'Tajawal',sans-serif; font-weight:900;
+      font-size:3.2rem; line-height:1;
+      background: linear-gradient(135deg,var(--accent),var(--accent3));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .results-label { color:var(--text2); margin-top:6px; font-size:0.95rem; }
+    .results-grade {
+      display:inline-block; padding:4px 14px; border-radius:999px;
+      font-weight:700; font-size:0.88rem; margin-top:8px;
+    }
 
-/* ══ TOOLBAR ══ */
-.grid-header{padding:.75rem 1.2rem .3rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:7px;}
-.grid-title-row{display:flex;align-items:center;gap:7px;}
-.grid-title{font-size:.95rem;font-weight:700;cursor:pointer;border-bottom:1px dashed transparent;transition:border-color .2s;}
-.grid-title:hover{border-color:var(--accent);}
-.grid-title-input{font-size:.95rem;font-weight:700;border:none;border-bottom:2px solid var(--accent);background:transparent;color:var(--text);font-family:'Cairo',sans-serif;outline:none;width:160px;}
-.grid-meta{font-size:.75rem;color:var(--muted);margin-top:2px;}
-.toolbar{padding:0 1.2rem .5rem;display:flex;flex-direction:column;gap:7px;}
-.tool-panel{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:.6rem .85rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;animation:fadeInUp .25s ease;}
-.tool-panel-label{font-size:.72rem;color:var(--muted);font-weight:700;white-space:nowrap;min-width:44px;}
-.shp-btn{width:28px;height:28px;cursor:pointer;background:var(--bg2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .2s,background .2s;}
-.shp-btn:hover,.shp-btn.sel{border-color:var(--accent);background:rgba(26,188,156,.18);}
-.shp-circle {border-radius:50%;}
-.shp-square {border-radius:4px;}
-.shp-star   {clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);border:none!important;background:var(--muted)!important;}
-.shp-star.sel{background:var(--accent)!important;}
-.csw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;flex-shrink:0;transition:transform .15s,border-color .15s;}
-.csw:hover,.csw.sel{transform:scale(1.3);border-color:#fff;}
-[data-theme="dark"] .csw:hover,[data-theme="dark"] .csw.sel{border-color:#ccc;}
-.progress-strip{margin:0 1.2rem .35rem;background:var(--bg2);border-radius:999px;height:5px;overflow:hidden;}
-.ps-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),#9b59b6);transition:width .45s;}
-.grid-wrapper{flex:1;padding:.35rem 1.2rem 1.2rem;overflow-y:auto;}
-.circle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:7px;max-width:1400px;}
+    .results-stats {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px;
+    }
+    .r-stat {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:14px 10px; text-align:center;
+    }
+    .r-stat-val { font-family:'Tajawal',sans-serif; font-weight:700; font-size:1.5rem; }
+    .r-stat-val.green { color:var(--green); }
+    .r-stat-val.red { color:var(--red); }
+    .r-stat-val.blue { color:var(--accent); }
+    .r-stat-val.gold { color:var(--gold); }
+    .r-stat-lbl { font-size:0.73rem; color:var(--text3); margin-top:3px; }
 
-/* ══ SHAPES ══ */
-.shape-item{aspect-ratio:1;cursor:pointer;background:var(--empty);border:2px solid var(--empty-border);
-  transition:transform .18s,box-shadow .25s,background .25s,border-color .25s,border-radius .3s;
-  position:relative;overflow:visible;}
-.shape-item:hover{transform:scale(1.1);z-index:2;}
-.shape-item.filled{border-color:transparent;}
-.shape-circle{border-radius:50%;}
-.shape-square{border-radius:6px;}
-.shape-star{clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);border-radius:0;border:none!important;}
-.shape-item.f1 {background:var(--f1)!important;}
-.shape-item.f2 {background:var(--f2)!important;}
-.shape-item.f3 {background:var(--f3)!important;}
-.shape-item.f4 {background:var(--f4)!important;}
-.shape-item.f5 {background:var(--f5)!important;}
-.shape-item.f6 {background:var(--f6)!important;}
-.shape-item.f7 {background:var(--f7)!important;}
-.shape-item.f8 {background:var(--f8)!important;}
-.shape-item.f9 {background:var(--f9)!important;}
-.shape-item.f10{background:var(--f10)!important;}
-.shape-item.f11{background:var(--f11)!important;}
-.shape-item.f12{background:var(--f12)!important;}
-.shape-item.glow{animation:gp 2s infinite;}
-.shape-circle.pop,.shape-square.pop,.shape-star.pop{animation:clickPop .28s ease;}
+    .score-circle-wrap { display:flex; justify-content:center; margin-bottom:20px; }
+    .score-circle { position:relative; width:120px; height:120px; }
+    .score-circle svg { transform:rotate(-90deg); }
+    .score-arc-bg { fill:none; stroke:var(--surface3); stroke-width:10; }
+    .score-arc { fill:none; stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
+    .score-inner {
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+    }
+    .score-inner .pct { font-family:'Tajawal',sans-serif; font-weight:900; font-size:1.6rem; }
+    .score-inner .lbl { font-size:0.7rem; color:var(--text3); }
 
-/* ══ NUMBER LABEL ══ */
-.num-label{
-  position:absolute;inset:0;display:none;align-items:center;justify-content:center;
-  font-family:'Cairo',sans-serif;font-weight:900;pointer-events:none;line-height:1;z-index:4;
-  font-size:clamp(8px, 2.2vw, 14px);
-  color:rgba(100,100,100,.75);
-  text-shadow: 0 1px 2px rgba(255,255,255,.5);
-}
-[data-theme="dark"] .num-label{color:rgba(180,180,180,.7);text-shadow:0 1px 2px rgba(0,0,0,.4);}
-.show-nums .shape-item .num-label{display:flex;}
-.shape-item.filled .num-label{text-shadow:0 1px 3px rgba(0,0,0,.4);}
+    .breakdown-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(36px,1fr));
+      gap:6px; margin-bottom:24px;
+    }
+    .breakdown-dot {
+      width:36px; height:36px; border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.75rem; font-weight:700; cursor:default;
+    }
+    .breakdown-dot.c { background:rgba(16,185,129,0.2); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+    .breakdown-dot.w { background:rgba(239,68,68,0.15); color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+    .breakdown-dot.s { background:rgba(100,116,139,0.15); color:var(--text3); border:1px solid var(--border); }
 
-/* ══ MODAL ══ */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.58);backdrop-filter:blur(5px);z-index:500;align-items:center;justify-content:center;}
-.modal-overlay.open{display:flex;animation:fadeInUp .22s ease;}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:1.6rem;width:min(430px,93vw);display:flex;flex-direction:column;gap:13px;}
-.modal h3{font-size:.98rem;font-weight:700;}
-.modal label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:3px;}
-.modal input,.modal select{width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);font-family:'Cairo',sans-serif;font-size:.86rem;color:var(--text);outline:none;transition:border-color .2s;}
-.modal input:focus,.modal select:focus{border-color:var(--accent);}
-.modal-row{display:flex;gap:8px;justify-content:flex-end;}
-.modal-hint{font-size:.72rem;color:var(--muted);background:var(--bg2);border-radius:7px;padding:6px 10px;line-height:1.5;}
+    .results-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:28px; }
 
-/* ══ TOAST ══ */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(55px);background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 16px;font-size:.8rem;font-weight:600;box-shadow:0 7px 26px rgba(0,0,0,.18);z-index:700;transition:transform .28s,opacity .28s;opacity:0;pointer-events:none;}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+    .review-list { display:flex; flex-direction:column; gap:10px; }
+    .review-item {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:14px;
+    }
+    .review-item.r-wrong { border-color:rgba(239,68,68,0.3); }
+    .review-item.r-correct { border-color:rgba(16,185,129,0.2); }
+    .review-q { font-weight:600; font-size:0.9rem; margin-bottom:8px; }
+    .review-choices { display:flex; flex-direction:column; gap:5px; }
+    .review-choice { font-size:0.82rem; padding:6px 10px; border-radius:7px; }
+    .r-answer { background:rgba(16,185,129,0.1); color:var(--green); border:1px solid rgba(16,185,129,0.2); }
+    .r-user-wrong { background:rgba(239,68,68,0.1); color:var(--red); border:1px solid rgba(239,68,68,0.2); }
 
-/* ══ APP FOOTER ══ */
-.app-footer{background:var(--nav-bg);border-top:1px solid var(--border);padding:.6rem 1.2rem;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.71rem;color:var(--muted);transition:background var(--t),border-color var(--t);line-height:1.7;}
+    /* Admin */
+    .admin-page { max-width:900px; margin:0 auto; padding:24px 20px; }
+    .admin-tabs { display:flex; gap:6px; margin-bottom:24px; flex-wrap:wrap; }
+    .admin-tab {
+      padding:9px 18px; border-radius:8px; border:none; cursor:pointer;
+      font-family:'Cairo',sans-serif; font-weight:700; font-size:0.85rem;
+      background:var(--surface2); color:var(--text3); transition: all .2s;
+    }
+    .admin-tab.active {
+      background: linear-gradient(135deg,var(--accent),var(--accent2));
+      color:#fff;
+    }
+    .admin-tab-content { display:none; }
+    .admin-tab-content.active { display:block; }
 
-/* ══ GRID CONTROLS ══ */
-.grid-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
-.tab-lock{font-size:.65rem;margin-right:3px;opacity:.7;}
+    .form-group { margin-bottom:16px; }
+    .form-label { display:block; font-size:0.82rem; color:var(--text2); font-weight:600; margin-bottom:6px; }
+    .form-input {
+      width:100%; background:var(--surface2); border:1px solid var(--border);
+      border-radius:10px; color:var(--text); padding:10px 14px;
+      font-family:'Cairo',sans-serif; font-size:0.9rem;
+      transition: border-color .2s; outline:none;
+    }
+    .form-input:focus { border-color:var(--accent); }
+    .form-input::placeholder { color:var(--text3); }
+    textarea.form-input { resize:vertical; min-height:80px; }
 
-/* ══════════════════════════════════════
-   RESPONSIVE
-══════════════════════════════════════ */
-@media(max-width:900px){
-  .lp-hero { grid-template-columns:1fr; gap:40px; padding:60px 20px 50px; }
-  .lp-hero-visual { order:-1; }
-  .lp-benefits-wrap { grid-template-columns:1fr; gap:36px; }
-  .lp-footer-inner { grid-template-columns:1fr 1fr; }
-  .lp-nav { display:none; }
-}
-@media(max-width:600px){
-  .lp-hero h1 { font-size:32px; }
-  .lp-section { padding:60px 16px; }
-  .lp-cta-wrap { padding:48px 20px; margin:0 16px 60px; }
-  .lp-footer-inner { grid-template-columns:1fr; }
-  .lp-benefits-visual { grid-template-columns:1fr 1fr; }
-  .lp-stat-card.big { grid-column:span 1; }
-  .lp-hero-btns { flex-direction:column; }
-  .lp-hero-btns .lp-btn-primary,
-  .lp-hero-btns .lp-btn-outline { text-align:center; }
-}
+    .parse-textarea {
+      min-height:200px; font-size:0.85rem; line-height:1.6;
+    }
+    .parse-result-preview {
+      background:var(--surface2); border:1px solid rgba(16,185,129,0.2);
+      border-radius:10px; padding:14px; margin-top:10px; display:none;
+    }
+    .parse-result-preview h4 { color:var(--green); font-size:0.85rem; margin-bottom:10px; }
+    .parsed-q-item {
+      background:var(--surface3); border-radius:8px; padding:12px; margin-bottom:8px;
+    }
+    .parsed-q-item:last-child { margin-bottom:0; }
+    .parsed-q-text { font-size:0.85rem; font-weight:700; margin-bottom:8px; color:var(--text); }
+    .parsed-choices { display:flex; flex-direction:column; gap:4px; }
+    .parsed-choice-row {
+      display:flex; align-items:center; gap:8px;
+      font-size:0.82rem; cursor:pointer; padding:4px 6px;
+      border-radius:6px; transition: background .15s;
+    }
+    .parsed-choice-row:hover { background:rgba(59,130,246,0.08); }
+    .parsed-choice-row input[type="radio"] {
+      appearance:none; width:14px; height:14px; border-radius:50%;
+      border:2px solid var(--border); cursor:pointer; flex-shrink:0;
+      transition: all .2s;
+    }
+    .parsed-choice-row input[type="radio"]:checked { border-color:var(--green); background:var(--green); }
 
-/* App wrapper hidden by default */
-#appWrapper { display:none; flex:1; flex-direction:column; }
-#appWrapper.active { display:flex; }
-</style>
+    .answer-bulk {
+      background:var(--surface2);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:12px;
+      margin:12px 0;
+    }
+    .answer-bulk label {
+      font-size:0.85rem;
+      color:var(--text2);
+      margin-bottom:6px;
+      display:block;
+    }
+    .answer-bulk textarea {
+      width:100%;
+      background:var(--surface3);
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:8px;
+      color:var(--text);
+      font-family:'Cairo',sans-serif;
+      font-size:0.85rem;
+      resize:vertical;
+    }
+    .answer-bulk small {
+      font-size:0.7rem;
+      color:var(--text3);
+      display:block;
+      margin-top:5px;
+    }
+
+    .questions-builder { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+    .q-builder-item {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:14px;
+    }
+    .q-builder-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .q-builder-num { font-weight:700; color:var(--accent); font-size:0.85rem; }
+    .q-del-btn {
+      background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2);
+      color:var(--red); border-radius:6px; padding:4px 9px;
+      cursor:pointer; font-family:'Cairo',sans-serif; font-size:0.78rem;
+      transition: all .2s;
+    }
+    .q-del-btn:hover { background:rgba(239,68,68,0.2); }
+    .choices-builder { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:7px; }
+    .choice-builder-row { display:flex; align-items:center; gap:7px; }
+    .choice-radio {
+      appearance:none; width:15px; height:15px; border-radius:50%;
+      border:2px solid var(--border); cursor:pointer; flex-shrink:0;
+      transition: all .2s;
+    }
+    .choice-radio:checked { border-color:var(--green); background:var(--green); }
+
+    /* Modal */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:200;
+      background:rgba(0,0,0,0.75); backdrop-filter:blur(4px);
+      align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:26px; width:100%; max-width:440px;
+      animation: modalIn .25s ease;
+    }
+    .modal-wide { max-width:560px; }
+    @keyframes modalIn {
+      from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)}
+    }
+    .modal h3 { font-family:'Tajawal',sans-serif; font-weight:700; font-size:1.15rem; margin-bottom:18px; }
+    .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap; }
+
+    .delete-warning {
+      background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2);
+      border-radius:10px; padding:14px; margin-bottom:16px;
+      font-size:0.88rem; color:var(--red); text-align:center;
+    }
+    .delete-warning strong { display:block; font-size:1rem; margin-bottom:4px; }
+
+    .toast-container { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:999; display:flex; flex-direction:column; gap:8px; }
+    .toast {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:10px; padding:10px 18px;
+      font-size:0.86rem; font-weight:600;
+      animation: toastIn .3s ease;
+      display:flex; align-items:center; gap:7px;
+      box-shadow:0 8px 32px rgba(0,0,0,0.3);
+      white-space:nowrap;
+    }
+    @keyframes toastIn {
+      from{opacity:0;transform:translateX(-50%) translateY(20px)}
+      to{opacity:1;transform:translateX(-50%) translateY(0)}
+    }
+    .toast.success { border-color:rgba(16,185,129,0.4); color:var(--green); }
+    .toast.error { border-color:rgba(239,68,68,0.4); color:var(--red); }
+    .toast.info { border-color:rgba(59,130,246,0.4); color:var(--accent); }
+
+    .empty-state { text-align:center; padding:44px 20px; color:var(--text3); }
+    .empty-state .icon { font-size:2.8rem; margin-bottom:10px; }
+    .empty-state p { font-size:0.88rem; }
+
+    .manage-item {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
+      padding:14px 16px; display:flex; align-items:center; justify-content:space-between;
+      gap:12px; flex-wrap:wrap; transition: border-color .2s;
+    }
+    .manage-item:hover { border-color:rgba(59,130,246,0.3); }
+    .manage-item-info { flex:1; min-width:160px; }
+    .manage-item-name { font-weight:700; font-size:0.92rem; margin-bottom:2px; }
+    .manage-item-meta { font-size:0.78rem; color:var(--text3); }
+    .manage-item-actions { display:flex; gap:7px; }
+
+    /* Tools */
+    .tools-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+      gap:14px;
+    }
+    .tool-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:20px;
+      position:relative; overflow:hidden;
+    }
+    .tool-card::before {
+      content:''; position:absolute; top:0; right:0; width:3px; height:100%;
+      background: linear-gradient(180deg,var(--accent),var(--accent3));
+    }
+    .tool-card-header {
+      display:flex; align-items:center; gap:10px; margin-bottom:16px;
+    }
+    .tool-icon {
+      width:38px; height:38px; border-radius:10px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; font-size:1.2rem;
+    }
+    .tool-icon.blue { background:rgba(59,130,246,0.15); }
+    .tool-icon.gold { background:rgba(245,158,11,0.15); }
+    .tool-icon.green { background:rgba(16,185,129,0.15); }
+    .tool-card-header h4 {
+      font-family:'Tajawal',sans-serif; font-weight:700; font-size:0.95rem;
+    }
+    .tool-card-header p { font-size:0.78rem; color:var(--text3); margin-top:1px; }
+    .tool-body { display:flex; flex-direction:column; gap:10px; }
+    .tool-row {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .tool-row label { font-size:0.8rem; color:var(--text3); min-width:80px; }
+    .tool-input {
+      flex:1; min-width:80px; background:var(--surface2); border:1px solid var(--border);
+      border-radius:8px; color:var(--text); padding:8px 12px;
+      font-family:'Cairo',sans-serif; font-size:0.88rem; text-align:center; outline:none;
+    }
+    .tool-input:focus { border-color:var(--accent); }
+    .tool-unit { font-size:0.78rem; color:var(--text3); white-space:nowrap; }
+    .tool-display {
+      background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+      padding:12px 16px; text-align:center;
+    }
+    .tool-timer-val {
+      font-family:'Tajawal',sans-serif; font-weight:900; font-size:2rem; color:var(--accent);
+      line-height:1;
+    }
+    .tool-timer-val.running { color:var(--green); }
+    .tool-timer-val.warning { color:var(--gold); }
+    .tool-timer-val.danger  { color:var(--red); animation:pulse .5s infinite; }
+    .tool-timer-lbl { font-size:0.72rem; color:var(--text3); margin-top:2px; }
+    .tool-goal-progress { margin-top:4px; }
+    .tool-goal-val {
+      font-family:'Tajawal',sans-serif; font-weight:900; font-size:1.8rem; color:var(--gold);
+      line-height:1; text-align:center;
+    }
+    .tool-goal-sub { font-size:0.75rem; color:var(--text3); text-align:center; margin-top:2px; }
+
+    .answer-map-section {
+      background: linear-gradient(135deg,rgba(16,185,129,0.06),rgba(59,130,246,0.04));
+      border:1px solid rgba(16,185,129,0.2);
+      border-radius:var(--radius-sm); padding:16px; margin-bottom:14px;
+    }
+    .answer-map-section h4 {
+      font-family:'Tajawal',sans-serif; font-weight:700; font-size:0.9rem;
+      color:var(--green); margin-bottom:4px;
+    }
+    .answer-map-section p { font-size:0.78rem; color:var(--text3); margin-bottom:12px; }
+    .answer-map-grid { display:flex; flex-direction:column; gap:6px; }
+    .answer-map-row {
+      display:flex; align-items:center; gap:10px;
+    }
+    .answer-map-qnum {
+      min-width:28px; height:28px; border-radius:6px;
+      background:rgba(59,130,246,0.1); color:var(--accent);
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.78rem; font-weight:700; flex-shrink:0;
+    }
+    .answer-map-qtext {
+      flex:1; font-size:0.82rem; color:var(--text2);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .answer-map-select {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:7px; color:var(--text); padding:5px 10px;
+      font-family:'Cairo',sans-serif; font-size:0.82rem; outline:none;
+      cursor:pointer; min-width:60px;
+    }
+    .answer-map-select:focus { border-color:var(--green); }
+    .answer-map-select.matched { border-color:rgba(16,185,129,0.5); color:var(--green); }
+
+    @media(max-width:640px){
+      .results-stats { grid-template-columns:1fr 1fr; }
+      .choices-builder { grid-template-columns:1fr; }
+      .header-nav .nav-btn span { display:none; }
+      .pomodoro-card { flex-direction:column; align-items:flex-start; }
+      .tools-grid { grid-template-columns:1fr; }
+    }
+  </style>
 </head>
 <body>
-
-<!-- ══════════════════════════════════════
-     LANDING PAGE
-══════════════════════════════════════ -->
-<div id="landingPage">
-
-  <!-- HEADER -->
-  <header class="lp-header">
-    <a href="#" class="lp-logo">
-      <div class="lp-logo-icon">🎯</div>
-      <span>منجَز</span>
-    </a>
-    <nav class="lp-nav">
-      <a href="#features">المميزات</a>
-      <a href="#benefits">كيف يعمل</a>
-      <a href="#cta">تواصل معنا</a>
-    </nav>
-    <div class="lp-header-actions">
-      <button class="lp-theme-btn" id="lpThemeBtn" onclick="toggleTheme()" title="تغيير الثيم">☀️</button>
-      <button class="lp-btn-outline" onclick="enterApp()">تسجيل الدخول</button>
-      <button class="lp-btn-primary" onclick="enterApp()">ابدأ الآن</button>
-    </div>
-  </header>
-
-  <!-- HERO -->
-  <section style="background:var(--lp-bg);transition:background var(--t);">
-    <div class="lp-hero">
-      <!-- Text -->
-      <div class="lp-hero-text">
-        <div class="lp-badge">🚀 منصة عربية حديثة للإنجاز</div>
-        <h1>نظّم <span>إنجازك</span>، رتّب أفكارك، واصنع تقدمك بثقة</h1>
-        <p>منصة عربية حديثة تساعدك على تنظيم أهدافك وإنجازاتك وأفكارك ومشاريعك في مكان واحد، بواجهة سهلة وأنيقة وآمنة.</p>
-        <div class="lp-hero-btns">
-          <button class="lp-btn-primary" onclick="enterApp()">ابدأ الآن ←</button>
-          <a href="#features" class="lp-btn-outline">تعرّف أكثر</a>
-        </div>
-      </div>
-      <!-- Visual / Mockup -->
-      <div class="lp-hero-visual">
-        <div class="lp-mockup">
-          <div class="lp-mockup-bar">
-            <div class="lp-mockup-dot" style="background:#ef4444;"></div>
-            <div class="lp-mockup-dot" style="background:#f59e0b;"></div>
-            <div class="lp-mockup-dot" style="background:#10b981;"></div>
-          </div>
-          <div class="lp-mockup-label">هدف القراءة — ٦٠ كتاب</div>
-          <div class="lp-mockup-grid" id="mockupGrid"></div>
-          <div class="lp-mockup-label">التقدم الكلي</div>
-          <div class="lp-mockup-bar2"><div class="lp-mockup-fill" style="width:68%;"></div></div>
-          <div style="font-size:.72rem;color:var(--lp-muted);font-weight:600;">٤١ من ٦٠ • ٦٨٪ مكتمل</div>
-        </div>
-        <div class="lp-float-card">
-          <div class="lp-float-icon">✅</div>
-          <div>
-            <div style="font-size:.8rem;font-weight:700;color:var(--lp-text);">هدف محقق!</div>
-            <div style="font-size:.72rem;color:var(--lp-muted);">استمر في التقدم</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURES -->
-  <section class="lp-section-alt" id="features">
-    <div class="lp-section">
-      <div class="lp-section-header">
-        <h2>كل ما تحتاجه في مكان واحد</h2>
-        <p>مميزات صُمّمت لتجعل رحلتك نحو الإنجاز أوضح وأكثر متعة</p>
-      </div>
-      <div class="lp-features-grid">
-        <div class="lp-feat-card">
-          <div class="lp-feat-icon">📄</div>
-          <h3>إنشاء صفحات خاصة</h3>
-          <p>أنشئ مساحاتك الخاصة لتنظيم أهدافك ومشاريعك بسهولة تامة.</p>
-        </div>
-        <div class="lp-feat-card">
-          <div class="lp-feat-icon">📋</div>
-          <h3>تنظيم المهام والعناصر</h3>
-          <p>رتّب أفكارك ومهامك بشكل واضح يساعدك على المتابعة المستمرة.</p>
-        </div>
-        <div class="lp-feat-card">
-          <div class="lp-feat-icon">🎨</div>
-          <h3>تخصيص الألوان</h3>
-          <p>خصص واجهتك بالطريقة التي تناسبك وتمنحك تجربة أكثر راحة.</p>
-        </div>
-        <div class="lp-feat-card">
-          <div class="lp-feat-icon">🔒</div>
-          <h3>حماية المحتوى</h3>
-          <p>حافظ على خصوصية بياناتك وصفحاتك بحماية مناسبة وموثوقة.</p>
-        </div>
-        <div class="lp-feat-card">
-          <div class="lp-feat-icon">⚡</div>
-          <h3>سهولة الإدارة</h3>
-          <p>كل شيء مصمم ليكون بسيطًا وسريعًا وواضحًا دون تعقيد.</p>
-        </div>
-        <div class="lp-feat-card">
-          <div class="lp-feat-icon">📈</div>
-          <h3>متابعة الإنجاز</h3>
-          <p>راقب تقدمك بشكل منظم يساعدك على الاستمرار والتحفيز.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- BENEFITS -->
-  <section style="background:var(--lp-bg);transition:background var(--t);" id="benefits">
-    <div class="lp-section">
-      <div class="lp-benefits-wrap">
-        <div class="lp-benefits-text">
-          <h2>كل ما تحتاجه لتنظيم رحلتك نحو الإنجاز</h2>
-          <p>سواء كنت ترتب أهدافك اليومية أو تدير أفكارك ومشاريعك الشخصية، تمنحك منجَز مساحة واضحة تساعدك على التركيز والترتيب والمتابعة بسهولة.</p>
-          <div class="lp-benefits-list">
-            <div class="lp-benefit-item"><div class="lp-benefit-check">✓</div>تنظيم أوضح لأهدافك اليومية</div>
-            <div class="lp-benefit-item"><div class="lp-benefit-check">✓</div>متابعة أسهل لتقدمك وإنجازاتك</div>
-            <div class="lp-benefit-item"><div class="lp-benefit-check">✓</div>تجربة مريحة وأنيقة باللغة العربية</div>
-            <div class="lp-benefit-item"><div class="lp-benefit-check">✓</div>واجهة عربية احترافية من اليمين لليسار</div>
-            <div class="lp-benefit-item"><div class="lp-benefit-check">✓</div>تحكم أفضل بالمحتوى والخصوصية</div>
-          </div>
-        </div>
-        <div class="lp-benefits-visual">
-          <div class="lp-stat-card">
-            <span class="stat-num">١٠٠٪</span>
-            <span class="stat-lbl">مجاني تمامًا</span>
-          </div>
-          <div class="lp-stat-card">
-            <span class="stat-num">∞</span>
-            <span class="stat-lbl">صفحات غير محدودة</span>
-          </div>
-          <div class="lp-stat-card">
-            <span class="stat-num">٣</span>
-            <span class="stat-lbl">أشكال للعناصر</span>
-          </div>
-          <div class="lp-stat-card">
-            <span class="stat-num">١٢</span>
-            <span class="stat-lbl">لونًا للتخصيص</span>
-          </div>
-          <div class="lp-stat-card big">
-            <span class="stat-num">عربي ١٠٠٪</span>
-            <span class="stat-lbl">مصمم للمستخدم العربي من الأساس</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <div id="cta">
-    <div class="lp-cta-wrap">
-      <h2>ابدأ الآن واجعل إنجازك أكثر وضوحًا</h2>
-      <p>أنشئ مساحتك الخاصة وابدأ في تنظيم أهدافك وأفكارك بطريقة أبسط وأكثر احترافية.</p>
-      <button class="lp-cta-btn" onclick="enterApp()">ابدأ مجانًا الآن ←</button>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer class="lp-footer">
-    <div class="lp-footer-inner">
-      <div class="lp-footer-brand">
-        <a href="#" class="lp-logo">
-          <div class="lp-logo-icon">🎯</div>
-          <span>منجَز</span>
-        </a>
-        <p>منصة عربية لتنظيم الإنجاز والأهداف والأفكار والمشاريع الشخصية بطريقة سهلة واحترافية.</p>
-      </div>
-      <div class="lp-footer-col">
-        <h4>روابط سريعة</h4>
-        <a href="#">الرئيسية</a>
-        <a href="#features">المميزات</a>
-        <a href="#benefits">كيف يعمل</a>
-      </div>
-      <div class="lp-footer-col">
-        <h4>آخر</h4>
-        <a href="#cta">تواصل معنا</a>
-        <a href="#">سياسة الخصوصية</a>
-        <a href="#" onclick="enterApp();return false;">الدخول للتطبيق</a>
-      </div>
-    </div>
-    <div class="lp-footer-bottom">
-      <span>© ٢٠٢٦ AHMED MOHSEN — جميع الحقوق محفوظة</span>
-      <span style="color:var(--lp-muted);font-weight:400;">صُنع بـ ❤️ للمستخدم العربي</span>
-    </div>
-  </footer>
-
-</div><!-- end #landingPage -->
-
-
-<!-- ══════════════════════════════════════
-     APP WRAPPER
-══════════════════════════════════════ -->
-<div id="appWrapper">
-
-<!-- NAV -->
-<nav>
-  <a href="#" class="nav-logo" onclick="showHome();return false;">
-    <span class="logo-dot">🎯</span>
-    <span>منجَز</span>
-  </a>
-  <div class="nav-center" id="navTabs"></div>
-  <div class="nav-actions">
-    <button class="btn btn-accent" onclick="openNewPageModal()">+ صفحة</button>
-    <button class="btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
-    <button class="btn" onclick="goToLanding()" title="الصفحة الرئيسية">🏠</button>
-  </div>
-</nav>
+<header class="header">
+  <div class="logo"><div class="logo-icon">📚</div><span>منصة الاختبارات</span></div>
+  <nav class="header-nav">
+    <button class="nav-btn ghost" onclick="showPage('home')">🏠 <span>الرئيسية</span></button>
+    <button class="nav-btn ghost" onclick="showPage('tools')">🛠️ <span>الأدوات</span></button>
+    <button class="nav-btn ghost" onclick="showPage('errors')">🗂️ <span>أخطائي</span></button>
+    <button class="nav-btn primary" onclick="showPage('admin')">⚙️ <span>إضافة</span></button>
+  </nav>
+</header>
 
 <!-- HOME PAGE -->
-<div class="page active" id="homePage">
-  <div class="home-wrap">
-    <h2>📋 صفحاتك</h2>
-    <div class="page-cards" id="pageCards"></div>
+<div id="page-home" class="page active">
+  <div class="home-hero">
+    <div class="hero-badge">⚡ دورة المحوسب — الأستاذ إيهاب عبدالعظيم</div>
+    <h1 class="hero-title">منصة الاختبارات الذكية</h1>
+    <p class="hero-sub">تابع تقدمك، حدد هدفك، وراجع أخطاءك بسهولة</p>
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-lbl">اختبار</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-done">0</div><div class="stat-lbl">مكتمل</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-avg">—</div><div class="stat-lbl">متوسط الدرجات</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-errors">0</div><div class="stat-lbl">خطأ مسجّل</div></div>
+    </div>
   </div>
+
+  <div class="section"><div class="section-title">🍅 مؤقت بومودورو</div>
+  <div class="pomodoro-card">
+    <div class="pomo-ring" id="pomo-ring-wrap"><svg width="70" height="70" viewBox="0 0 70 70"><circle class="pomo-ring-bg" cx="35" cy="35" r="30"/><circle class="pomo-ring-fill" id="pomo-ring-fill" cx="35" cy="35" r="30" stroke-dasharray="188.5" stroke-dashoffset="0"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><span id="pomo-sessions-inner" style="font-size:0.75rem;font-weight:700;color:var(--text3)">1/4</span></div></div>
+    <div class="pomo-display"><div class="pomo-time focus" id="pomo-display">25:00</div><div class="pomo-label focus" id="pomo-label">تركيز</div></div>
+    <div class="pomo-info"><h4>مؤقت بومودورو</h4><p id="pomo-status-text">ابدأ جلسة دراسة منتجة</p><div class="pomo-sessions" id="pomo-dots"></div></div>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;"><div class="pomo-controls"><button class="btn btn-primary" id="pomo-start-btn" onclick="togglePomodoro()" style="padding:9px 18px;font-size:0.85rem">▶ ابدأ</button><button class="btn btn-secondary" onclick="resetPomodoro()" style="padding:9px 12px;font-size:0.85rem">↺</button><button class="btn btn-secondary" onclick="skipPomoPhase()" style="padding:9px 12px;font-size:0.85rem" title="تخطي المرحلة">⏭</button></div><div class="pomo-settings-row"><div class="pomo-input-group"><span style="font-size:0.76rem;color:var(--text3)">تركيز (د)</span><input type="number" id="pomo-focus-input" value="25" min="1" max="60" onchange="updatePomoSettings()"></div><div class="pomo-input-group"><span style="font-size:0.76rem;color:var(--text3)">استراحة (د)</span><input type="number" id="pomo-break-input" value="5" min="1" max="30" onchange="updatePomoSettings()"></div><div class="pomo-input-group"><span style="font-size:0.76rem;color:var(--text3)">جلسات</span><input type="number" id="pomo-sessions-input" value="4" min="1" max="8" onchange="updatePomoSettings()"></div></div></div>
+  </div></div>
+
+  <div class="section"><div class="section-title">🎯 هدفك</div>
+  <div class="goal-card"><div class="goal-icon">🏆</div><div class="goal-info"><h3 id="goal-title">حدد هدفك</h3><p id="goal-desc">اضغط تعديل لتحديد هدفك من الاختبارات</p></div><div class="goal-progress-wrap"><div class="progress-bar-bg"><div class="progress-bar-fill" id="goal-bar" style="width:0%"></div></div><div class="progress-labels"><span id="goal-done-lbl">0 مكتمل</span><span id="goal-target-lbl">الهدف: —</span></div></div><button class="goal-edit-btn" onclick="openGoalModal()">✏️ تعديل</button></div></div>
+
+  <div class="section"><div class="section-title">📋 الاختبارات</div><div class="tests-grid" id="tests-grid"><div class="add-card" onclick="showPage('admin')"><span style="font-size:1.4rem">➕</span><span>أضف اختباراً جديداً</span></div></div></div>
 </div>
 
-<!-- GRID PAGE -->
-<div class="page" id="gridPage">
-  <div class="grid-header">
-    <div>
-      <div class="grid-title-row">
-        <span class="grid-title" id="gridTitle" onclick="startRename()" title="اضغط لتغيير الاسم">—</span>
-        <input class="grid-title-input" id="gridTitleInput" style="display:none" onblur="finishRename()" onkeydown="if(event.key==='Enter')finishRename()">
-        <span style="font-size:.7rem;color:var(--muted);cursor:pointer;" onclick="startRename()" title="تعديل الاسم">✏️</span>
-      </div>
-      <div class="grid-meta" id="gridMeta">—</div>
-    </div>
-    <div class="grid-controls">
-      <button class="btn" id="numBtn" onclick="toggleNums()">١٢٣ ترقيم</button>
-      <button class="btn" onclick="openBulkFill()">🎨 تلوين عدد</button>
-      <button class="btn" onclick="openAddCircles()">+ عناصر</button>
-      <button class="btn" onclick="resetPage()">تصفير</button>
-      <button class="btn" onclick="deletePage()">🗑️</button>
-      <button class="btn" onclick="goBack()">← رجوع</button>
-    </div>
-  </div>
-  <div class="toolbar">
-    <div class="tool-panel">
-      <span class="tool-panel-label">الشكل:</span>
-      <div id="shapeSel" style="display:flex;gap:7px;align-items:center;">
-        <div class="shp-btn shp-circle sel" data-shape="circle" title="دائرة"></div>
-        <div class="shp-btn shp-square"     data-shape="square" title="مربع"></div>
-        <div class="shp-btn shp-star"       data-shape="star"   title="نجمة"></div>
-      </div>
-    </div>
-    <div class="tool-panel">
-      <span class="tool-panel-label">اللون:</span>
-      <div id="cpick" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
-        <div class="csw sel" data-c="1"  style="background:#1abc9c;"></div>
-        <div class="csw"     data-c="2"  style="background:#e74c3c;"></div>
-        <div class="csw"     data-c="3"  style="background:#9b59b6;"></div>
-        <div class="csw"     data-c="4"  style="background:#f39c12;"></div>
-        <div class="csw"     data-c="5"  style="background:#2980b9;"></div>
-        <div class="csw"     data-c="6"  style="background:#e67e22;"></div>
-        <div class="csw"     data-c="7"  style="background:#1dd1a1;"></div>
-        <div class="csw"     data-c="8"  style="background:#fd79a8;"></div>
-        <div class="csw"     data-c="9"  style="background:#6c5ce7;"></div>
-        <div class="csw"     data-c="10" style="background:#00b894;"></div>
-        <div class="csw"     data-c="11" style="background:#f0c040;"></div>
-        <div class="csw"     data-c="12" style="background:#a29bfe;"></div>
-      </div>
-    </div>
-  </div>
-  <div class="progress-strip"><div class="ps-fill" id="psFill"></div></div>
-  <div class="grid-wrapper">
-    <div class="circle-grid" id="circleGrid"></div>
-  </div>
+<!-- TOOLS PAGE -->
+<div id="page-tools" class="page"><div style="max-width:900px;margin:0 auto;padding:24px 20px;"><h2 style="font-family:'Tajawal',sans-serif;font-weight:700;margin-bottom:6px">🛠️ الأدوات</h2><p style="color:var(--text2);font-size:0.88rem;margin-bottom:24px">مؤقتات وأدوات مساعدة لتنظيم وقت الدراسة وتحديد الأهداف</p><div class="tools-grid">
+  <div class="tool-card"><div class="tool-card-header"><div class="tool-icon blue">⏱️</div><div><h4>مؤقت العد التنازلي</h4><p>حدد مدة واضغط ابدأ</p></div></div><div class="tool-body"><div class="tool-row"><label>المدة</label><input class="tool-input" id="cd-mins" type="number" value="5" min="0" max="999" placeholder="دقائق"><span class="tool-unit">د</span><input class="tool-input" id="cd-secs" type="number" value="0" min="0" max="59" placeholder="ثواني"><span class="tool-unit">ث</span></div><div class="tool-display"><div class="tool-timer-val" id="cd-display">05:00</div><div class="tool-timer-lbl" id="cd-label">جاهز للبدء</div></div><div class="tool-row" style="justify-content:center;gap:8px"><button class="btn btn-primary" id="cd-start-btn" onclick="toggleCountdown()" style="padding:9px 20px;font-size:0.85rem">▶ ابدأ</button><button class="btn btn-secondary" onclick="resetCountdown()" style="padding:9px 14px;font-size:0.85rem">↺ إعادة</button></div></div></div>
+  <div class="tool-card"><div class="tool-card-header"><div class="tool-icon green">🕐</div><div><h4>ساعة إيقاف</h4><p>قِس الوقت المستغرق</p></div></div><div class="tool-body"><div class="tool-display"><div class="tool-timer-val" id="sw-display">00:00</div><div class="tool-timer-lbl" id="sw-label">متوقفة</div></div><div id="sw-laps" style="max-height:100px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div><div class="tool-row" style="justify-content:center;gap:8px"><button class="btn btn-primary" id="sw-start-btn" onclick="toggleStopwatch()" style="padding:9px 20px;font-size:0.85rem">▶ ابدأ</button><button class="btn btn-secondary" onclick="lapStopwatch()" id="sw-lap-btn" disabled style="padding:9px 14px;font-size:0.85rem">🏁 سجّل</button><button class="btn btn-secondary" onclick="resetStopwatch()" style="padding:9px 14px;font-size:0.85rem">↺</button></div></div></div>
+  <div class="tool-card"><div class="tool-card-header"><div class="tool-icon gold">🎯</div><div><h4>متتبع الهدف</h4><p>ضع هدفاً وراقب تقدمك</p></div></div><div class="tool-body"><div class="tool-row"><label>اسم الهدف</label><input class="tool-input" id="tool-goal-name" placeholder="مثال: حل 20 سؤالاً" style="text-align:right;flex:2"></div><div class="tool-row"><label>الهدف</label><input class="tool-input" id="tool-goal-target" type="number" value="20" min="1"><span class="tool-unit">وحدة</span></div><div class="tool-row"><label>المنجز حالياً</label><input class="tool-input" id="tool-goal-done" type="number" value="0" min="0" oninput="updateToolGoal()"><button class="btn btn-secondary" onclick="incrementGoalDone()" style="padding:7px 12px;font-size:0.88rem">+1</button></div><div class="tool-display tool-goal-progress"><div class="tool-goal-val" id="tool-goal-pct">0%</div><div class="progress-bar-bg" style="margin:6px 0 4px"><div class="progress-bar-fill" id="tool-goal-bar" style="width:0%"></div></div><div class="tool-goal-sub" id="tool-goal-sub">0 من 20</div></div><button class="btn btn-primary" onclick="saveToolGoal()" style="width:100%;font-size:0.85rem;padding:9px">💾 حفظ الهدف</button></div></div>
+  <div class="tool-card"><div class="tool-card-header"><div class="tool-icon blue">❓</div><div><h4>مؤقت لكل سؤال</h4><p>حدد وقت للإجابة على كل سؤال</p></div></div><div class="tool-body"><div class="tool-row"><label>وقت السؤال</label><input class="tool-input" id="qt-secs" type="number" value="30" min="5" max="300"><span class="tool-unit">ثانية</span></div><div class="tool-row"><label>عدد الأسئلة</label><input class="tool-input" id="qt-count" type="number" value="10" min="1" max="100"><span class="tool-unit">سؤال</span></div><div class="tool-display"><div class="tool-timer-val" id="qt-display">00:30</div><div class="tool-timer-lbl" id="qt-label">سؤال 0 / 0</div><div class="progress-bar-bg" style="margin-top:8px"><div class="progress-bar-fill" id="qt-bar" style="width:100%;background:linear-gradient(90deg,var(--green),var(--accent))"></div></div></div><div class="tool-row" style="justify-content:center;gap:8px"><button class="btn btn-primary" id="qt-start-btn" onclick="toggleQTimer()" style="padding:9px 20px;font-size:0.85rem">▶ ابدأ</button><button class="btn btn-secondary" onclick="nextQTimer()" id="qt-next-btn" disabled style="padding:9px 14px;font-size:0.85rem">⏭ التالي</button><button class="btn btn-secondary" onclick="resetQTimer()" style="padding:9px 14px;font-size:0.85rem">↺</button></div></div></div>
+</div></div></div>
+
+<!-- ERRORS PAGE -->
+<div id="page-errors" class="page"><div class="errors-section"><div class="errors-header"><div><h2 style="font-family:'Tajawal',sans-serif;font-weight:700;font-size:1.25rem">🗂️ مجلد الأخطاء</h2><p style="color:var(--text2);font-size:0.86rem;margin-top:3px">جميع الأسئلة التي أخطأت فيها من كل الاختبارات</p></div><button class="btn btn-secondary" onclick="clearErrors()" style="font-size:0.83rem">🗑️ مسح الكل</button></div><div class="practice-panel" id="practice-panel" style="display:none"><h3>🔁 التدريب على الأخطاء</h3><p style="font-size:0.83rem;color:var(--text3);margin-bottom:14px">حدد عدد الأسئلة في كل اختبار وسيتم تقسيم أخطائك تلقائياً إلى جلسات منفصلة.</p><div class="practice-settings"><div class="practice-input-group"><label>عدد الأسئلة لكل اختبار</label><input type="number" id="practice-size" value="10" min="1"></div><button class="btn btn-primary" onclick="startPracticeSession(false)" style="font-size:0.85rem;padding:10px 18px">🚀 ابدأ التدريب</button><button class="btn btn-secondary" onclick="startPracticeSession(true)" style="font-size:0.85rem;padding:10px 18px">📋 اختبار واحد (الكل)</button></div><div id="practice-splits-info" style="margin-top:12px;font-size:0.8rem;color:var(--text3)"></div></div><div id="errors-container"></div></div></div>
+
+<!-- QUIZ PAGE -->
+<div id="page-quiz" class="page"><div class="quiz-page"><div class="quiz-header"><button class="quiz-back" onclick="confirmLeaveQuiz()">← رجوع</button><div class="quiz-title-bar"><h2 id="quiz-title">—</h2><p id="quiz-subtitle"></p></div><div class="timer-pill" id="timer-pill">⏱️ <span id="timer-display">00:00</span></div></div><div class="quiz-progress-row"><div class="q-progress-bar"><div class="q-progress-fill" id="q-progress-fill" style="width:0%"></div></div><div class="q-counter" id="q-counter">0 / 0</div></div><div class="question-card" id="question-card"><div class="q-num" id="q-num"></div><div class="q-text" id="q-text"></div><div class="choices" id="choices-container"></div></div><div class="quiz-actions"><button class="btn btn-secondary" id="skip-btn" onclick="skipQuestion()">تخطي ⏭️</button><button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>التالي ←</button></div></div></div>
+
+<!-- RESULTS PAGE -->
+<div id="page-results" class="page"><div class="results-page"><div class="results-hero"><span class="results-icon" id="results-icon">🏆</span><div class="results-score" id="results-score">0%</div><div class="results-label" id="results-label"></div><div class="results-grade" id="results-grade"></div></div><div class="score-circle-wrap"><div class="score-circle"><svg width="120" height="120" viewBox="0 0 120 120"><circle class="score-arc-bg" cx="60" cy="60" r="52"/><circle class="score-arc" id="score-arc" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg><div class="score-inner"><div class="pct" id="score-pct">0%</div><div class="lbl">النتيجة</div></div></div></div><div class="results-stats"><div class="r-stat"><div class="r-stat-val green" id="r-correct">0</div><div class="r-stat-lbl">✅ صحيح</div></div><div class="r-stat"><div class="r-stat-val red" id="r-wrong">0</div><div class="r-stat-lbl">❌ خطأ</div></div><div class="r-stat"><div class="r-stat-val gold" id="r-skipped">0</div><div class="r-stat-lbl">⏭️ تخطي</div></div><div class="r-stat"><div class="r-stat-val blue" id="r-time">—</div><div class="r-stat-lbl">⏱️ الوقت</div></div></div><div class="section-title" style="margin-bottom:12px;font-size:0.9rem">🔢 توزيع الإجابات</div><div class="breakdown-grid" id="breakdown-grid"></div><div class="results-actions"><button class="btn btn-primary" onclick="retryQuiz()">🔄 إعادة المحاولة</button><button class="btn btn-secondary" onclick="showPage('errors')">🗂️ الأخطاء</button><button class="btn btn-secondary" onclick="showPage('home')">🏠 الرئيسية</button></div><div class="section-title" style="margin-bottom:14px;font-size:0.9rem">📝 مراجعة الإجابات</div><div class="review-list" id="review-list"></div></div></div>
+
+<!-- ADMIN PAGE -->
+<div id="page-admin" class="page"><div class="admin-page"><h2 style="font-family:'Tajawal',sans-serif;font-weight:700;margin-bottom:18px">⚙️ إدارة الاختبارات</h2><div class="admin-tabs"><button class="admin-tab active" onclick="switchAdminTab('add',event)">➕ إضافة اختبار</button><button class="admin-tab" onclick="switchAdminTab('parse',event)">🤖 استيراد ذكي</button><button class="admin-tab" onclick="switchAdminTab('manage',event)">📋 إدارة الاختبارات</button></div>
+<div id="admin-add" class="admin-tab-content active"><div class="form-group"><label class="form-label">اسم الاختبار *</label><input class="form-input" id="new-test-name" placeholder="مثال: الزلازل والسكري" /></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="form-group"><label class="form-label">المادة / الموضوع</label><input class="form-input" id="new-test-subject" placeholder="مثال: العلوم" /></div><div class="form-group"><label class="form-label">⏱️ وقت الاختبار (بالدقائق) — 0 = بدون حد</label><input class="form-input" id="new-test-time" type="number" min="0" value="10" /></div></div><div class="section-title" style="margin-bottom:10px;font-size:0.88rem">الأسئلة</div><div class="questions-builder" id="questions-builder"></div><button class="btn btn-secondary" onclick="addQuestionBuilder()" style="margin-bottom:18px;width:100%">➕ إضافة سؤال يدوياً</button><div class="answer-map-section" id="answer-map-section" style="display:none"><h4>✅ تحديد الإجابات الصحيحة</h4><p>بدلاً من اختيار كل إجابة يدوياً في كل سؤال، يمكنك تحديد الإجابات الصحيحة هنا دفعةً واحدة.</p><div class="answer-map-grid" id="answer-map-grid"></div></div><button class="btn btn-primary" onclick="saveTest()" style="width:100%">💾 حفظ الاختبار</button></div>
+<div id="admin-parse" class="admin-tab-content"><div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:18px;"><p style="font-size:0.84rem;color:var(--text2);line-height:1.7">📋 <strong style="color:var(--accent)">الاستيراد الذكي:</strong> الصق نصاً يحتوي على أسئلة وخيارات وسيتم تحليله تلقائياً. يدعم الصيغ التالية: <code style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:0.8rem">س: / Q:</code> للسؤال و <code style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:0.8rem">أ/ ب/ ج/ أو A) B) C)</code> للخيارات. بعد التحليل، يمكنك استخدام خانة الإجابات السريعة لتحديد الصحيح دفعة واحدة.</p></div><div class="form-group"><label class="form-label">اسم الاختبار *</label><input class="form-input" id="parse-test-name" placeholder="مثال: درس الجملة الاسمية" /></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="form-group"><label class="form-label">المادة</label><input class="form-input" id="parse-test-subject" placeholder="مثال: اللغة العربية" /></div><div class="form-group"><label class="form-label">⏱️ وقت الاختبار (دقائق)</label><input class="form-input" id="parse-test-time" type="number" min="0" value="10" /></div></div><div class="form-group"><label class="form-label">📝 الصق نص الأسئلة هنا (مساحة كبيرة)</label><textarea class="form-input parse-textarea" id="parse-input" rows="8" placeholder="مثال:
+س1: ما هو أكبر كوكب في المجموعة الشمسية؟
+أ) الأرض
+ب) المريخ
+ج) المشتري
+د) زحل
+
+س2: ما عاصمة المملكة العربية السعودية؟
+أ) جدة
+ب) الرياض
+ج) مكة
+د) الدمام"></textarea></div>
+
+<!-- Bulk Answers Area -->
+<div class="answer-bulk">
+  <label>✍️ الإجابات الصحيحة (اختياري) — أدخلها بشكل تسلسلي مفصولة بفواصل:</label>
+  <textarea id="bulk-answers-input" rows="2" placeholder="مثال: ج, ب   أو   C,B   أو   ‫3,2‬   (حسب رقم الخيار)"></textarea>
+  <small>مثال: إذا أردت أن يكون السؤال الأول جوابه "ج" والثاني "ب"، اكتب: ج, ب   أو   C,B   أو   ‫3,2‬. سيتم تعيينها تلقائياً بعد التحليل.</small>
 </div>
 
-<footer class="app-footer">
-  <div>
-    <div>© ٢٠٢٦ AHMED MOHSEN — جميع الحقوق محفوظة</div>
-    <div style="opacity:.75;">الموقع غير ربحي هدفه مساعدة الجميع على تحديد أهدافهم ومتابعتها</div>
-  </div>
-</footer>
+<button class="btn btn-primary" onclick="parseQuestions()" style="width:100%;margin-bottom:14px">🔍 تحليل النص</button>
+<div class="parse-result-preview" id="parse-preview"><h4 id="parse-preview-title">✅ تم التحليل — حدد الإجابات الصحيحة</h4><div id="parse-questions-list"></div><button class="btn btn-primary" onclick="saveParsedTest()" style="width:100%;margin-top:14px">💾 حفظ الاختبار</button></div></div>
+<div id="admin-manage" class="admin-tab-content"><div id="manage-list"></div></div></div></div>
 
 <!-- MODALS -->
-<div class="modal-overlay" id="modalAdd">
-  <div class="modal">
-    <h3>➕ إضافة عناصر</h3>
-    <div><label>عدد العناصر</label><input type="number" id="addN" value="10" min="1" max="9999"></div>
-    <div class="modal-row">
-      <button class="btn" onclick="closeModal('modalAdd')">إلغاء</button>
-      <button class="btn btn-accent" onclick="confirmAdd()">إضافة</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="modalBulk">
-  <div class="modal">
-    <h3>🎨 تلوين عدد محدد</h3>
-    <div><label>عدد العناصر المراد تلوينها</label><input type="number" id="bulkN" value="10" min="1" max="9999"></div>
-    <div class="modal-hint">سيتم تلوين العناصر الفارغة بالتسلسل باللون المختار حالياً.</div>
-    <div class="modal-row">
-      <button class="btn" onclick="closeModal('modalBulk')">إلغاء</button>
-      <button class="btn btn-accent" onclick="confirmBulk()">تلوين</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="modalNew">
-  <div class="modal">
-    <h3>📄 صفحة جديدة</h3>
-    <div><label>اسم الصفحة</label><input type="text" id="newName" placeholder="مثال: اختبار لفظي" maxlength="40"></div>
-    <div><label>عدد العناصر الابتدائي</label><input type="number" id="newCount" value="100" min="1" max="9999"></div>
-    <div><label>شكل العناصر</label>
-      <select id="newShape">
-        <option value="circle">⬤ دائرة</option>
-        <option value="square">■ مربع</option>
-        <option value="star">★ نجمة</option>
-      </select>
-    </div>
-    <div style="border-top:1px solid var(--border);padding-top:10px;">
-      <label>🔒 رقم سري للصفحة (اختياري)</label>
-      <input type="password" id="newPin" placeholder="اتركه فارغاً إن لم تُرِد قفلاً" maxlength="20" autocomplete="new-password">
-    </div>
-    <div id="newPinExtra" style="display:none;">
-      <label>📖 اسم كتابك المفضل (لاسترداد كلمة السر)</label>
-      <input type="text" id="newBook" placeholder="مثال: زين الدين" maxlength="60">
-    </div>
-    <div class="modal-row">
-      <button class="btn" onclick="closeModal('modalNew')">إلغاء</button>
-      <button class="btn btn-accent" onclick="confirmNewPage()">إنشاء</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="modalPin">
-  <div class="modal">
-    <h3>🔒 الصفحة محمية</h3>
-    <div><label>أدخل الرقم السري</label><input type="password" id="pinEntry" placeholder="الرقم السري" maxlength="20" autocomplete="off"></div>
-    <div class="modal-row" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
-      <button class="btn" onclick="openRecovery()" style="color:var(--muted);">نسيت كلمة السر؟</button>
-      <div style="display:flex;gap:8px;">
-        <button class="btn" onclick="cancelPin()">إلغاء</button>
-        <button class="btn btn-accent" onclick="confirmPin()">دخول</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="modalRecovery">
-  <div class="modal">
-    <h3>🔑 استرداد كلمة السر</h3>
-    <div class="modal-hint">أجب عن السؤال الأمني لفتح الصفحة.</div>
-    <div><label>📖 ما اسم كتابك المفضل؟</label><input type="text" id="recoveryBook" placeholder="أجب هنا..." maxlength="60"></div>
-    <div id="recoveryError" style="font-size:.76rem;color:#e74c3c;display:none;">❌ الإجابة غير صحيحة</div>
-    <div class="modal-row">
-      <button class="btn" onclick="closeModal('modalRecovery')">رجوع</button>
-      <button class="btn btn-accent" onclick="confirmRecovery()">تأكيد</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="modalChangePin">
-  <div class="modal">
-    <h3>🔐 تعيين رقم سري جديد</h3>
-    <div><label>الرقم السري الجديد</label><input type="password" id="newPinChange" placeholder="اتركه فارغاً لإزالة القفل" maxlength="20"></div>
-    <div class="modal-row">
-      <button class="btn" onclick="closeModal('modalChangePin')">إلغاء</button>
-      <button class="btn btn-accent" onclick="confirmChangePin()">حفظ</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-</div><!-- end #appWrapper -->
+<div class="modal-overlay" id="goal-modal"><div class="modal"><h3>🎯 تحديد الهدف</h3><div class="form-group"><label class="form-label">اسم الهدف</label><input class="form-input" id="goal-name-input" placeholder="مثال: أكمل جميع الاختبارات هذا الأسبوع" /></div><div class="form-group"><label class="form-label">عدد الاختبارات المستهدفة</label><input class="form-input" id="goal-target-input" type="number" min="1" placeholder="مثال: 20" /></div><div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('goal-modal')">إلغاء</button><button class="btn btn-primary" onclick="saveGoal()">حفظ</button></div></div></div>
+<div class="modal-overlay" id="leave-modal"><div class="modal"><h3>⚠️ هل تريد المغادرة؟</h3><p style="color:var(--text2);font-size:0.9rem">سيتم فقدان تقدمك في الاختبار الحالي.</p><div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('leave-modal')">تراجع</button><button class="btn btn-primary" onclick="leaveQuiz()">مغادرة</button></div></div></div>
+<div class="modal-overlay" id="delete-modal"><div class="modal"><h3>🗑️ تأكيد الحذف</h3><div class="delete-warning"><strong id="delete-modal-name">اسم الاختبار</strong> سيتم حذف هذا الاختبار وجميع درجاته نهائياً ولا يمكن التراجع.</div><div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('delete-modal')">إلغاء</button><button class="btn" onclick="confirmDeleteTest()" style="background:var(--red);color:#fff;padding:11px 22px;border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;border:none;cursor:pointer;">حذف نهائياً</button></div></div></div>
+<div class="modal-overlay" id="practice-modal"><div class="modal modal-wide"><h3>🔁 جلسات التدريب على الأخطاء</h3><p style="color:var(--text3);font-size:0.85rem;margin-bottom:16px" id="practice-modal-desc"></p><div id="practice-sessions-list" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('practice-modal')">إغلاق</button></div></div></div>
+<div class="toast-container" id="toast-container"></div>
 
 <script>
-/* ══════════════════════════════════════
-   LANDING / APP TOGGLE
-══════════════════════════════════════ */
-function enterApp() {
-  document.getElementById('landingPage').classList.add('hidden');
-  document.getElementById('appWrapper').classList.add('active');
-  document.body.style.background = '';
-}
-function goToLanding() {
-  document.getElementById('landingPage').classList.remove('hidden');
-  document.getElementById('appWrapper').classList.remove('active');
-}
-
-/* Build mockup grid */
-(function(){
-  const grid = document.getElementById('mockupGrid');
-  const colors = ['mc1','mc2','mc3','mc4','mc5','mc6'];
-  const filled = [true,true,true,true,true,true,true,true,true,true,
-                  true,true,true,true,true,true,true,true,true,true,
-                  true,true,true,true,true,true,true,true,true,true,
-                  true,true,true,true,true,true,true,true,true,true,
-                  true,false,false,false,false,false,false,false,false,false,
-                  false,false,false,false,false,false,false,false,false,false];
-  for(let i=0;i<60;i++){
-    const c = document.createElement('div');
-    c.className = 'lp-mockup-cell';
-    if(filled[i]) { c.classList.add('filled', colors[i % colors.length]); }
-    grid.appendChild(c);
-  }
-})();
-
-/* ══════════════════════════════════════
-   STATE
-══════════════════════════════════════ */
-const STORE_KEY = 'ahmed_mohsen_v3';
-let pages = (() => {
-  try { const r = localStorage.getItem(STORE_KEY); if(r) return JSON.parse(r); } catch(e){}
-  return [{ id:'p1', name:'الصفحة الأولى', circles:Array(100).fill(0), shape:'circle',
-            showNums:false, pin:'', book:'' }];
-})();
-let curId    = null;
-let selColor = 1;
-let selShape = 'circle';
-let dark     = true;
-let pendingOpenId = null;
-
-function save() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(pages)); } catch(e){}
-}
-function curPage() { return pages.find(p => p.id === curId); }
-
-/* ══ THEME ══ */
-function applyTheme() {
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
-  const icon = dark ? '☀️' : '🌙';
-  const tb = document.getElementById('themeBtn');
-  const lpb = document.getElementById('lpThemeBtn');
-  if(tb)  tb.textContent  = icon;
-  if(lpb) lpb.textContent = icon;
-}
-function toggleTheme() { dark = !dark; applyTheme(); }
-applyTheme();
-
-/* ══ NAV TABS ══ */
-function renderTabs() {
-  const c = document.getElementById('navTabs');
-  c.innerHTML = '';
-  const h = document.createElement('button');
-  h.className = 'nav-tab' + (curId === null ? ' active' : '');
-  h.textContent = '🏠';
-  h.onclick = showHome;
-  c.appendChild(h);
-  pages.forEach(p => {
-    const b = document.createElement('button');
-    b.className = 'nav-tab' + (curId === p.id ? ' active' : '');
-    const lockSpan = p.pin ? '<span class="tab-lock">🔒</span>' : '';
-    b.innerHTML = lockSpan + p.name;
-    b.onclick = () => tryOpenPage(p.id);
-    c.appendChild(b);
+// ================== ESCAPE HTML ==================
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
   });
 }
 
-/* ══ HOME ══ */
-function showHome(animate) {
-  curId = null;
-  const hp = document.getElementById('homePage');
-  const gp = document.getElementById('gridPage');
-  hp.classList.add('active');
-  gp.classList.remove('active','anim-right','anim-left');
-  hp.classList.remove('anim-right','anim-left');
-  if (animate !== false) {
-    hp.classList.add('anim-left');
-    setTimeout(() => hp.classList.remove('anim-left'), 380);
-  }
-  renderTabs(); renderCards();
+// ================== STATE ==================
+let tests = [];           // will be filled from Firebase
+let errors  = JSON.parse(localStorage.getItem('quizErrors') || '[]');
+let goal    = JSON.parse(localStorage.getItem('quizGoal')   || 'null');
+let scores  = JSON.parse(localStorage.getItem('quizScores') || '{}');
+
+let currentTest   = null;
+let currentQ      = 0;
+let userAnswers   = [];
+let answered      = false;
+let timerInterval = null;
+let elapsedSecs   = 0;
+
+let builderQuestions = [];
+let parsedQuestions  = [];
+
+let pomodoro = {
+  running: false,
+  phase: 'focus',
+  focusMins: 25,
+  breakMins: 5,
+  totalSessions: 4,
+  currentSession: 1,
+  completedSessions: 0,
+  remaining: 25*60,
+  interval: null
+};
+
+let pendingDeleteId = null;   // firebase key
+let deleteMode = 'test';
+
+// ================== UTILITIES ==================
+function fmtTime(s) {
+  return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+}
+function showToast(msg, type = 'success') {
+  const tc = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  tc.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+function persistScoresAndErrors() {
+  localStorage.setItem('quizScores', JSON.stringify(scores));
+  localStorage.setItem('quizErrors', JSON.stringify(errors));
 }
 
-function renderCards() {
-  const c = document.getElementById('pageCards');
-  c.innerHTML = '';
-  pages.forEach((p, idx) => {
-    const filled = p.circles.filter(v => v > 0).length;
-    const total  = p.circles.length;
-    const pct    = total > 0 ? Math.round(filled / total * 100) : 0;
-    const d = document.createElement('div');
-    d.className = 'page-card';
-    d.style.animationDelay = idx * 55 + 'ms';
-    const lbl = {circle:'دائرة',square:'مربع',star:'نجمة'}[p.shape||'circle']||'دائرة';
-    d.innerHTML = `
-      ${p.pin ? '<span class="pc-lock">🔒</span>' : ''}
-      <div class="pc-title">${p.name}</div>
-      <div class="pc-sub">${filled} / ${total} ${lbl} • ${pct}% مكتمل</div>
-      <div class="pbar-wrap"><div class="pbar-fill" style="width:${pct}%"></div></div>
-      <div class="pbar-label">${pct}%</div>
-    `;
-    d.onclick = () => tryOpenPage(p.id);
-    c.appendChild(d);
-  });
-  const a = document.createElement('div');
-  a.className = 'add-card';
-  a.innerHTML = '<span style="font-size:1.3rem">+</span><span>صفحة جديدة</span>';
-  a.onclick = openNewPageModal;
-  c.appendChild(a);
-}
-
-/* ══ PIN GUARD ══ */
-function tryOpenPage(id) {
-  const page = pages.find(p => p.id === id);
-  if (!page) return;
-  if (page.pin) {
-    pendingOpenId = id;
-    document.getElementById('pinEntry').value = '';
-    document.getElementById('recoveryError').style.display = 'none';
-    openModal('modalPin');
-  } else {
-    openPage(id);
-  }
-}
-
-function confirmPin() {
-  const page = pages.find(p => p.id === pendingOpenId);
-  if (!page) return;
-  const entered = document.getElementById('pinEntry').value;
-  if (entered === page.pin) {
-    closeModal('modalPin');
-    openPage(pendingOpenId);
-    pendingOpenId = null;
-  } else {
-    document.getElementById('pinEntry').style.borderColor = '#e74c3c';
-    document.getElementById('pinEntry').value = '';
-    document.getElementById('pinEntry').placeholder = '❌ خطأ، حاول مرة أخرى';
-    setTimeout(() => {
-      document.getElementById('pinEntry').style.borderColor = '';
-      document.getElementById('pinEntry').placeholder = 'الرقم السري';
-    }, 1500);
-  }
-}
-
-function cancelPin() { pendingOpenId = null; closeModal('modalPin'); }
-
-function openRecovery() {
-  document.getElementById('recoveryBook').value = '';
-  document.getElementById('recoveryError').style.display = 'none';
-  closeModal('modalPin');
-  openModal('modalRecovery');
-}
-
-function confirmRecovery() {
-  const page = pages.find(p => p.id === pendingOpenId);
-  if (!page) return;
-  const ans = document.getElementById('recoveryBook').value.trim().toLowerCase();
-  const correct = (page.book || '').trim().toLowerCase();
-  if (ans && ans === correct) {
-    closeModal('modalRecovery');
-    openModal('modalChangePin');
-    document.getElementById('newPinChange').value = '';
-  } else {
-    document.getElementById('recoveryError').style.display = 'block';
-  }
-}
-
-function confirmChangePin() {
-  const page = pages.find(p => p.id === pendingOpenId);
-  if (!page) return;
-  page.pin = document.getElementById('newPinChange').value.trim();
-  save();
-  closeModal('modalChangePin');
-  openPage(pendingOpenId);
-  pendingOpenId = null;
-  showToast('✅ تم تعيين الرقم السري الجديد');
-}
-
-/* ══ OPEN PAGE ══ */
-function openPage(id) {
-  curId = id;
-  const hp = document.getElementById('homePage');
-  const gp = document.getElementById('gridPage');
-  hp.classList.remove('active');
-  gp.classList.add('active');
-  gp.classList.remove('anim-right','anim-left');
-  void gp.offsetWidth;
-  gp.classList.add('anim-right');
-  setTimeout(() => gp.classList.remove('anim-right'), 380);
-  renderTabs();
-  const page = curPage();
-  if (page) {
-    selShape = page.shape || 'circle';
-    document.querySelectorAll('.shp-btn').forEach(b => b.classList.toggle('sel', b.dataset.shape === selShape));
-    const nb = document.getElementById('numBtn');
-    if (page.showNums) { nb.classList.add('btn-on'); nb.textContent = '١٢٣ إخفاء'; }
-    else               { nb.classList.remove('btn-on'); nb.textContent = '١٢٣ ترقيم'; }
-  }
-  renderGrid();
-}
-
-function goBack() { showHome(true); }
-
-/* ══ RENDER GRID ══ */
-function renderGrid() {
-  const page = curPage();
-  if (!page) return;
-  document.getElementById('gridTitle').textContent = page.name;
-  updateMeta(page);
-  const grid = document.getElementById('circleGrid');
-  grid.innerHTML = '';
-  const shape = page.shape || 'circle';
-  if (page.showNums) grid.classList.add('show-nums');
-  else               grid.classList.remove('show-nums');
-  page.circles.forEach((v, i) => {
-    const el = document.createElement('div');
-    el.className = `shape-item shape-${shape}`;
-    if (v > 0) el.classList.add('filled', `f${v}`);
-    el.style.opacity = '0';
-    el.style.animation = `fadeIn .32s ${Math.min(i * 3.5, 700)}ms ease forwards`;
-    const lbl = document.createElement('span');
-    lbl.className = 'num-label';
-    lbl.textContent = i + 1;
-    el.appendChild(lbl);
-    el.onclick = () => toggleC(i, el);
-    grid.appendChild(el);
-  });
-  updateProgress(page);
-}
-
-/* ══ TOGGLE CIRCLE ══ */
-function toggleC(idx, el) {
-  const page = curPage();
-  if (!page) return;
-  el.classList.remove('pop');
-  void el.offsetWidth;
-  el.classList.add('pop');
-  setTimeout(() => el.classList.remove('pop'), 320);
-  if (page.circles[idx] === 0) {
-    page.circles[idx] = selColor;
-    el.classList.add('filled', `f${selColor}`);
-    el.classList.add('glow');
-    setTimeout(() => el.classList.remove('glow'), 1800);
-  } else {
-    page.circles[idx] = 0;
-    el.classList.remove('filled');
-    for (let i=1;i<=12;i++) el.classList.remove(`f${i}`);
-  }
-  save(); updateMeta(page); updateProgress(page);
-}
-
-function updateMeta(page) {
-  const f = page.circles.filter(v=>v>0).length;
-  const t = page.circles.length;
-  const pct = t > 0 ? Math.round(f/t*100) : 0;
-  document.getElementById('gridMeta').textContent = `${f} من ${t} • ${pct}% مكتمل`;
-}
-
-function updateProgress(page) {
-  const f = page.circles.filter(v=>v>0).length;
-  const t = page.circles.length;
-  document.getElementById('psFill').style.width = (t>0?f/t*100:0)+'%';
-  renderTabs();
-  renderCards();
-}
-
-/* ══ NUMBERING ══ */
-function toggleNums() {
-  const page = curPage();
-  if (!page) return;
-  page.showNums = !page.showNums;
-  save();
-  const grid = document.getElementById('circleGrid');
-  const btn  = document.getElementById('numBtn');
-  if (page.showNums) {
-    grid.classList.add('show-nums');
-    btn.classList.add('btn-on');
-    btn.textContent = '١٢٣ إخفاء';
-  } else {
-    grid.classList.remove('show-nums');
-    btn.classList.remove('btn-on');
-    btn.textContent = '١٢٣ ترقيم';
-  }
-}
-
-/* ══ RENAME ══ */
-function startRename() {
-  const page = curPage();
-  if (!page) return;
-  const titleEl = document.getElementById('gridTitle');
-  const inputEl = document.getElementById('gridTitleInput');
-  inputEl.value = page.name;
-  titleEl.style.display = 'none';
-  inputEl.style.display = 'inline-block';
-  inputEl.focus();
-  inputEl.select();
-}
-function finishRename() {
-  const page = curPage();
-  const titleEl = document.getElementById('gridTitle');
-  const inputEl = document.getElementById('gridTitleInput');
-  const newName = inputEl.value.trim();
-  if (newName && page) {
-    page.name = newName;
-    save();
-    titleEl.textContent = newName;
-    renderTabs();
-    showToast('✅ تم تغيير الاسم');
-  }
-  titleEl.style.display = '';
-  inputEl.style.display = 'none';
-}
-
-/* ══ BULK FILL ══ */
-function openBulkFill() { document.getElementById('bulkN').value = 10; openModal('modalBulk'); }
-function confirmBulk() {
-  const n = parseInt(document.getElementById('bulkN').value) || 0;
-  if (n < 1) return;
-  const page = curPage();
-  if (!page) return;
-  let filled = 0;
-  const grid = document.getElementById('circleGrid');
-  const els = grid.querySelectorAll('.shape-item');
-  for (let i = 0; i < page.circles.length && filled < n; i++) {
-    if (page.circles[i] === 0) {
-      page.circles[i] = selColor;
-      if (els[i]) {
-        els[i].classList.add('filled', `f${selColor}`);
-        els[i].classList.add('glow');
-        const idx = i;
-        setTimeout(() => els[idx].classList.remove('glow'), 1800);
-      }
-      filled++;
+// ================== FIREBASE SYNC ==================
+function attachFirebaseListener() {
+  db.ref('quizzes').on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      tests = Object.entries(data).map(([firebaseId, quizData]) => ({
+        ...quizData,
+        firebaseId: firebaseId,
+        id: firebaseId    // we use firebaseId as unique id
+      }));
+    } else {
+      tests = [];
     }
+    renderHome();        // refresh UI
+    if (document.getElementById('page-admin').classList.contains('active') && document.getElementById('admin-manage').classList.contains('active')) {
+      renderManageList();
+    }
+  });
+}
+
+// ================== NAVIGATION ==================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'home')   renderHome();
+  if (name === 'errors') renderErrors();
+  if (name === 'admin')  renderManageList();
+  if (name === 'tools')  initToolsPage();
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ================== HOME ==================
+function renderHome() {
+  const done = Object.keys(scores).length;
+  const vals = Object.values(scores);
+  const avg  = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+  document.getElementById('stat-total').textContent  = tests.length;
+  document.getElementById('stat-done').textContent   = done;
+  document.getElementById('stat-avg').textContent    = avg !== null ? avg + '%' : '—';
+  document.getElementById('stat-errors').textContent = errors.length;
+  renderGoal(done);
+  renderTestsGrid();
+}
+function renderGoal(done) {
+  if (!goal) return;
+  const pct = goal.target ? Math.min(100, Math.round(done / goal.target * 100)) : 0;
+  document.getElementById('goal-title').textContent     = escapeHtml(goal.name || 'هدفي');
+  document.getElementById('goal-desc').textContent      = `${pct}% من الهدف مكتمل`;
+  document.getElementById('goal-bar').style.width       = pct + '%';
+  document.getElementById('goal-done-lbl').textContent  = done + ' مكتمل';
+  document.getElementById('goal-target-lbl').textContent = 'الهدف: ' + (goal.target || '—');
+}
+function renderTestsGrid() {
+  const grid = document.getElementById('tests-grid');
+  let html = '';
+  tests.forEach((t, idx) => {
+    const sc = scores[t.id];
+    let badge = '<span class="test-badge badge-new">جديد</span>';
+    let scoreBarHtml = '';
+    if (sc !== undefined) {
+      badge = sc >= 70 ? '<span class="test-badge badge-done">مكتمل ✓</span>' : '<span class="test-badge badge-retry">راجع أخطاءك</span>';
+      const cls = sc >= 80 ? 'fill-green' : sc >= 60 ? 'fill-yellow' : 'fill-red';
+      scoreBarHtml = `<div class="test-score-bar"><div class="test-score-fill ${cls}" style="width:${sc}%"></div></div>`;
+    }
+    const qCount = t.questions ? t.questions.length : 0;
+    const time   = t.timeLimit  ? t.timeLimit + ' دقيقة' : 'بلا حد';
+    html += `<div class="test-card" onclick="startQuiz('${t.firebaseId}')"><button class="test-card-del" onclick="event.stopPropagation();requestDeleteTest('${t.firebaseId}')">🗑️ حذف</button><div class="test-card-top"><div class="test-num">${idx+1}</div>${badge}</div><div class="test-title">${escapeHtml(t.name)}</div><div class="test-meta"><span>📝 ${qCount} سؤال</span><span>⏱️ ${time}</span>${t.subject ? `<span>📚 ${escapeHtml(t.subject)}</span>` : ''}${sc !== undefined ? `<span style="color:${sc>=70?'var(--green)':sc>=50?'var(--gold)':'var(--red)'}">🎯 ${sc}%</span>` : ''}</div>${scoreBarHtml}</div>`;
+  });
+  html += `<div class="add-card" onclick="showPage('admin')"><span style="font-size:1.4rem">➕</span><span>أضف اختباراً جديداً</span></div>`;
+  grid.innerHTML = html;
+}
+
+// ================== GOAL ==================
+function openGoalModal() {
+  if (goal) {
+    document.getElementById('goal-name-input').value   = goal.name   || '';
+    document.getElementById('goal-target-input').value = goal.target || '';
   }
-  save(); updateMeta(page); updateProgress(page);
-  closeModal('modalBulk');
-  showToast(`🎨 تم تلوين ${filled} عنصر`);
+  document.getElementById('goal-modal').classList.add('open');
+}
+function saveGoal() {
+  const name   = document.getElementById('goal-name-input').value.trim();
+  const target = parseInt(document.getElementById('goal-target-input').value) || 0;
+  goal = { name: name || 'هدفي', target };
+  localStorage.setItem('quizGoal', JSON.stringify(goal));
+  closeModal('goal-modal');
+  renderHome();
+  showToast('تم حفظ هدفك ✓', 'success');
 }
 
-/* ══ ADD ELEMENTS ══ */
-function openAddCircles() { document.getElementById('addN').value = 10; openModal('modalAdd'); }
-function confirmAdd() {
-  const n = parseInt(document.getElementById('addN').value) || 0;
-  if (n < 1) return;
-  const page = curPage();
-  if (!page) return;
-  for (let i=0;i<n;i++) page.circles.push(0);
-  save(); closeModal('modalAdd'); renderGrid();
-  showToast(`✅ أضيفت ${n} عناصر`);
+// ================== DELETE ==================
+function requestDeleteTest(firebaseId) {
+  const test = tests.find(t => t.firebaseId === firebaseId);
+  if (!test) return;
+  pendingDeleteId = firebaseId;
+  deleteMode = 'test';
+  document.getElementById('delete-modal-name').textContent = test.name;
+  document.getElementById('delete-modal').classList.add('open');
 }
-
-/* ══ RESET ══ */
-function resetPage() {
-  if (!confirm('تصفير جميع العناصر؟')) return;
-  const page = curPage();
-  if (!page) return;
-  page.circles = page.circles.map(()=>0);
-  save(); renderGrid(); showToast('🔄 تم التصفير');
+function clearErrors() {
+  if (!errors.length) return;
+  deleteMode = 'errors';
+  document.getElementById('delete-modal-name').textContent = 'جميع الأخطاء المسجّلة';
+  document.getElementById('delete-modal').classList.add('open');
 }
-
-/* ══ DELETE ══ */
-function deletePage() {
-  const page = curPage();
-  if (!page) return;
-  if (!confirm(`حذف صفحة "${page.name}"؟`)) return;
-  pages = pages.filter(p=>p.id!==curId);
-  save(); showHome(true); showToast('🗑️ تم الحذف');
-}
-
-/* ══ NEW PAGE MODAL ══ */
-document.getElementById('newPin').addEventListener('input', function() {
-  document.getElementById('newPinExtra').style.display = this.value ? 'block' : 'none';
-});
-function openNewPageModal() {
-  document.getElementById('newName').value  = '';
-  document.getElementById('newCount').value = 100;
-  document.getElementById('newShape').value = 'circle';
-  document.getElementById('newPin').value   = '';
-  document.getElementById('newBook').value  = '';
-  document.getElementById('newPinExtra').style.display = 'none';
-  openModal('modalNew');
-}
-function confirmNewPage() {
-  const name  = document.getElementById('newName').value.trim();
-  const count = parseInt(document.getElementById('newCount').value) || 100;
-  const shape = document.getElementById('newShape').value || 'circle';
-  const pin   = document.getElementById('newPin').value.trim();
-  const book  = document.getElementById('newBook').value.trim();
-  if (!name) { document.getElementById('newName').focus(); return; }
-  if (pin && !book) { showToast('⚠️ أدخل اسم الكتاب المفضل للاسترداد'); document.getElementById('newBook').focus(); return; }
-  const id = 'p' + Date.now();
-  pages.push({ id, name, circles: Array(count).fill(0), shape, showNums: false, pin, book });
-  save(); closeModal('modalNew'); renderCards(); renderTabs(); openPage(id);
-  showToast(`📄 "${name}" تم الإنشاء`);
-}
-
-/* ══ SHAPE SELECTOR ══ */
-document.getElementById('shapeSel').addEventListener('click', e => {
-  const btn = e.target.closest('.shp-btn');
-  if (!btn) return;
-  document.querySelectorAll('.shp-btn').forEach(b => b.classList.remove('sel'));
-  btn.classList.add('sel');
-  selShape = btn.dataset.shape;
-  const page = curPage();
-  if (page) {
-    page.shape = selShape;
-    save();
-    const grid = document.getElementById('circleGrid');
-    grid.style.opacity = '0'; grid.style.transform = 'scale(.95)'; grid.style.transition = 'opacity .18s,transform .18s';
-    setTimeout(() => {
-      renderGrid();
-      grid.style.opacity = '1'; grid.style.transform = 'scale(1)';
-      setTimeout(() => { grid.style.transition = ''; }, 250);
-    }, 180);
+function confirmDeleteTest() {
+  if (deleteMode === 'test' && pendingDeleteId) {
+    db.ref('quizzes/' + pendingDeleteId).remove().then(() => {
+      delete scores[pendingDeleteId];
+      errors = errors.filter(e => e.testId !== pendingDeleteId);
+      persistScoresAndErrors();
+      showToast('تم حذف الاختبار نهائياً', 'success');
+    }).catch(() => showToast('فشل الحذف', 'error'));
+  } else if (deleteMode === 'errors') {
+    errors = [];
+    localStorage.setItem('quizErrors', JSON.stringify(errors));
+    renderErrors();
+    renderHome();
+    showToast('تم مسح مجلد الأخطاء', 'success');
   }
-});
-
-/* ══ COLOR PICKER ══ */
-document.getElementById('cpick').addEventListener('click', e => {
-  const sw = e.target.closest('.csw');
-  if (!sw) return;
-  document.querySelectorAll('.csw').forEach(s => s.classList.remove('sel'));
-  sw.classList.add('sel');
-  selColor = parseInt(sw.dataset.c);
-  sw.style.transform = 'scale(1.5)';
-  setTimeout(() => { sw.style.transform = ''; }, 180);
-});
-
-/* ══ MODALS ══ */
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
-});
-document.getElementById('pinEntry').addEventListener('keydown', e => { if(e.key==='Enter') confirmPin(); });
-
-/* ══ TOAST ══ */
-let tt;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2600);
+  closeModal('delete-modal');
+  pendingDeleteId = null;
 }
 
-/* ══ BOOT ══ */
-showHome(false);
+// ================== QUIZ ==================
+function startQuiz(firebaseId) {
+  const test = tests.find(t => t.firebaseId === firebaseId);
+  if (!test || !test.questions || test.questions.length === 0) {
+    showToast('هذا الاختبار لا يحتوي على أسئلة!', 'error');
+    return;
+  }
+  currentTest = test;
+  currentQ = 0;
+  userAnswers = new Array(test.questions.length).fill(null);
+  answered = false;
+  elapsedSecs = 0;
+  showPage('quiz');
+  document.getElementById('quiz-title').textContent = escapeHtml(test.name);
+  document.getElementById('quiz-subtitle').textContent = (test.subject ? escapeHtml(test.subject) : '') + ' • ' + test.questions.length + ' سؤال';
+  startTimer();
+  renderQuestion();
+}
+function startCustomQuiz(questions, title) {
+  if (!questions.length) { showToast('لا توجد أسئلة', 'error'); return; }
+  currentTest = { id: '__practice__', firebaseId: '__practice__', name: title, subject: 'تدريب الأخطاء', timeLimit: 0, questions };
+  currentQ = 0;
+  userAnswers = new Array(questions.length).fill(null);
+  answered = false;
+  elapsedSecs = 0;
+  showPage('quiz');
+  document.getElementById('quiz-title').textContent = escapeHtml(title);
+  document.getElementById('quiz-subtitle').textContent = 'تدريب الأخطاء • ' + questions.length + ' سؤال';
+  startTimer();
+  renderQuestion();
+}
+function startTimer() {
+  clearInterval(timerInterval);
+  const limit = (currentTest.timeLimit || 0) * 60;
+  const pill = document.getElementById('timer-pill');
+  timerInterval = setInterval(() => {
+    elapsedSecs++;
+    if (limit > 0) {
+      const rem = limit - elapsedSecs;
+      if (rem <= 0) { clearInterval(timerInterval); finishQuiz(); return; }
+      pill.className = 'timer-pill' + (rem <= 60 ? ' danger' : rem <= 120 ? ' warning' : '');
+      pill.innerHTML = `⏱️ <span>${fmtTime(rem)}</span>`;
+    } else {
+      pill.innerHTML = `⏱️ <span>${fmtTime(elapsedSecs)}</span>`;
+    }
+  }, 1000);
+}
+function renderQuestion() {
+  const q = currentTest.questions[currentQ];
+  const pct = (currentQ / currentTest.questions.length) * 100;
+  document.getElementById('q-progress-fill').style.width = pct + '%';
+  document.getElementById('q-counter').textContent = (currentQ+1) + ' / ' + currentTest.questions.length;
+  document.getElementById('q-num').textContent = 'السؤال ' + (currentQ+1);
+  document.getElementById('q-text').textContent = escapeHtml(q.text);
+  const letters = ['أ','ب','ج','د','هـ','و'];
+  let html = '';
+  q.choices.forEach((c, i) => {
+    html += `<div class="choice" id="choice-${i}" onclick="selectAnswer(${i})"><div class="choice-letter">${letters[i] || (i+1)}</div><div class="choice-text">${escapeHtml(c)}</div></div>`;
+  });
+  document.getElementById('choices-container').innerHTML = html;
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.disabled = true;
+  nextBtn.textContent = currentQ === currentTest.questions.length-1 ? 'إنهاء ✓' : 'التالي ←';
+  const skipBtn = document.getElementById('skip-btn');
+  skipBtn.style.display = '';
+  if (userAnswers[currentQ] !== null) {
+    markAnswer(userAnswers[currentQ]);
+  }
+}
+function selectAnswer(i) {
+  if (answered) return;
+  answered = true;
+  userAnswers[currentQ] = i;
+  markAnswer(i);
+  document.getElementById('next-btn').disabled = false;
+  document.getElementById('skip-btn').style.display = 'none';
+}
+function markAnswer(selected) {
+  document.querySelectorAll('.choice').forEach(el => el.classList.add('disabled'));
+  const selEl = document.getElementById('choice-' + selected);
+  selEl.classList.add('selected');
+}
+function skipQuestion() {
+  userAnswers[currentQ] = -1;
+  nextQuestion();
+}
+function nextQuestion() {
+  if (currentQ < currentTest.questions.length - 1) {
+    currentQ++;
+    answered = false;
+    renderQuestion();
+  } else {
+    finishQuiz();
+  }
+}
+function confirmLeaveQuiz() { document.getElementById('leave-modal').classList.add('open'); }
+function leaveQuiz() { clearInterval(timerInterval); closeModal('leave-modal'); showPage('home'); }
+function finishQuiz() {
+  clearInterval(timerInterval);
+  const qs = currentTest.questions;
+  let correct = 0;
+  let skipped = 0;
+  const wrongList = [];
+  qs.forEach((q, i) => {
+    if (userAnswers[i] === q.correct) correct++;
+    else if (userAnswers[i] === -1 || userAnswers[i] === null) skipped++;
+    else wrongList.push({ testName: currentTest.name, testId: currentTest.id, qIndex: i, q, userAnswer: userAnswers[i] });
+  });
+  const pct = Math.round(correct / qs.length * 100);
+  if (currentTest.id !== '__practice__') {
+    scores[currentTest.id] = pct;
+    localStorage.setItem('quizScores', JSON.stringify(scores));
+  }
+  wrongList.forEach(w => {
+    const exists = errors.find(e => e.testId === w.testId && e.qIndex === w.qIndex);
+    if (!exists) errors.push(w);
+  });
+  errors = errors.filter(e => {
+    if (e.testId !== currentTest.id) return true;
+    const wa = userAnswers[e.qIndex];
+    return wa !== e.q.correct;
+  });
+  localStorage.setItem('quizErrors', JSON.stringify(errors));
+  showResults(pct, correct, skipped, qs.length, elapsedSecs);
+}
+function showResults(pct, correct, skipped, total, elapsed) {
+  showPage('results');
+  const wrong = total - correct - skipped;
+  const icon = pct >= 90 ? '🏆' : pct >= 70 ? '🎉' : pct >= 50 ? '📚' : '💪';
+  const grade = pct >= 90 ? 'ممتاز' : pct >= 80 ? 'جيد جداً' : pct >= 70 ? 'جيد' : pct >= 60 ? 'مقبول' : 'راجع المادة';
+  const gColor = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+  const arcColor = pct >= 70 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
+  document.getElementById('results-icon').textContent = icon;
+  document.getElementById('results-score').textContent = pct + '%';
+  document.getElementById('score-pct').textContent = pct + '%';
+  document.getElementById('results-label').textContent = escapeHtml(currentTest.name);
+  document.getElementById('results-grade').textContent = grade;
+  document.getElementById('results-grade').style.cssText = `background:${gColor}22;color:${gColor};border:1px solid ${gColor}44`;
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-skipped').textContent = skipped;
+  document.getElementById('r-time').textContent = fmtTime(elapsed);
+  const arc = document.getElementById('score-arc');
+  const circum = 326.7;
+  arc.style.stroke = arcColor;
+  setTimeout(() => { arc.style.strokeDashoffset = circum - (circum * pct / 100); }, 100);
+  const qs = currentTest.questions;
+  let bdHtml = '';
+  qs.forEach((q, i) => {
+    const ua = userAnswers[i];
+    let cls = 's', sym = '⏭';
+    if (ua === q.correct) { cls = 'c'; sym = i+1; }
+    else if (ua !== null && ua !== -1) { cls = 'w'; sym = i+1; }
+    bdHtml += `<div class="breakdown-dot ${cls}" title="سؤال ${i+1}">${sym}</div>`;
+  });
+  document.getElementById('breakdown-grid').innerHTML = bdHtml;
+  const letters = ['أ','ب','ج','د','هـ','و'];
+  let rvHtml = '';
+  qs.forEach((q, i) => {
+    const ua = userAnswers[i];
+    const isCorrect = ua === q.correct;
+    rvHtml += `<div class="review-item ${isCorrect?'r-correct':'r-wrong'}"><div class="review-q">${i+1}. ${escapeHtml(q.text)}</div><div class="review-choices">`;
+    q.choices.forEach((c, ci) => {
+      let cls = '';
+      if (ci === q.correct) cls = 'r-answer';
+      else if (ci === ua && !isCorrect) cls = 'r-user-wrong';
+      if (cls) rvHtml += `<div class="review-choice ${cls}">${ci===q.correct?'✅':'❌'} ${letters[ci]}. ${escapeHtml(c)}</div>`;
+    });
+    rvHtml += `</div></div>`;
+  });
+  document.getElementById('review-list').innerHTML = rvHtml;
+}
+function retryQuiz() {
+  if (currentTest.firebaseId !== '__practice__') startQuiz(currentTest.firebaseId);
+  else startCustomQuiz(currentTest.questions, currentTest.name);
+}
+
+// ================== ERRORS ==================
+function renderErrors() {
+  const container = document.getElementById('errors-container');
+  const panel = document.getElementById('practice-panel');
+  if (!errors.length) {
+    panel.style.display = 'none';
+    container.innerHTML = `<div class="empty-state"><div class="icon">🎉</div><p>لا توجد أخطاء مسجّلة — أحسنت!</p></div>`;
+    return;
+  }
+  panel.style.display = 'block';
+  const size = parseInt(document.getElementById('practice-size').value) || 10;
+  const splits = Math.ceil(errors.length / size);
+  document.getElementById('practice-splits-info').textContent = `${errors.length} خطأ مسجّل • سيتم تقسيمها إلى ${splits} جلسة (${size} سؤال لكل جلسة)`;
+  const grouped = {};
+  errors.forEach(e => { if (!grouped[e.testId]) grouped[e.testId] = { name: e.testName, items: [] }; grouped[e.testId].items.push(e); });
+  const letters = ['أ','ب','ج','د','هـ','و'];
+  let html = '';
+  Object.values(grouped).forEach(g => {
+    html += `<div class="errors-folder"><div class="folder-top" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="folder-top-left"><span>📁</span><span class="folder-title">${escapeHtml(g.name)}</span></div><span class="folder-count">${g.items.length} خطأ</span></div><div class="folder-body">`;
+    g.items.forEach((e, idx) => {
+      const ua = e.userAnswer;
+      html += `<div class="error-item"><div class="error-q-num">${idx+1}</div><div class="error-content"><div class="error-q">${escapeHtml(e.q.text)}</div><div class="error-answers">${ua >= 0 ? `<span class="error-wrong">❌ إجابتك: ${letters[ua]||'?'}. ${escapeHtml(e.q.choices[ua]||'—')}</span>` : '<span class="error-wrong">⏭️ تم التخطي</span>'}<span class="error-correct">✅ الصحيح: ${letters[e.q.correct]}. ${escapeHtml(e.q.choices[e.q.correct])}</span></div></div></div>`;
+    });
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+}
+function startPracticeSession(all = false) {
+  if (!errors.length) { showToast('لا توجد أخطاء للتدريب', 'error'); return; }
+  const questions = errors.map(e => ({...e.q}));
+  if (all) { startCustomQuiz(questions, 'تدريب الأخطاء — كل الأسئلة'); return; }
+  const size = parseInt(document.getElementById('practice-size').value) || 10;
+  const splits = [];
+  for (let i = 0; i < questions.length; i += size) splits.push(questions.slice(i, i + size));
+  if (splits.length === 1) { startCustomQuiz(splits[0], 'تدريب الأخطاء — جلسة 1'); return; }
+  const desc = document.getElementById('practice-modal-desc');
+  desc.textContent = `${questions.length} سؤال مقسّم على ${splits.length} جلسات (${size} سؤال لكل جلسة)`;
+  let listHtml = '';
+  splits.forEach((chunk, i) => {
+    listHtml += `<div class="manage-item"><div class="manage-item-info"><div class="manage-item-name">الجلسة ${i+1}</div><div class="manage-item-meta">${chunk.length} سؤال</div></div><button class="btn btn-primary" style="font-size:0.82rem;padding:8px 14px" onclick="closeModal('practice-modal');startCustomQuiz(practiceChunks[${i}],'تدريب الأخطاء — جلسة ${i+1}')">▶ ابدأ</button></div>`;
+  });
+  document.getElementById('practice-sessions-list').innerHTML = listHtml;
+  window.practiceChunks = splits;
+  document.getElementById('practice-modal').classList.add('open');
+}
+
+// ================== SMART PARSE ==================
+function smartParseText(raw) {
+  let txt = raw.replace(/\r\n|\r/g, '\n')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .replace(/[أإآ]/g, 'أ').replace(/ﻻ/g, 'لا')
+    .replace(/[١٢٣٤٥٦٧٨٩٠]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/\t/g, ' ').replace(/ {2,}/g, ' ');
+  const lines = txt.split('\n').map(l => l.trim());
+  const RX_Q = /^(?:س(?:ؤال)?\s*\d*\s*[:.)]\s*|Q\s*\d*\s*[:.)]\s*|\d+\s*[.)]\s*(?!\s*[أبجدهوABCDa-f]\s*[.)]))(.+)/i;
+  const RX_C = /^(?:([أبجدهوABCDEFa-f])\s*[.):\-]\s*|(\d+)\s*[.)\-]\s*([أبجدهو])\s*[.):\-]?\s*|[•▪▸\-*]\s*)(.+)/i;
+  const questions = [];
+  let current = null;
+  function pushCurrent() { if (current && current.text.trim() && current.choices.length >= 2) questions.push(current); current = null; }
+  lines.forEach(line => {
+    if (!line) return;
+    const qText = line.match(RX_Q) ? line.match(RX_Q)[1].trim() : (line.endsWith('؟')||line.endsWith('?')) ? line : null;
+    const cText = line.match(RX_C) ? line.match(RX_C)[line.match(RX_C).length-1].trim() : null;
+    if (qText && !cText) { pushCurrent(); current = { text: qText, choices: [], correct: 0 }; }
+    else if (cText && current) current.choices.push(cText);
+    else if (cText && !current && questions.length) questions[questions.length-1].choices.push(cText);
+    else if (current) {
+      if (current.choices.length === 0) current.text += ' ' + line;
+      else if (line.length < 120 && !line.match(RX_Q)) current.choices[current.choices.length-1] += ' ' + line;
+    } else if (line.endsWith('؟')||line.endsWith('?')) { pushCurrent(); current = { text: line, choices: [], correct: 0 }; }
+  });
+  pushCurrent();
+  return questions.filter(q => q.choices.length >= 2).map(q => ({ ...q, text: q.text.trim(), choices: q.choices.map(c => c.trim()).filter(c => c.length > 0) }));
+}
+function parseQuestions() {
+  const raw = document.getElementById('parse-input').value.trim();
+  if (!raw) { showToast('الصق نصاً أولاً', 'error'); return; }
+  parsedQuestions = smartParseText(raw);
+  if (!parsedQuestions.length) { showToast('لم يتم التعرف على أسئلة. تأكد من الصيغة', 'error'); return; }
+  const bulk = document.getElementById('bulk-answers-input').value.trim();
+  if (bulk) {
+    const parts = bulk.split(',').map(p => p.trim());
+    for (let i = 0; i < parsedQuestions.length && i < parts.length; i++) {
+      let ans = parts[i].toLowerCase();
+      if (ans === 'أ' || ans === 'ا' || ans === '1') parsedQuestions[i].correct = 0;
+      else if (ans === 'ب' || ans === '2') parsedQuestions[i].correct = 1;
+      else if (ans === 'ج' || ans === '3') parsedQuestions[i].correct = 2;
+      else if (ans === 'د' || ans === '4') parsedQuestions[i].correct = 3;
+      else if (ans === 'ه' || ans === '5') parsedQuestions[i].correct = 4;
+      else if (ans === 'و' || ans === '6') parsedQuestions[i].correct = 5;
+      else {
+        let num = parseInt(ans);
+        if (!isNaN(num) && num >= 1 && num <= parsedQuestions[i].choices.length) parsedQuestions[i].correct = num-1;
+      }
+    }
+    showToast('تم تعيين الإجابات تلقائياً ✓', 'success');
+  }
+  renderParsedQuestions();
+  showToast(`تم التعرف على ${parsedQuestions.length} سؤال ✓`, 'success');
+}
+function renderParsedQuestions() {
+  const preview = document.getElementById('parse-preview');
+  const list = document.getElementById('parse-questions-list');
+  const letters = ['أ','ب','ج','د','هـ','و'];
+  preview.style.display = 'block';
+  document.getElementById('parse-preview-title').textContent = `✅ تم التحليل — حدد الإجابة الصحيحة لكل سؤال (${parsedQuestions.length} سؤال)`;
+  let html = '';
+  parsedQuestions.forEach((q, qi) => {
+    html += `<div class="parsed-q-item"><div class="parsed-q-text">${qi+1}. ${escapeHtml(q.text)}</div><div class="parsed-choices">`;
+    q.choices.forEach((c, ci) => {
+      html += `<label class="parsed-choice-row"><input type="radio" name="pq-${qi}" value="${ci}" ${q.correct===ci?'checked':''} onchange="parsedQuestions[${qi}].correct=${ci}"><span>${letters[ci]||ci+1}. ${escapeHtml(c)}</span></label>`;
+    });
+    html += `</div></div>`;
+  });
+  list.innerHTML = html;
+}
+function saveParsedTest() {
+  const name = document.getElementById('parse-test-name').value.trim();
+  if (!name) { showToast('أدخل اسم الاختبار', 'error'); return; }
+  if (!parsedQuestions.length) { showToast('لا توجد أسئلة محللة', 'error'); return; }
+  const testData = {
+    name,
+    subject: document.getElementById('parse-test-subject').value.trim(),
+    timeLimit: parseInt(document.getElementById('parse-test-time').value) || 0,
+    questions: parsedQuestions.map(q => ({...q, choices:[...q.choices]})),
+    createdAt: Date.now()
+  };
+  db.ref('quizzes').push(testData).then(() => {
+    showToast(`تم حفظ "${name}" بـ ${testData.questions.length} سؤال ✓`, 'success');
+    document.getElementById('parse-input').value = '';
+    document.getElementById('bulk-answers-input').value = '';
+    document.getElementById('parse-test-name').value = '';
+    document.getElementById('parse-test-subject').value = '';
+    document.getElementById('parse-preview').style.display = 'none';
+    parsedQuestions = [];
+    setTimeout(() => showPage('home'), 900);
+  }).catch(() => showToast('حدث خطأ أثناء الحفظ', 'error'));
+}
+function saveTest() {
+  const name = document.getElementById('new-test-name').value.trim();
+  if (!name) { showToast('أدخل اسم الاختبار', 'error'); return; }
+  if (!builderQuestions.length) { showToast('أضف سؤالاً على الأقل', 'error'); return; }
+  const valid = builderQuestions.every(q => q.text.trim() && q.choices.every(c=>c.trim()));
+  if (!valid) { showToast('أكمل جميع الأسئلة والخيارات', 'error'); return; }
+  const testData = {
+    name,
+    subject: document.getElementById('new-test-subject').value.trim(),
+    timeLimit: parseInt(document.getElementById('new-test-time').value) || 0,
+    questions: builderQuestions.map(q => ({...q, choices:[...q.choices]})),
+    createdAt: Date.now()
+  };
+  db.ref('quizzes').push(testData).then(() => {
+    showToast('تم حفظ الاختبار ✓', 'success');
+    document.getElementById('new-test-name').value = '';
+    document.getElementById('new-test-subject').value = '';
+    document.getElementById('new-test-time').value = '10';
+    builderQuestions = [];
+    renderBuilder();
+    setTimeout(() => showPage('home'), 900);
+  }).catch(() => showToast('حدث خطأ أثناء الحفظ', 'error'));
+}
+function addQuestionBuilder(data) { builderQuestions.push(data || { text:'', choices:['','','',''], correct:0 }); renderBuilder(); }
+function renderBuilder() {
+  const container = document.getElementById('questions-builder');
+  const letters = ['أ','ب','ج','د'];
+  let html = '';
+  builderQuestions.forEach((q, qi) => {
+    html += `<div class="q-builder-item"><div class="q-builder-header"><span class="q-builder-num">سؤال ${qi+1}</span><button class="q-del-btn" onclick="deleteBuilderQ(${qi})">حذف</button></div><input class="form-input" placeholder="نص السؤال..." value="${escapeHtml(q.text||'')}" oninput="builderQuestions[${qi}].text=this.value;updateAnswerMapForQuestion(${qi})" style="margin-bottom:9px"/><div class="choices-builder">`;
+    q.choices.forEach((c, ci) => {
+      html += `<div class="choice-builder-row"><input type="radio" class="choice-radio" name="correct-${qi}" ${q.correct===ci?'checked':''} onchange="builderQuestions[${qi}].correct=${ci};updateAnswerMapForQuestion(${qi})" /><input class="form-input" placeholder="${letters[ci]}..." value="${escapeHtml(c||'')}" oninput="builderQuestions[${qi}].choices[${ci}]=this.value;updateAnswerMapForQuestion(${qi})" style="flex:1"/></div>`;
+    });
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+  renderAnswerMap();
+}
+function updateAnswerMapForQuestion(qi) {
+  const q = builderQuestions[qi];
+  if (!q) return;
+  const row = document.querySelector(`.answer-map-row[data-qidx="${qi}"]`);
+  if (row) {
+    const select = row.querySelector('.answer-map-select');
+    if (select && q.correct !== undefined) select.value = q.correct;
+    if (q.correct >= 0) select.classList.add('matched');
+  } else {
+    renderAnswerMap();
+  }
+}
+function renderAnswerMap() {
+  const section = document.getElementById('answer-map-section');
+  const grid = document.getElementById('answer-map-grid');
+  const letters = ['أ','ب','ج','د','هـ','و'];
+  if (!builderQuestions.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  let html = '';
+  builderQuestions.forEach((q, qi) => {
+    const hasChoices = q.choices.some(c => c.trim());
+    html += `<div class="answer-map-row" data-qidx="${qi}"><div class="answer-map-qnum">${qi+1}</div><div class="answer-map-qtext">${escapeHtml(q.text || '(بدون نص بعد)')}</div><select class="answer-map-select ${q.correct >= 0 ? 'matched' : ''}" onchange="builderQuestions[${qi}].correct=parseInt(this.value);syncBuilderRadio(${qi})">`;
+    q.choices.forEach((c, ci) => {
+      html += `<option value="${ci}" ${q.correct===ci?'selected':''}>${letters[ci]||ci+1}</option>`;
+    });
+    if (!hasChoices) html += `<option disabled>—</option>`;
+    html += `</select></div>`;
+  });
+  grid.innerHTML = html;
+}
+function syncBuilderRadio(qi) {
+  const correct = builderQuestions[qi].correct;
+  const radios = document.querySelectorAll(`input[name="correct-${qi}"]`);
+  radios.forEach((r, ci) => { r.checked = (ci === correct); });
+  renderAnswerMap();
+}
+function deleteBuilderQ(i) { builderQuestions.splice(i,1); renderBuilder(); }
+function renderManageList() {
+  const container = document.getElementById('manage-list');
+  if (!tests.length) { container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>لا توجد اختبارات بعد</p></div>`; return; }
+  let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+  tests.forEach((t) => {
+    const sc = scores[t.id];
+    html += `<div class="manage-item"><div class="manage-item-info"><div class="manage-item-name">${escapeHtml(t.name)}</div><div class="manage-item-meta">${t.questions?.length||0} سؤال • ${t.timeLimit||0} دقيقة${sc!==undefined?' • آخر درجة: '+sc+'%':''}</div></div><div class="manage-item-actions"><button onclick="startQuiz('${t.firebaseId}')" class="btn btn-primary" style="font-size:0.8rem;padding:8px 12px">▶️ تشغيل</button><button onclick="requestDeleteTest('${t.firebaseId}')" class="btn btn-secondary" style="font-size:0.8rem;padding:8px 12px;color:var(--red)">🗑️ حذف</button></div></div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+function switchAdminTab(tab, ev) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+  if (ev && ev.target) ev.target.classList.add('active');
+  else document.querySelectorAll('.admin-tab')[0].classList.add('active');
+  document.getElementById('admin-' + tab).classList.add('active');
+  if (tab === 'manage') renderManageList();
+}
+
+// ================== POMODORO, TOOLS (unchanged) ==================
+function updatePomoSettings() { if (pomodoro.running) return; pomodoro.focusMins = parseInt(document.getElementById('pomo-focus-input').value) || 25; pomodoro.breakMins = parseInt(document.getElementById('pomo-break-input').value) || 5; pomodoro.totalSessions = parseInt(document.getElementById('pomo-sessions-input').value) || 4; pomodoro.remaining = pomodoro.focusMins * 60; pomodoro.phase = 'focus'; updatePomoDisplay(); }
+function togglePomodoro() { if (pomodoro.running) { clearInterval(pomodoro.interval); pomodoro.running = false; document.getElementById('pomo-start-btn').textContent = '▶ ابدأ'; document.getElementById('pomo-status-text').textContent = 'متوقف مؤقتاً'; } else { pomodoro.running = true; document.getElementById('pomo-start-btn').textContent = '⏸ إيقاف'; pomodoro.interval = setInterval(tickPomo, 1000); } }
+function tickPomo() { pomodoro.remaining--; if (pomodoro.remaining <= 0) { if (pomodoro.phase === 'focus') { pomodoro.completedSessions++; pomodoro.phase = 'break'; pomodoro.remaining = pomodoro.breakMins * 60; showToast('🍅 وقت الاستراحة!', 'info'); } else { pomodoro.phase = 'focus'; pomodoro.remaining = pomodoro.focusMins * 60; pomodoro.currentSession = Math.min(pomodoro.currentSession + 1, pomodoro.totalSessions); if (pomodoro.completedSessions >= pomodoro.totalSessions) { showToast('🏆 انتهت جميع الجلسات! أحسنت', 'success'); resetPomodoro(); return; } showToast('✏️ وقت التركيز!', 'info'); } } updatePomoDisplay(); }
+function skipPomoPhase() { pomodoro.remaining = 0; tickPomo(); }
+function resetPomodoro() { clearInterval(pomodoro.interval); pomodoro.running = false; pomodoro.phase = 'focus'; pomodoro.currentSession = 1; pomodoro.completedSessions = 0; pomodoro.remaining = pomodoro.focusMins * 60; document.getElementById('pomo-start-btn').textContent = '▶ ابدأ'; updatePomoDisplay(); }
+function updatePomoDisplay() { const isFocus = pomodoro.phase === 'focus'; const total = (isFocus ? pomodoro.focusMins : pomodoro.breakMins) * 60; const fraction = pomodoro.remaining / total; const circum = 188.5; const offset = circum - (circum * fraction); document.getElementById('pomo-display').textContent = fmtTime(pomodoro.remaining); document.getElementById('pomo-display').className = 'pomo-time ' + (isFocus ? 'focus' : 'break'); document.getElementById('pomo-label').textContent = isFocus ? 'تركيز' : 'استراحة'; document.getElementById('pomo-label').className = 'pomo-label ' + (isFocus ? 'focus' : 'break'); const ring = document.getElementById('pomo-ring-fill'); ring.style.strokeDashoffset = offset; ring.className = 'pomo-ring-fill ' + (isFocus ? 'focus-ring' : 'break-ring'); document.getElementById('pomo-sessions-inner').textContent = pomodoro.currentSession + '/' + pomodoro.totalSessions; document.getElementById('pomo-status-text').textContent = pomodoro.running ? (isFocus ? '⏳ جلسة تركيز جارية...' : '☕ استرح قليلاً...') : 'ابدأ جلسة دراسة منتجة'; let dotsHtml = ''; for (let i = 0; i < pomodoro.totalSessions; i++) dotsHtml += `<div class="pomo-dot ${i < pomodoro.completedSessions ? 'done' : ''}"></div>`; document.getElementById('pomo-dots').innerHTML = dotsHtml; }
+
+const tools = { cd: { running:false, interval:null, remaining:0, total:0 }, sw: { running:false, interval:null, elapsed:0, laps:[] }, qt: { running:false, interval:null, remaining:0, qIdx:0, total:0, perQ:0 } };
+function initToolsPage() { const tg = JSON.parse(localStorage.getItem('toolGoal') || 'null'); if (tg) { document.getElementById('tool-goal-name').value = tg.name || ''; document.getElementById('tool-goal-target').value = tg.target || 20; document.getElementById('tool-goal-done').value = tg.done || 0; updateToolGoal(); } updateCdDisplay(); updateQtDisplay(); }
+function toggleCountdown() { if (tools.cd.running) { clearInterval(tools.cd.interval); tools.cd.running = false; document.getElementById('cd-start-btn').textContent = '▶ ابدأ'; document.getElementById('cd-label').textContent = 'متوقف'; } else { if (!tools.cd.remaining) { const m = parseInt(document.getElementById('cd-mins').value) || 0; const s = parseInt(document.getElementById('cd-secs').value) || 0; tools.cd.total = tools.cd.remaining = m*60 + s; if (!tools.cd.remaining) { showToast('حدد وقتاً أولاً', 'error'); return; } } tools.cd.running = true; document.getElementById('cd-start-btn').textContent = '⏸ إيقاف'; document.getElementById('cd-label').textContent = 'يعدّ...'; tools.cd.interval = setInterval(() => { tools.cd.remaining--; updateCdDisplay(); if (tools.cd.remaining <= 0) { clearInterval(tools.cd.interval); tools.cd.running = false; document.getElementById('cd-start-btn').textContent = '▶ ابدأ'; document.getElementById('cd-label').textContent = '✅ انتهى الوقت!'; showToast('⏰ انتهى الوقت!', 'info'); } }, 1000); } }
+function updateCdDisplay() { const el = document.getElementById('cd-display'); const rem = tools.cd.remaining; el.textContent = fmtTime(rem); el.className = 'tool-timer-val' + (rem <= 10 && rem > 0 ? ' danger' : rem <= 30 ? ' warning' : (tools.cd.running ? ' running' : '')); }
+function resetCountdown() { clearInterval(tools.cd.interval); tools.cd.running = false; tools.cd.remaining = 0; document.getElementById('cd-start-btn').textContent = '▶ ابدأ'; document.getElementById('cd-label').textContent = 'جاهز للبدء'; updateCdDisplay(); }
+function toggleStopwatch() { if (tools.sw.running) { clearInterval(tools.sw.interval); tools.sw.running = false; document.getElementById('sw-start-btn').textContent = '▶ ابدأ'; document.getElementById('sw-label').textContent = 'متوقفة'; document.getElementById('sw-lap-btn').disabled = true; } else { tools.sw.running = true; document.getElementById('sw-start-btn').textContent = '⏸ إيقاف'; document.getElementById('sw-label').textContent = 'تعمل...'; document.getElementById('sw-lap-btn').disabled = false; tools.sw.interval = setInterval(() => { tools.sw.elapsed++; document.getElementById('sw-display').textContent = fmtTime(tools.sw.elapsed); }, 1000); } }
+function lapStopwatch() { tools.sw.laps.push(tools.sw.elapsed); const lapsEl = document.getElementById('sw-laps'); const div = document.createElement('div'); div.style.cssText = 'background:var(--surface2);border-radius:6px;padding:4px 10px;font-size:0.78rem;color:var(--text3);display:flex;justify-content:space-between'; div.innerHTML = `<span>لفة ${tools.sw.laps.length}</span><span style="color:var(--accent);font-weight:700">${fmtTime(tools.sw.elapsed)}</span>`; lapsEl.appendChild(div); lapsEl.scrollTop = lapsEl.scrollHeight; }
+function resetStopwatch() { clearInterval(tools.sw.interval); tools.sw.running = false; tools.sw.elapsed = 0; tools.sw.laps = []; document.getElementById('sw-display').textContent = '00:00'; document.getElementById('sw-start-btn').textContent = '▶ ابدأ'; document.getElementById('sw-label').textContent = 'متوقفة'; document.getElementById('sw-lap-btn').disabled = true; document.getElementById('sw-laps').innerHTML = ''; }
+function updateToolGoal() { const target = parseInt(document.getElementById('tool-goal-target').value) || 1; const done = parseInt(document.getElementById('tool-goal-done').value) || 0; const pct = Math.min(100, Math.round(done / target * 100)); document.getElementById('tool-goal-pct').textContent = pct + '%'; document.getElementById('tool-goal-bar').style.width = pct + '%'; document.getElementById('tool-goal-sub').textContent = `${done} من ${target}`; document.getElementById('tool-goal-pct').style.color = pct >= 100 ? 'var(--green)' : pct >= 60 ? 'var(--gold)' : 'var(--accent)'; }
+function incrementGoalDone() { const inp = document.getElementById('tool-goal-done'); inp.value = (parseInt(inp.value) || 0) + 1; updateToolGoal(); }
+function saveToolGoal() { const tg = { name: document.getElementById('tool-goal-name').value.trim(), target: parseInt(document.getElementById('tool-goal-target').value) || 20, done: parseInt(document.getElementById('tool-goal-done').value) || 0 }; localStorage.setItem('toolGoal', JSON.stringify(tg)); showToast('تم حفظ الهدف ✓', 'success'); }
+function toggleQTimer() { if (tools.qt.running) { clearInterval(tools.qt.interval); tools.qt.running = false; document.getElementById('qt-start-btn').textContent = '▶ ابدأ'; document.getElementById('qt-next-btn').disabled = true; } else { if (!tools.qt.qIdx) { tools.qt.perQ = parseInt(document.getElementById('qt-secs').value) || 30; tools.qt.total = parseInt(document.getElementById('qt-count').value) || 10; tools.qt.qIdx = 1; tools.qt.remaining = tools.qt.perQ; } tools.qt.running = true; document.getElementById('qt-start-btn').textContent = '⏸ إيقاف'; document.getElementById('qt-next-btn').disabled = false; tools.qt.interval = setInterval(() => { tools.qt.remaining--; updateQtDisplay(); if (tools.qt.remaining <= 0) nextQTimer(); }, 1000); } }
+function nextQTimer() { tools.qt.qIdx++; if (tools.qt.qIdx > tools.qt.total) { clearInterval(tools.qt.interval); tools.qt.running = false; tools.qt.qIdx = 0; document.getElementById('qt-start-btn').textContent = '▶ ابدأ'; document.getElementById('qt-next-btn').disabled = true; document.getElementById('qt-label').textContent = '✅ انتهت الأسئلة!'; showToast('✅ انتهت جميع الأسئلة!', 'success'); return; } tools.qt.remaining = tools.qt.perQ; showToast(`➡️ السؤال ${tools.qt.qIdx}`, 'info'); updateQtDisplay(); }
+function updateQtDisplay() { const rem = tools.qt.remaining; const tot = tools.qt.perQ || 1; const pct = Math.max(0, rem / tot * 100); const el = document.getElementById('qt-display'); el.textContent = fmtTime(rem); el.className = 'tool-timer-val' + (rem <= 5 ? ' danger' : rem <= 10 ? ' warning' : ''); document.getElementById('qt-label').textContent = tools.qt.qIdx ? `سؤال ${tools.qt.qIdx} / ${tools.qt.total}` : 'جاهز'; document.getElementById('qt-bar').style.width = pct + '%'; }
+function resetQTimer() { clearInterval(tools.qt.interval); tools.qt.running = false; tools.qt.qIdx = 0; tools.qt.remaining = 0; document.getElementById('qt-start-btn').textContent = '▶ ابدأ'; document.getElementById('qt-next-btn').disabled = true; updateQtDisplay(); }
+
+// ================== INIT ==================
+updatePomoSettings();
+attachFirebaseListener();   // Start realtime sync
 </script>
 </body>
 </html>
