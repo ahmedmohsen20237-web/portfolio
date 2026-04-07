@@ -32,16 +32,14 @@
         <input type="number" id="exam-duration" value="30" min="1" max="180" />
       </div>
       <div class="form-group">
-        <label>عدد الأسئلة الرنهمية (العشوائية)</label>
+        <label>عدد الأسئلة العشوائية</label>
         <input type="number" id="random-count" value="2" min="0" />
       </div>
 
       <div class="setup-divider"><span>أسئلة الاختبار</span></div>
       <p class="setup-hint">أضف أسئلتك — كل سؤال يمكن أن يرتبط بقطعة نصية أو يكون مستقلاً</p>
 
-      <div id="questions-builder">
-        <!-- Questions added dynamically -->
-      </div>
+      <div id="questions-builder"></div>
 
       <button class="btn-add-question" id="add-question-btn">+ إضافة سؤال جديد</button>
 
@@ -49,10 +47,72 @@
     </div>
   </div>
 
-  <!-- ===== EXAM SCREEN ===== -->
+  <!-- ===== MODE SELECTION SCREEN ===== -->
+  <div id="mode-screen" class="screen">
+    <div class="mode-card">
+      <div class="mode-logo">
+        <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="30" cy="30" r="28" stroke="#00897B" stroke-width="3"/>
+          <path d="M18 30h24M30 18v24" stroke="#00897B" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2 class="mode-title">اختر نظام الاختبار</h2>
+      <p class="mode-sub">يمكنك الاختيار بين النظام الكلاسيكي أو نظام الورقة الرقمية</p>
+
+      <div class="mode-options">
+
+        <!-- Classic Mode -->
+        <div class="mode-option" id="mode-classic-card" onclick="selectMode('classic')">
+          <div class="mode-icon mode-icon-classic">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="6" y="6" width="36" height="36" rx="4" stroke="#00897B" stroke-width="2.5"/>
+              <path d="M14 18h20M14 24h20M14 30h14" stroke="#00897B" stroke-width="2.5" stroke-linecap="round"/>
+              <rect x="28" y="10" width="8" height="8" rx="2" fill="#00897B" fill-opacity="0.15" stroke="#00897B" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <h3 class="mode-name">النظام الكلاسيكي</h3>
+          <p class="mode-desc">واجهة الاختبار التقليدية مع الشريط الجانبي والمؤقت والتنقل بين الأسئلة</p>
+          <div class="mode-features">
+            <span class="mode-feature">⏱ مؤقت مرئي</span>
+            <span class="mode-feature">📋 شريط تنقل</span>
+            <span class="mode-feature">📊 إحصائيات فورية</span>
+          </div>
+          <button class="btn-mode-select" onclick="selectMode('classic')">اختر هذا النظام ←</button>
+        </div>
+
+        <!-- New Mode -->
+        <div class="mode-option" id="mode-new-card" onclick="selectMode('new')">
+          <div class="mode-icon mode-icon-new">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="8" width="40" height="32" rx="4" stroke="#1565C0" stroke-width="2.5"/>
+              <path d="M4 16h40" stroke="#1565C0" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="12" cy="12" r="2" fill="#1565C0"/>
+              <circle cx="19" cy="12" r="2" fill="#1565C0" fill-opacity="0.5"/>
+              <circle cx="26" cy="12" r="2" fill="#1565C0" fill-opacity="0.3"/>
+              <path d="M12 24h24M12 30h16" stroke="#1565C0" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="36" cy="33" r="5" fill="#1565C0" fill-opacity="0.15" stroke="#1565C0" stroke-width="1.5"/>
+              <path d="M34 33l1.5 1.5L38 31" stroke="#1565C0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="mode-name">نظام الورقة الرقمية</h3>
+          <p class="mode-desc">واجهة مبسّطة تحاكي ورقة الاختبار التقليدية مع عرض جميع الأسئلة دفعة واحدة</p>
+          <div class="mode-features">
+            <span class="mode-feature new">📄 جميع الأسئلة بصفحة واحدة</span>
+            <span class="mode-feature new">✏️ تجربة ورقة اختبار</span>
+            <span class="mode-feature new">⏱ مؤقت بسيط</span>
+          </div>
+          <button class="btn-mode-select btn-mode-new" onclick="selectMode('new')">اختر هذا النظام ←</button>
+        </div>
+
+      </div>
+
+      <button class="btn-back-setup" onclick="backToSetup()">← العودة للإعدادات</button>
+    </div>
+  </div>
+
+  <!-- ===== EXAM SCREEN (Classic) ===== -->
   <div id="exam-screen" class="screen">
 
-    <!-- Top Bar -->
     <div class="topbar">
       <div class="topbar-title" id="exam-title-bar">الاختبار</div>
       <div class="topbar-meta">
@@ -65,19 +125,15 @@
       </div>
     </div>
 
-    <!-- Main Layout -->
     <div class="exam-layout">
 
       <!-- LEFT SIDEBAR -->
       <aside class="sidebar">
-
-        <!-- Timer -->
         <div class="timer-block">
           <div class="timer-label">الوقت المتبقي</div>
           <div class="timer-display" id="timer-display">00:00</div>
         </div>
 
-        <!-- Student Info -->
         <div class="student-block">
           <div class="student-avatar">
             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -91,10 +147,9 @@
           </div>
         </div>
 
-        <!-- Question Stats -->
         <div class="stats-block">
           <div class="stat-row">
-            <span class="stat-label">عدد الأسئلة الرنهمية</span>
+            <span class="stat-label">عدد الأسئلة العشوائية</span>
             <span class="stat-val" id="stat-random">0</span>
           </div>
           <div class="stat-row">
@@ -103,7 +158,6 @@
           </div>
         </div>
 
-        <!-- Answer Status -->
         <div class="answer-status">
           <div class="status-row">
             <span class="status-badge answered">تمت الإجابة</span>
@@ -119,24 +173,16 @@
           </div>
         </div>
 
-        <!-- Question Navigator -->
         <div class="navigator-block">
-          <div class="nav-current-row" id="nav-current-pages">
-            <!-- current page buttons -->
-          </div>
-          <div class="nav-grid" id="nav-grid">
-            <!-- number buttons -->
-          </div>
+          <div class="nav-current-row" id="nav-current-pages"></div>
+          <div class="nav-grid" id="nav-grid"></div>
         </div>
 
-        <!-- End Exam -->
         <button class="btn-end" id="end-exam-btn">إنهاء الاختبار</button>
       </aside>
 
       <!-- RIGHT CONTENT -->
       <main class="exam-main">
-
-        <!-- Question Header -->
         <div class="question-header">
           <div class="q-number-label">رقم السؤال <span id="q-number-display">1</span></div>
           <div class="font-controls">
@@ -146,30 +192,65 @@
           </div>
         </div>
 
-        <!-- Split panel (passage + question) or full question -->
         <div class="content-panel" id="content-panel">
-
-          <!-- Passage Side (right in RTL) -->
           <div class="passage-side" id="passage-side">
             <div class="passage-title" id="passage-title">القطعة</div>
             <div class="passage-body" id="passage-body"></div>
           </div>
-
-          <!-- Question Side (left in RTL) -->
           <div class="question-side" id="question-side">
             <div class="question-text" id="question-text"></div>
             <div class="options-list" id="options-list"></div>
           </div>
-
         </div>
 
-        <!-- Bottom Navigation -->
         <div class="bottom-nav">
           <button class="btn-nav btn-prev" id="btn-prev">السابق</button>
           <button class="btn-nav btn-save" id="btn-save">حفظ والتالي</button>
         </div>
-
       </main>
+    </div>
+  </div>
+
+  <!-- ===== NEW EXAM SCREEN (Digital Paper) ===== -->
+  <div id="new-exam-screen" class="screen">
+
+    <div class="new-topbar">
+      <div class="new-topbar-right">
+        <div class="new-exam-logo">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="28" height="28" rx="4" fill="#1565C0" fill-opacity="0.1" stroke="#1565C0" stroke-width="2"/>
+            <path d="M8 10h16M8 16h16M8 22h10" stroke="#1565C0" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="new-topbar-info">
+          <div class="new-topbar-title" id="new-exam-title">الاختبار</div>
+          <div class="new-topbar-student" id="new-sidebar-name">—</div>
+        </div>
+      </div>
+      <div class="new-topbar-center">
+        <div class="new-timer-wrap">
+          <span class="new-timer-label">الوقت المتبقي</span>
+          <span class="new-timer-display" id="new-timer-display">00:00</span>
+        </div>
+      </div>
+      <div class="new-topbar-left">
+        <div class="new-progress-wrap">
+          <span class="new-progress-label">الإجابات</span>
+          <div class="new-progress-bar-wrap">
+            <div class="new-progress-bar" id="new-progress-bar"></div>
+          </div>
+          <span class="new-progress-count"><span id="new-count-answered">0</span> / <span id="new-stat-total">0</span></span>
+        </div>
+        <button class="btn-new-end" id="new-end-exam-btn">إنهاء الاختبار</button>
+      </div>
+    </div>
+
+    <div class="new-exam-body" id="new-exam-body">
+      <!-- Questions rendered dynamically -->
+    </div>
+
+    <div class="new-exam-footer">
+      <button class="btn-new-submit" id="new-submit-btn">📤 تسليم الاختبار</button>
     </div>
   </div>
 
