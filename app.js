@@ -1,8 +1,7 @@
 /* ============================================================
-   app.js — منصة الوسام التعليمية (نسخة محدّثة)
+   app.js — منصة الوسام التعليمية
    جميع الميزات: تغيير الإجابة، التنقل الحر، مراجعة نهائية،
-   تعديل الاختبارات، ملاحظات المعلم، أزرار حجم الخط،
-   نظام الاقتراحات والشكاوى، تحسينات الجوال
+   تعديل الاختبارات، ملاحظات المعلم أثناء السؤال
 ============================================================ */
 
 /* ── Firebase ── */
@@ -16,9 +15,8 @@ const FIREBASE_CONFIG = {
   appId:             "1:361533364886:web:60875464941f706277c0b7"
 };
 firebase.initializeApp(FIREBASE_CONFIG);
-const db       = firebase.database();
-const auth     = firebase.auth();
-const firestore= firebase.firestore();
+const db   = firebase.database();
+const auth = firebase.auth();
 
 /* ── Auth State ── */
 let currentUser   = null;
@@ -33,29 +31,9 @@ auth.onAuthStateChanged(user => {
   if (user) {
     sessionStorage.setItem('adminMode','1');
     document.body.classList.add('admin-mode');
-    const adminBar = $id('admin-mode-bar');
-    if (adminBar) adminBar.classList.add('visible');
-    const emailEl = $id('admin-user-email');
-    if (emailEl) emailEl.textContent = user.email || '';
-    const navAdminBtn = $id('nav-admin-btn');
-    if (navAdminBtn) navAdminBtn.style.display = '';
-    const lockIcon = $id('admin-lock-icon');
-    if (lockIcon) lockIcon.className = 'fa-solid fa-unlock';
-    const loginBtn = $id('admin-login-btn');
-    if (loginBtn) loginBtn.classList.add('active-admin');
-    const adminEmailSettings = $id('admin-user-email-settings');
-    if (adminEmailSettings) adminEmailSettings.textContent = user.email || '';
   } else {
     sessionStorage.removeItem('adminMode');
     document.body.classList.remove('admin-mode');
-    const adminBar = $id('admin-mode-bar');
-    if (adminBar) adminBar.classList.remove('visible');
-    const navAdminBtn = $id('nav-admin-btn');
-    if (navAdminBtn) navAdminBtn.style.display = 'none';
-    const lockIcon = $id('admin-lock-icon');
-    if (lockIcon) lockIcon.className = 'fa-solid fa-lock';
-    const loginBtn = $id('admin-login-btn');
-    if (loginBtn) loginBtn.classList.remove('active-admin');
   }
   authListeners.forEach(cb => cb(user, isAdminMode));
 });
@@ -108,25 +86,6 @@ async function dbSaveAnalytics(qid, data) {
   } catch(e) { console.warn('Analytics:', e); }
 }
 
-/* ── Firestore: حفظ الاقتراحات والشكاوى ── */
-async function dbSaveFeedback(data) {
-  try {
-    await firestore.collection('feedback').add({
-      ...data,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      userId: currentUser ? currentUser.uid : null,
-      userEmail: currentUser ? currentUser.email : null
-    });
-  } catch(e) {
-    // Fallback: حفظ في Realtime Database
-    await db.ref('feedback').push({
-      ...data,
-      timestamp: Date.now(),
-      userId: currentUser ? currentUser.uid : null
-    });
-  }
-}
-
 /* ============================================================
    STATE
 ============================================================ */
@@ -137,12 +96,11 @@ const AppState = {
   scores:        JSON.parse(localStorage.getItem('quizScores')    || '{}'),
   adminSettings: JSON.parse(localStorage.getItem('adminSettings') || '{"categorizedErrors":false,"showNotesLive":true}'),
   progress:      JSON.parse(localStorage.getItem('quizProgress')  || '{}'),
-  quizFontSize:  parseFloat(localStorage.getItem('quizFontSize')  || '1.05'),
 
   /* Quiz session */
   currentTest:   null,
   currentQ:      0,
-  userAnswers:   [],
+  userAnswers:   [],  /* null=لم يُجب، -1=تخطي، رقم=إجابة */
   timerInterval: null,
   elapsedSecs:   0,
 
@@ -216,88 +174,6 @@ document.addEventListener('click', e => {
   if(e.target.classList.contains('modal-overlay') && e.target.classList.contains('open') && e.target.id!=='admin-login-modal')
     closeModal(e.target.id);
 });
-
-/* ============================================================
-   أزرار حجم الخط (A+ / A / A-)
-============================================================ */
-const FONT_SIZES = [0.85, 0.95, 1.05, 1.18, 1.32, 1.48];
-let fontSizeIdx = 2; // الافتراضي 1.05rem
-
-function applyQuizFontSize(size) {
-  document.documentElement.style.setProperty('--q-font-size', size + 'rem');
-  localStorage.setItem('quizFontSize', size);
-  AppState.quizFontSize = size;
-}
-
-function changeFontSize(dir) {
-  if(dir === 0) {
-    fontSizeIdx = 2;
-  } else if(dir === 1) {
-    fontSizeIdx = Math.min(fontSizeIdx + 1, FONT_SIZES.length - 1);
-  } else if(dir === -1) {
-    fontSizeIdx = Math.max(fontSizeIdx - 1, 0);
-  }
-  applyQuizFontSize(FONT_SIZES[fontSizeIdx]);
-}
-
-function initFontSize() {
-  const saved = parseFloat(localStorage.getItem('quizFontSize') || '1.05');
-  const idx = FONT_SIZES.indexOf(saved);
-  fontSizeIdx = idx >= 0 ? idx : 2;
-  applyQuizFontSize(FONT_SIZES[fontSizeIdx]);
-}
-
-/* ============================================================
-   قسم الاقتراحات والشكاوى
-============================================================ */
-function initFeedbackSection() {
-  const textarea = $id('feedback-message');
-  const charCount = $id('feedback-char-count');
-  if(!textarea || !charCount) return;
-
-  textarea.addEventListener('input', () => {
-    const len = textarea.value.length;
-    const max = 500;
-    charCount.textContent = len + ' / ' + max;
-    charCount.className = 'feedback-char' + (len >= max ? ' limit' : len >= max*0.8 ? ' warn' : '');
-    if(len > max) textarea.value = textarea.value.substring(0, max);
-  });
-}
-
-async function submitFeedback() {
-  const message = $id('feedback-message')?.value.trim();
-  const typeEl = document.querySelector('input[name="feedback-type"]:checked');
-  const type = typeEl ? typeEl.value : 'اقتراح';
-
-  if(!message) {
-    showToast('الرجاء كتابة رسالتك قبل الإرسال', 'error');
-    $id('feedback-message')?.focus();
-    return;
-  }
-
-  const btn = document.querySelector('.feedback-actions .btn-primary');
-  if(btn) { btn.disabled = true; btn.textContent = 'جارٍ الإرسال...'; }
-
-  try {
-    await dbSaveFeedback({
-      message,
-      type,
-      date: new Date().toISOString()
-    });
-    showToast(`تم إرسال ${type}ك بنجاح ✓`, 'success');
-    if($id('feedback-message')) $id('feedback-message').value = '';
-    const charCount = $id('feedback-char-count');
-    if(charCount) charCount.textContent = '0 / 500';
-    // إعادة تعيين النوع للاقتراح
-    const defaultType = document.querySelector('input[name="feedback-type"][value="اقتراح"]');
-    if(defaultType) defaultType.checked = true;
-  } catch(e) {
-    showToast('حدث خطأ أثناء الإرسال، حاول مرة أخرى', 'error');
-    console.error(e);
-  } finally {
-    if(btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-left:6px"></i> إرسال'; }
-  }
-}
 
 /* ============================================================
    NAVIGATION
@@ -418,107 +294,146 @@ async function confirmDeleteTest() {
   AppState.pendingDeleteId=null;
 }
 
-/* ── Admin ── */
-function handleAdminLogin() {
-  if(isAdminMode) logoutAdmin();
-  else openAdminLoginModal();
+/* ── Firebase Listener ── */
+function attachFirebaseListener() {
+  showLoadingScreen();
+  dbListenQuizzes(tests=>{
+    AppState.tests=tests; renderHome();
+    const ap=$id('page-admin'), mt=$id('admin-manage');
+    if(ap?.classList.contains('active') && mt?.classList.contains('active')) renderManageList();
+    hideLoadingScreen();
+  }, ()=>{ showToast('خطأ في الاتصال بقاعدة البيانات','error'); hideLoadingScreen(); });
+}
+
+/* ── Init ── */
+function initApp() {
+  initTheme(); updatePomoSettings(); attachFirebaseListener();
+  onAuthStateChange((user,isAdmin)=>{
+    applyAdminUI(user,isAdmin);
+    if($id('page-home')?.classList.contains('active')) renderHome();
+  });
+}
+document.addEventListener('DOMContentLoaded', initApp);
+
+/* ============================================================
+   ADMIN AUTH
+============================================================ */
+function applyAdminUI(user,isAdmin) {
+  const bar=$id('admin-mode-bar'), lb=$id('admin-login-btn'), li=$id('admin-lock-icon'), ab=$id('nav-admin-btn');
+  document.querySelectorAll('.admin-only-inline').forEach(e=>e.style.display=isAdmin?'':'none');
+  if(isAdmin) {
+    document.body.classList.add('admin-mode');
+    bar?.classList.add('visible'); lb?.classList.add('active-admin');
+    if(li) li.className='fa-solid fa-unlock'; if(lb) lb.title='وضع الأدمن — انقر للخروج';
+    if(ab) ab.style.display='flex'; setText('admin-user-email',user?.email||'');
+  } else {
+    document.body.classList.remove('admin-mode');
+    bar?.classList.remove('visible'); lb?.classList.remove('active-admin');
+    if(li) li.className='fa-solid fa-lock'; if(lb) lb.title='دخول الأدمن';
+    if(ab) ab.style.display='none';
+  }
 }
 function openAdminLoginModal() {
+  if(isAdminMode){ if(confirm('هل تريد تسجيل الخروج؟')) logoutAdmin(); return; }
   setVal('admin-email-input',''); setVal('admin-password-input','');
-  const err=$id('admin-login-error'); if(err) err.style.display='none';
-  openModal('admin-login-modal');
+  const e=$id('admin-login-error'); if(e){ e.style.display='none'; e.textContent=''; }
+  openModal('admin-login-modal'); setTimeout(()=>$id('admin-email-input')?.focus(),120);
 }
+function handleAdminLogin() { openAdminLoginModal(); }
 async function verifyAdminLogin() {
   const email=$id('admin-email-input')?.value.trim();
   const pw=$id('admin-password-input')?.value;
-  const errEl=$id('admin-login-error');
   const btn=$id('admin-login-submit-btn');
-  if(!email||!pw){ if(errEl){ errEl.textContent='أدخل البريد وكلمة المرور'; errEl.style.display='block'; } return; }
+  if(!email||!pw){ showLoginError('يرجى إدخال البريد وكلمة المرور'); return; }
   if(btn){ btn.disabled=true; btn.textContent='جارٍ التحقق...'; }
   try {
     await adminSignIn(email,pw);
-    closeModal('admin-login-modal');
-    showToast('تم تسجيل دخول الأدمن ✓');
-    showPage('admin');
-  } catch(e) {
-    if(errEl){ errEl.textContent=e.message; errEl.style.display='block'; }
-  } finally { if(btn){ btn.disabled=false; btn.textContent='دخول'; } }
+    closeModal('admin-login-modal'); showToast('✅ مرحباً في وضع الأدمن');
+  } catch(e){ showLoginError(e.message||'فشل تسجيل الدخول'); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='دخول'; } }
+}
+function showLoginError(msg) {
+  const e=$id('admin-login-error'); if(e){ e.textContent='❌ '+msg; e.style.display='block'; }
 }
 async function logoutAdmin() {
-  try { await adminSignOut(); showToast('تم تسجيل الخروج'); showPage('home'); }
-  catch(e){ showToast(e.message||'فشل تسجيل الخروج','error'); }
+  try{ await adminSignOut(); showPage('home'); showToast('🔒 تم تسجيل الخروج','info'); }
+  catch(e){ showToast('فشل تسجيل الخروج','error'); }
 }
-
-/* ── Admin Tabs ── */
-function switchAdminTab(tab, e) {
-  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.admin-tab-content').forEach(t=>t.classList.remove('active'));
-  if(e?.target) e.target.classList.add('active');
-  const c=$id('admin-'+tab); if(c) c.classList.add('active');
-  if(tab==='manage') renderManageList();
-  if(tab==='settings') loadAdminSettings();
-}
+document.addEventListener('keydown',e=>{
+  const m=$id('admin-login-modal');
+  if(e.key==='Enter' && m?.classList.contains('open')) verifyAdminLogin();
+});
 
 /* ── Admin Settings ── */
 function loadAdminSettings() {
   const s=AppState.adminSettings;
-  const ce=$id('setting-categorized-errors'); if(ce) ce.checked=!!s.categorizedErrors;
-  const sn=$id('setting-show-notes-live'); if(sn) sn.checked=s.showNotesLive!==false;
-  const emailEl=$id('admin-user-email-settings');
-  if(emailEl) emailEl.textContent = currentUser?.email || '—';
+  const c=$id('setting-categorized-errors'), n=$id('setting-show-notes-live');
+  if(c) c.checked=!!s.categorizedErrors;
+  if(n) n.checked=s.showNotesLive!==false;
 }
 function saveAdminSettings() {
-  AppState.adminSettings={
-    categorizedErrors:!!$id('setting-categorized-errors')?.checked,
-    showNotesLive:!!$id('setting-show-notes-live')?.checked
-  };
+  AppState.adminSettings.categorizedErrors=$id('setting-categorized-errors')?.checked||false;
+  AppState.adminSettings.showNotesLive=$id('setting-show-notes-live')?.checked!==false;
   localStorage.setItem('adminSettings',JSON.stringify(AppState.adminSettings));
   showToast('تم حفظ الإعدادات ✓');
+}
+function switchAdminTab(tab,ev) {
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-content').forEach(c=>c.classList.remove('active'));
+  if(ev?.currentTarget) ev.currentTarget.classList.add('active');
+  $id('admin-'+tab)?.classList.add('active');
+  if(tab==='manage') renderManageList();
+  if(tab==='settings') loadAdminSettings();
 }
 
 /* ── Manage List ── */
 function renderManageList() {
-  const list=$id('manage-list'); if(!list) return;
-  if(!AppState.tests.length){ list.innerHTML='<div class="empty-state"><div class="icon">📭</div><p>لا توجد اختبارات بعد</p></div>'; return; }
-  list.innerHTML='';
-  AppState.tests.forEach(t=>{
+  const c=$id('manage-list'); if(!c) return;
+  const {tests,scores}=AppState;
+  if(!tests.length){ c.innerHTML='<div class="empty-state"><div class="icon">📭</div><p>لا توجد اختبارات بعد</p></div>'; return; }
+  const w=document.createElement('div'); w.style.cssText='display:flex;flex-direction:column;gap:8px;';
+  tests.forEach(t=>{
+    const sc=scores[t.id];
     const item=document.createElement('div'); item.className='manage-item';
     item.innerHTML=`
       <div class="manage-item-info">
         <div class="manage-item-name">${escapeHtml(t.name)}</div>
-        <div class="manage-item-meta">${t.questions?.length||0} سؤال${t.subject?' • '+escapeHtml(t.subject):''}${t.timeLimit?' • '+t.timeLimit+' د':''}</div>
+        <div class="manage-item-meta">${t.questions?.length||0} سؤال • ${t.timeLimit||0} دقيقة${sc!==undefined?' • آخر درجة: '+sc+'%':''}</div>
       </div>
       <div class="manage-item-actions">
-        <button class="btn btn-secondary" onclick="openEditQuiz('${t.firebaseId}')" style="font-size:0.82rem;padding:8px 14px;min-height:38px">✏️ تعديل</button>
-        <button class="btn" onclick="requestDeleteTest('${t.firebaseId}')" style="background:rgba(239,68,68,.1);color:var(--red);font-size:0.82rem;padding:8px 14px;border:1px solid rgba(239,68,68,.2);min-height:38px">🗑️</button>
+        <button onclick="startQuiz('${t.firebaseId}')" class="btn btn-primary" style="font-size:0.8rem;padding:8px 12px">▶️ تشغيل</button>
+        <button onclick="openEditQuiz('${t.firebaseId}')" class="btn btn-secondary" style="font-size:0.8rem;padding:8px 12px;color:var(--accent)">✏️ تعديل</button>
+        <button onclick="requestDeleteTest('${t.firebaseId}')" class="btn btn-secondary" style="font-size:0.8rem;padding:8px 12px;color:var(--red)">🗑️ حذف</button>
       </div>`;
-    list.appendChild(item);
+    w.appendChild(item);
   });
+  c.innerHTML=''; c.appendChild(w);
 }
 
-/* ── Builder ── */
-function addQuestionBuilder() {
-  AppState.builderQuestions.push({text:'',choices:['','','',''],correct:0,correctAnswers:[0],multiCorrect:false,note:''});
+/* ============================================================
+   QUIZ BUILDER (إضافة/تعديل)
+============================================================ */
+function addQuestionBuilder(data) {
+  AppState.builderQuestions.push(data||{text:'',choices:['','','',''],correct:0,correctAnswers:[0],multiCorrect:false,note:''});
   renderBuilder();
 }
-function renderBuilderTo(qs, containerId) {
+function renderBuilderTo(questions, containerId) {
   const container=$id(containerId); if(!container) return;
+  const letters=['أ','ب','ج','د'];
   const frag=document.createDocumentFragment();
-  const letters=['أ','ب','ج','د','هـ','و'];
-  qs.forEach((q,qi)=>{
+  questions.forEach((q,qi)=>{
     const item=document.createElement('div'); item.className='q-builder-item';
-    const isMulti=q.multiCorrect||false;
+    const isMulti=q.multiCorrect;
     let ch='';
     q.choices.forEach((c,ci)=>{
-      const isCorrect=isMulti?(q.correctAnswers||[q.correct||0]).includes(ci):q.correct===ci;
-      const inputType=isMulti?'checkbox':'radio';
-      const inputClass=isMulti?'choice-checkbox':'choice-radio';
+      const iType=isMulti?'checkbox':'radio', iClass=isMulti?'choice-checkbox':'choice-radio';
+      const checked=isMulti?(Array.isArray(q.correctAnswers)&&q.correctAnswers.includes(ci)):(q.correct===ci);
       ch+=`<div class="choice-builder-row">
-        <input type="${inputType}" class="${inputClass}" name="${containerId}-q${qi}" ${isCorrect?'checked':''}
+        <input type="${iType}" class="${iClass}" name="bq-correct-${containerId}-${qi}" ${checked?'checked':''}
           onchange="builderSetCorrect('${containerId}',${qi},${ci},this.checked,${isMulti})"/>
-        <input class="form-input" style="padding:7px 10px;font-size:0.85rem;min-height:38px" placeholder="${letters[ci]||ci+1}..."
-          value="${escapeHtml(c||'')}"
-          oninput="getBuilderQuestions('${containerId}')[${qi}].choices[${ci}]=this.value;updateAnswerMapIfExists()"/>
+        <input class="form-input" placeholder="${letters[ci]||ci+1}..." value="${escapeHtml(c||'')}"
+          oninput="getBuilderQuestions('${containerId}')[${qi}].choices[${ci}]=this.value;updateAnswerMapIfExists()"
+          style="flex:1"/>
       </div>`;
     });
     item.innerHTML=`
@@ -533,7 +448,7 @@ function renderBuilderTo(qs, containerId) {
       </div>
       <input class="form-input" placeholder="نص السؤال..." value="${escapeHtml(q.text||'')}"
         oninput="getBuilderQuestions('${containerId}')[${qi}].text=this.value;updateAnswerMapIfExists()"
-        style="margin-bottom:9px;min-height:44px"/>
+        style="margin-bottom:9px"/>
       <div class="choices-builder" id="${containerId}-choices-${qi}">${ch}</div>
       <textarea class="q-note-input" placeholder="ملاحظة المعلم (تظهر للطالب أثناء السؤال إن فعّلتها)..."
         oninput="getBuilderQuestions('${containerId}')[${qi}].note=this.value"
@@ -545,11 +460,13 @@ function renderBuilderTo(qs, containerId) {
 }
 function renderBuilder() { renderBuilderTo(AppState.builderQuestions,'questions-builder'); }
 
+/* helper: الحصول على مصفوفة الأسئلة حسب الـ containerId */
 function getBuilderQuestions(cid) {
   return cid==='edit-questions-builder' ? AppState.editQuestions : AppState.builderQuestions;
 }
 function updateAnswerMapIfExists() { if($id('answer-map-section')) renderAnswerMap(); }
 
+/* تبديل تعدد الإجابات */
 function toggleBuilderMulti(cid, qi) {
   const qs=getBuilderQuestions(cid);
   qs[qi].multiCorrect=!qs[qi].multiCorrect;
@@ -622,7 +539,9 @@ async function saveTest() {
   finally{ if(btn){ btn.disabled=false; btn.textContent='💾 حفظ الاختبار'; } }
 }
 
-/* ── تعديل الاختبارات ── */
+/* ============================================================
+   تعديل الاختبارات المحفوظة
+============================================================ */
 function openEditQuiz(fid) {
   const test=AppState.tests.find(t=>t.firebaseId===fid); if(!test) return;
   AppState.editingQuizId=fid;
@@ -765,6 +684,11 @@ async function saveParsedTest() {
 
 /* ============================================================
    QUIZ ENGINE
+   - الطالب يختار إجابة واحدة فقط (حتى لو المعلم حدد إجابات متعددة)
+   - أي إجابة صحيحة تُعتبر صحيحة
+   - يمكن تغيير الإجابة في أي وقت قبل الانتقال
+   - التنقل الحر بين الأسئلة
+   - ملاحظة المعلم تظهر مع السؤال مباشرة
 ============================================================ */
 function getCorrectAnswers(q) {
   if(Array.isArray(q.correctAnswers)&&q.correctAnswers.length) return q.correctAnswers;
@@ -857,9 +781,6 @@ function renderNavStrip() {
     d.onclick=()=>jumpToQuestion(i);
     strip.appendChild(d);
   });
-  // التمرير للسؤال الحالي
-  const curr=strip.querySelector('.current');
-  if(curr) curr.scrollIntoView({inline:'nearest',behavior:'smooth'});
 }
 
 /* ── الانتقال المباشر لسؤال معين ── */
@@ -877,7 +798,7 @@ function renderQuestion() {
   setText('q-num','السؤال '+(currentQ+1));
   setText('q-text',q.text);
 
-  /* ملاحظة المعلم */
+  /* ملاحظة المعلم تظهر أعلى الخيارات مباشرة إن وجدت والإعداد مفعّل */
   const notePre=$id('teacher-note-pre');
   if(notePre) {
     if(q.note&&q.note.trim()&&AppState.adminSettings.showNotesLive!==false) {
@@ -886,9 +807,10 @@ function renderQuestion() {
       notePre.style.display='none';
     }
   }
+  /* إخفاء مربع الملاحظة السفلي (غير مستخدم الآن) */
   const nb=$id('teacher-note-box'); if(nb) nb.style.display='none';
 
-  /* بناء الخيارات */
+  /* بناء الخيارات — يمكن تغيير الإجابة دائماً */
   const letters=['أ','ب','ج','د','هـ','و'];
   const container=$id('choices-container'); if(!container) return;
   const frag=document.createDocumentFragment();
@@ -910,12 +832,14 @@ function renderQuestion() {
   if(skipBtn) skipBtn.style.display=ua!==null?'none':'';
 }
 
-/* ── اختيار الإجابة ── */
+/* ── اختيار الإجابة — يمكن التغيير دائماً ── */
 function selectAnswer(i) {
   AppState.userAnswers[AppState.currentQ]=i;
+  /* تحديث الخيارات بصرياً */
   document.querySelectorAll('.choice').forEach((el,ci)=>{
     el.classList.toggle('selected', ci===i);
   });
+  /* إخفاء زر التخطي بعد الاختيار */
   const sb=$id('skip-btn'); if(sb) sb.style.display='none';
   saveProgress(); renderNavStrip();
 }
@@ -943,8 +867,10 @@ function openFinalReview() {
   const answered=userAnswers.filter(a=>a!==null&&a!==-1).length;
   const skipped=userAnswers.filter(a=>a===-1).length;
   const unanswered=userAnswers.filter(a=>a===null).length;
+
   setText('final-review-summary',
     `إجمالي الأسئلة: ${qs.length} • أجبت على: ${answered} • تخطيت: ${skipped} • لم تجب على: ${unanswered}`);
+
   const letters=['أ','ب','ج','د','هـ','و'];
   const list=$id('final-review-list'); if(!list) return;
   list.innerHTML='';
@@ -965,7 +891,7 @@ function openFinalReview() {
   openModal('final-review-modal');
 }
 
-/* ── تسليم الاختبار ── */
+/* ── تسليم الاختبار النهائي ── */
 function submitQuiz() {
   closeModal('final-review-modal');
   clearInterval(AppState.timerInterval);
@@ -1114,7 +1040,7 @@ function startPracticeSession(all=false) {
   if(splits.length===1){ startCustomQuiz(splits[0],'تدريب الأخطاء — جلسة 1'); return; }
   setText('practice-modal-desc',`${questions.length} سؤال مقسّم على ${splits.length} جلسات (${size} سؤال لكل جلسة) — مرتبة حسب الصعوبة`);
   let lh='';
-  splits.forEach((chunk,i)=>{ lh+=`<div class="manage-item"><div class="manage-item-info"><div class="manage-item-name">الجلسة ${i+1}</div><div class="manage-item-meta">${chunk.length} سؤال</div></div><button class="btn btn-primary" style="font-size:0.82rem;padding:8px 14px;min-height:38px" onclick="closeModal('practice-modal');startCustomQuiz(window.__pChunks[${i}],'تدريب الأخطاء — جلسة ${i+1}')">▶ ابدأ</button></div>`; });
+  splits.forEach((chunk,i)=>{ lh+=`<div class="manage-item"><div class="manage-item-info"><div class="manage-item-name">الجلسة ${i+1}</div><div class="manage-item-meta">${chunk.length} سؤال</div></div><button class="btn btn-primary" style="font-size:0.82rem;padding:8px 14px" onclick="closeModal('practice-modal');startCustomQuiz(window.__pChunks[${i}],'تدريب الأخطاء — جلسة ${i+1}')">▶ ابدأ</button></div>`; });
   const le=$id('practice-sessions-list'); if(le) le.innerHTML=lh;
   window.__pChunks=splits; openModal('practice-modal');
 }
@@ -1198,20 +1124,3 @@ function toggleQTimer() {
 function nextQTimer(){ const qt=AppState.tools.qt; qt.qIdx++; if(qt.qIdx>qt.total){ clearInterval(qt.interval); qt.running=false; qt.qIdx=0; setText('qt-start-btn','▶ ابدأ'); const nb=$id('qt-next-btn'); if(nb) nb.disabled=true; setText('qt-label','✅ انتهت الأسئلة!'); showToast('✅ انتهت جميع الأسئلة!','success'); return; } qt.remaining=qt.perQ; showToast(`➡️ السؤال ${qt.qIdx}`,'info'); updateQtDisplay(); }
 function updateQtDisplay(){ const qt=AppState.tools.qt,r=qt.remaining,t=qt.perQ||1,p=Math.max(0,r/t*100),e=$id('qt-display'); if(e){ e.textContent=fmtTime(r); e.className='tool-timer-val'+(r<=5?' danger':r<=10?' warning':''); } setText('qt-label',qt.qIdx?`سؤال ${qt.qIdx} / ${qt.total}`:'جاهز'); const b=$id('qt-bar'); if(b) b.style.width=p+'%'; }
 function resetQTimer(){ const qt=AppState.tools.qt; clearInterval(qt.interval); qt.running=false; qt.qIdx=0; qt.remaining=0; setText('qt-start-btn','▶ ابدأ'); const nb=$id('qt-next-btn'); if(nb) nb.disabled=true; updateQtDisplay(); }
-
-/* ============================================================
-   INIT
-============================================================ */
-document.addEventListener('DOMContentLoaded', () => {
-  initTheme();
-  initFontSize();
-  initFeedbackSection();
-  updatePomoDisplay();
-
-  dbListenQuizzes(tests => {
-    AppState.tests = tests;
-    hideLoadingScreen();
-    if(document.querySelector('.page.active')?.id==='page-home') renderHome();
-    if(document.querySelector('.page.active')?.id==='page-admin') renderManageList();
-  }, () => hideLoadingScreen());
-});

@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>منصة الوسام التعليمية</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -10,7 +10,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -99,38 +98,6 @@
     <div class="section-title">📋 الاختبارات</div>
     <div class="tests-grid" id="tests-grid"></div>
   </div>
-
-  <!-- ==================== قسم الاقتراحات والشكاوى ==================== -->
-  <div class="section">
-    <div class="section-title">💬 الاقتراحات والشكاوى</div>
-    <div class="feedback-card">
-      <div class="feedback-header">
-        <div class="feedback-icon">📨</div>
-        <div>
-          <h3>شاركنا رأيك</h3>
-          <p>نسعى دائماً لتطوير المنصة بناءً على آرائكم</p>
-        </div>
-      </div>
-      <div class="feedback-type-row">
-        <label class="feedback-type-option">
-          <input type="radio" name="feedback-type" value="اقتراح" checked>
-          <span class="feedback-type-label"><i class="fa-solid fa-lightbulb"></i> اقتراح</span>
-        </label>
-        <label class="feedback-type-option">
-          <input type="radio" name="feedback-type" value="شكوى">
-          <span class="feedback-type-label"><i class="fa-solid fa-triangle-exclamation"></i> شكوى</span>
-        </label>
-      </div>
-      <textarea id="feedback-message" class="feedback-textarea" placeholder="اكتب اقتراحك أو شكواك هنا..." rows="4"></textarea>
-      <div class="feedback-actions">
-        <span id="feedback-char-count" class="feedback-char">0 / 500</span>
-        <button class="btn btn-primary" onclick="submitFeedback()">
-          <i class="fa-solid fa-paper-plane" style="margin-left:6px"></i>
-          إرسال
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- ==================== الأدوات ==================== -->
@@ -200,28 +167,17 @@
   </div>
 </div>
 
-<!-- ==================== صفحة الاختبار (نظام موحد) ==================== -->
+<!-- ==================== صفحة الاختبار ==================== -->
 <div id="page-quiz" class="page">
-  <div class="quiz-page" id="quiz-page-wrapper">
-
-    <!-- شريط الأدوات العلوي للاختبار -->
+  <div class="quiz-page">
     <div class="quiz-header">
       <button class="quiz-exit-btn" onclick="confirmLeaveQuiz()"><i class="fa-solid fa-xmark"></i></button>
       <div class="quiz-title-wrap">
         <div class="quiz-title" id="quiz-title"></div>
         <div class="quiz-subtitle" id="quiz-subtitle"></div>
       </div>
-      <div class="quiz-header-tools">
-        <!-- أزرار حجم الخط -->
-        <div class="font-size-btns">
-          <button class="font-btn" onclick="changeFontSize(-1)" title="تصغير الخط">A-</button>
-          <button class="font-btn" onclick="changeFontSize(0)" title="الحجم الافتراضي">A</button>
-          <button class="font-btn font-btn-lg" onclick="changeFontSize(1)" title="تكبير الخط">A+</button>
-        </div>
-        <div class="timer-pill" id="timer-pill">⏱️ <span>00:00</span></div>
-      </div>
+      <div class="timer-pill" id="timer-pill">⏱️ <span>00:00</span></div>
     </div>
-
     <div class="quiz-progress-row">
       <div class="q-progress-bar"><div class="q-progress-fill" id="q-progress-fill" style="width:0%"></div></div>
       <div class="q-counter" id="q-counter">0 / 0</div>
@@ -233,6 +189,7 @@
     <div class="question-card" id="question-card">
       <div class="q-num" id="q-num"></div>
       <div class="q-text" id="q-text"></div>
+      <!-- ملاحظة المعلم تظهر أعلى الخيارات إن وُجدت -->
       <div class="teacher-note-pre" id="teacher-note-pre" style="display:none"></div>
       <div class="choices" id="choices-container"></div>
       <div class="teacher-note-box" id="teacher-note-box" style="display:none">
@@ -247,6 +204,7 @@
       <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">التالي ←</button>
     </div>
 
+    <!-- زر المراجعة النهائية -->
     <div style="text-align:center;margin-top:12px;">
       <button class="btn-review-final" id="review-final-btn" onclick="openFinalReview()">
         📋 مراجعة الإجابات قبل التسليم
