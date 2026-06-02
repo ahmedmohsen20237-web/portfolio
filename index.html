@@ -6,9 +6,14 @@
   <title>منصة الوسام التعليمية</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>window.addEventListener('load',function(){if(typeof pdfjsLib!=='undefined'){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}});</script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -91,6 +96,17 @@
         <div class="progress-labels"><span id="goal-done-lbl">0 مكتمل</span><span id="goal-target-lbl">الهدف: —</span></div>
       </div>
       <button class="goal-edit-btn" onclick="openGoalModal()">✏️ تعديل</button>
+    </div>
+  </div>
+  <div class="section" id="folders-section" style="display:none">
+    <div class="section-title">📁 المجلدات</div>
+    <div class="folders-grid" id="folders-grid"></div>
+    <div id="folder-quizzes-view" style="display:none">
+      <div class="folder-view-header">
+        <button class="btn btn-secondary" onclick="closeFolderView()" style="font-size:0.85rem;padding:9px 16px">🔙 عودة للمجلدات</button>
+        <div class="folder-view-title" id="folder-view-title">مجلد</div>
+      </div>
+      <div class="tests-grid" id="folder-quizzes-grid"></div>
     </div>
   </div>
   <div class="section">
@@ -210,6 +226,37 @@
       <button class="btn-review-final" id="review-final-btn" onclick="openFinalReview()">
         📋 مراجعة الإجابات قبل التسليم
       </button>
+      <button class="btn-omr" id="omr-tab-btn" onclick="openOmrPanel()" style="margin-right:10px">
+        📝 تصحيح البابل شيت
+      </button>
+    </div>
+  </div>
+
+  <!-- لوحة OMR -->
+  <div id="omr-panel" style="display:none;max-width:680px;margin:0 auto;padding:0 20px 30px">
+    <div class="omr-card">
+      <div class="omr-header">
+        <h3>📝 مصحح ورقة الإجابات (بابل شيت)</h3>
+        <button class="btn btn-secondary" onclick="closeOmrPanel()" style="font-size:0.82rem;padding:7px 14px">✕ إغلاق</button>
+      </div>
+      <div class="omr-instructions">
+        <p>📌 <strong>التعليمات:</strong> حمّل النموذج المطبوع، أجب على الأسئلة بظلام الدوائر ثم ارفع الصورة للتصحيح التلقائي.</p>
+        <a href="#" onclick="generateOmrTemplate(); return false;" class="omr-template-link">🖨️ تحميل نموذج الإجابة (A4)</a>
+      </div>
+      <div class="form-group" style="margin-top:14px">
+        <label class="form-label">📷 ارفع صورة ورقة إجاباتك</label>
+        <label class="pdf-upload-zone" style="padding:20px">
+          <span id="omr-upload-text">📷 اضغط لرفع الصورة</span>
+          <input type="file" accept="image/*" id="omr-image-input" style="display:none" onchange="handleOmrUpload(event)">
+        </label>
+      </div>
+      <div id="omr-processing" style="display:none;text-align:center;padding:20px">
+        <div style="font-size:1.5rem;margin-bottom:8px">⚙️</div>
+        <p style="color:var(--text2);font-size:0.88rem">جارٍ تحليل ورقة الإجابات...</p>
+        <div class="loading-bar" style="margin:12px auto"><div class="loading-fill"></div></div>
+      </div>
+      <canvas id="omr-canvas" style="display:none;max-width:100%;border-radius:10px;margin-top:10px"></canvas>
+      <div id="omr-results-preview" style="display:none;margin-top:14px"></div>
     </div>
   </div>
 </div>
@@ -256,15 +303,22 @@
       <button class="admin-tab active" onclick="switchAdminTab('add',event)">➕ إضافة اختبار</button>
       <button class="admin-tab" onclick="switchAdminTab('parse',event)">🤖 استيراد ذكي</button>
       <button class="admin-tab" onclick="switchAdminTab('manage',event)">📋 إدارة الاختبارات</button>
+      <button class="admin-tab" onclick="switchAdminTab('folders',event)">📁 المجلدات</button>
+      <button class="admin-tab" onclick="switchAdminTab('pdf',event)">📄 استيراد PDF</button>
       <button class="admin-tab" onclick="switchAdminTab('settings',event)">⚙️ إعدادات</button>
     </div>
 
     <!-- تبويب الإضافة -->
     <div id="admin-add" class="admin-tab-content active">
       <div class="form-group"><label class="form-label">اسم الاختبار *</label><input class="form-input" id="new-test-name" placeholder="مثال: الزلازل والسكري" /></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
         <div class="form-group"><label class="form-label">المادة / الموضوع</label><input class="form-input" id="new-test-subject" placeholder="مثال: العلوم" /></div>
-        <div class="form-group"><label class="form-label">⏱️ وقت الاختبار (دقائق) — 0 = بدون حد</label><input class="form-input" id="new-test-time" type="number" min="0" value="10" /></div>
+        <div class="form-group"><label class="form-label">⏱️ وقت الاختبار (دقائق)</label><input class="form-input" id="new-test-time" type="number" min="0" value="10" /></div>
+        <div class="form-group"><label class="form-label">📁 المجلد</label>
+          <select class="form-input" id="new-test-folder">
+            <option value="">عام (بدون مجلد)</option>
+          </select>
+        </div>
       </div>
       <div class="section-title" style="margin-bottom:10px;font-size:0.88rem">الأسئلة</div>
       <div class="questions-builder" id="questions-builder"></div>
@@ -283,9 +337,14 @@
         <p style="font-size:0.84rem;color:var(--text2);line-height:1.7">📋 <strong style="color:var(--accent)">الاستيراد الذكي:</strong> الصق نصاً يحتوي على أسئلة وخيارات وسيتم تحليله تلقائياً.</p>
       </div>
       <div class="form-group"><label class="form-label">اسم الاختبار *</label><input class="form-input" id="parse-test-name" placeholder="مثال: درس الجملة الاسمية" /></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
         <div class="form-group"><label class="form-label">المادة</label><input class="form-input" id="parse-test-subject" placeholder="مثال: اللغة العربية" /></div>
         <div class="form-group"><label class="form-label">⏱️ وقت الاختبار (دقائق)</label><input class="form-input" id="parse-test-time" type="number" min="0" value="10" /></div>
+        <div class="form-group"><label class="form-label">📁 المجلد</label>
+          <select class="form-input" id="parse-test-folder">
+            <option value="">عام (بدون مجلد)</option>
+          </select>
+        </div>
       </div>
       <div class="form-group"><label class="form-label">📝 الصق نص الأسئلة هنا</label><textarea class="form-input parse-textarea" id="parse-input" rows="8" placeholder="مثال:&#10;س1: ما هو أكبر كوكب في المجموعة الشمسية؟&#10;أ) الأرض&#10;ب) المريخ&#10;ج) المشتري&#10;د) زحل"></textarea></div>
       <div class="answer-bulk">
@@ -304,6 +363,52 @@
     <!-- تبويب الإدارة -->
     <div id="admin-manage" class="admin-tab-content">
       <div id="manage-list"></div>
+    </div>
+
+    <!-- تبويب المجلدات -->
+    <div id="admin-folders" class="admin-tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <p style="color:var(--text2);font-size:0.88rem">إنشاء مجلدات لتصنيف الاختبارات وعرضها منظّمة</p>
+        <button class="btn btn-primary" onclick="openCreateFolderModal()" style="font-size:0.85rem;padding:9px 18px">📁 إنشاء مجلد جديد</button>
+      </div>
+      <div id="admin-folders-list"></div>
+    </div>
+
+    <!-- تبويب استيراد PDF -->
+    <div id="admin-pdf" class="admin-tab-content">
+      <div style="background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.18);border-radius:11px;padding:14px;margin-bottom:18px">
+        <p style="font-size:0.84rem;color:var(--text2);line-height:1.7">📄 <strong style="color:var(--accent)">استيراد PDF:</strong> ارفع ملف PDF وحدد منطقة السؤال باقتصاصها ثم أضفها كصورة للسؤال.</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">📤 رفع ملف PDF</label>
+        <label class="pdf-upload-zone" id="pdf-upload-zone">
+          <span id="pdf-upload-text">🗂️ اضغط لاختيار ملف PDF</span>
+          <input type="file" accept="application/pdf" id="pdf-file-input" style="display:none" onchange="handlePdfUpload(event)">
+        </label>
+      </div>
+      <div id="pdf-page-controls" style="display:none;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="btn btn-secondary" onclick="changePdfPage(-1)" style="font-size:0.85rem;padding:8px 14px">← السابق</button>
+          <span id="pdf-page-info" style="color:var(--text2);font-size:0.85rem">صفحة 1 / 1</span>
+          <button class="btn btn-secondary" onclick="changePdfPage(1)" style="font-size:0.85rem;padding:8px 14px">التالي →</button>
+          <span style="color:var(--text3);font-size:0.8rem">🖱️ اسحب لتحديد منطقة السؤال</span>
+        </div>
+        <div style="position:relative;overflow:hidden;border-radius:var(--radius-sm);border:1px solid var(--border2)">
+          <img id="pdf-crop-img" src="" alt="صفحة PDF" style="max-width:100%;display:block">
+        </div>
+        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="cropPdfSelection()" id="pdf-crop-btn" style="font-size:0.85rem">✂️ اقتصاص واستخدام</button>
+          <button class="btn btn-secondary" onclick="resetPdfCropper()" style="font-size:0.85rem">🔄 إعادة التحديد</button>
+        </div>
+      </div>
+      <div id="pdf-cropped-preview" style="display:none;margin-top:14px">
+        <p style="font-size:0.82rem;color:var(--green);margin-bottom:8px">✅ تم الاقتصاص — سيتم إضافة هذه الصورة للسؤال التالي في البيلدر</p>
+        <img id="pdf-cropped-img" style="max-width:100%;max-height:200px;border-radius:10px;border:1.5px solid var(--green);object-fit:contain">
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="insertPdfImageToBuilder()" style="font-size:0.85rem">➕ إضافة للبيلدر</button>
+          <button class="btn btn-secondary" onclick="cropAnotherPdf()" style="font-size:0.85rem">✂️ اقتصاص منطقة أخرى</button>
+        </div>
+      </div>
     </div>
 
     <!-- تبويب الإعدادات -->
@@ -423,6 +528,36 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
+
+<!-- مودال إنشاء مجلد -->
+<div class="modal-overlay" id="create-folder-modal">
+  <div class="modal" style="max-width:420px">
+    <h3>📁 إنشاء مجلد جديد</h3>
+    <div class="form-group">
+      <label class="form-label">اسم المجلد *</label>
+      <input class="form-input" id="folder-name-input" placeholder="مثال: الفصل الأول — العلوم" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">أيقونة المجلد</label>
+      <div id="folder-emoji-picker" style="display:flex;flex-wrap:wrap;gap:8px;padding:10px;background:var(--surface2);border-radius:11px;border:1px solid var(--border2)">
+        <span class="folder-emoji-opt selected" onclick="selectFolderEmoji(this,'📁')">📁</span>
+        <span class="folder-emoji-opt" onclick="selectFolderEmoji(this,'📚')">📚</span>
+        <span class="folder-emoji-opt" onclick="selectFolderEmoji(this,'🔬')">🔬</span>
+        <span class="folder-emoji-opt" onclick="selectFolderEmoji(this,'🔢')">🔢</span>
+        <span class="folder-emoji-opt" onclick="selectFolderEmoji(this,'🌍')">🌍</span>
+        <span class="folder-emoji-opt" onclick="selectFolderEmoji(this,'⚗️')">⚗️</span>
+        <span class="folder-emoji-opt" onclick="selectFolderEmoji(this,'🏛️')">🏛️</span>
+        <span class="folder-emoji-opt" onclick="selectFolderEmoji(this,'🎨')">🎨</span>
+        <span class="folder-emoji-opt" onclick="selectFolderEmoji(this,'💻')">💻</span>
+        <span class="folder-emoji-opt" onclick="selectFolderEmoji(this,'🌙')">🌙</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('create-folder-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveFolder()">💾 إنشاء المجلد</button>
+    </div>
+  </div>
+</div>
 <script src="app.js"></script>
 </body>
 </html>

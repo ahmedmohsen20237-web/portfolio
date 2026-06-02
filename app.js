@@ -1178,3 +1178,724 @@ function toggleQTimer() {
 function nextQTimer(){ const qt=AppState.tools.qt; qt.qIdx++; if(qt.qIdx>qt.total){ clearInterval(qt.interval); qt.running=false; qt.qIdx=0; setText('qt-start-btn','▶ ابدأ'); const nb=$id('qt-next-btn'); if(nb) nb.disabled=true; setText('qt-label','✅ انتهت الأسئلة!'); showToast('✅ انتهت جميع الأسئلة!','success'); return; } qt.remaining=qt.perQ; showToast(`➡️ السؤال ${qt.qIdx}`,'info'); updateQtDisplay(); }
 function updateQtDisplay(){ const qt=AppState.tools.qt,r=qt.remaining,t=qt.perQ||1,p=Math.max(0,r/t*100),e=$id('qt-display'); if(e){ e.textContent=fmtTime(r); e.className='tool-timer-val'+(r<=5?' danger':r<=10?' warning':''); } setText('qt-label',qt.qIdx?`سؤال ${qt.qIdx} / ${qt.total}`:'جاهز'); const b=$id('qt-bar'); if(b) b.style.width=p+'%'; }
 function resetQTimer(){ const qt=AppState.tools.qt; clearInterval(qt.interval); qt.running=false; qt.qIdx=0; qt.remaining=0; setText('qt-start-btn','▶ ابدأ'); const nb=$id('qt-next-btn'); if(nb) nb.disabled=true; updateQtDisplay(); }
+
+/* ============================================================
+   ميزة 1: إدارة المجلدات (Folder Management)
+============================================================ */
+
+let AppFolders = {}; // { folderId: { name, icon, createdAt } }
+let selectedFolderEmoji = '📁';
+let currentFolderView = null; // folderId المعروض حالياً
+
+/* ── Firebase Folders ── */
+async function dbSaveFolder(data) {
+  if (!currentUser) throw new Error('يجب تسجيل الدخول كأدمن');
+  const ref = await db.ref('folders').push(data);
+  return ref.key;
+}
+async function dbDeleteFolder(id) {
+  if (!currentUser) throw new Error('يجب تسجيل الدخول كأدمن');
+  await db.ref('folders/' + id).remove();
+}
+function dbListenFolders(cb) {
+  db.ref('folders').on('value', snap => {
+    const d = snap.val();
+    AppFolders = d || {};
+    cb(AppFolders);
+  });
+}
+
+/* ── تهيئة مستمع المجلدات ── */
+function attachFoldersListener() {
+  dbListenFolders(folders => {
+    populateFolderSelects();
+    if ($id('page-home')?.classList.contains('active')) renderFoldersSection();
+    if ($id('admin-folders')?.classList.contains('active')) renderAdminFoldersList();
+  });
+}
+
+/* ── تعبئة قوائم اختيار المجلد ── */
+function populateFolderSelects() {
+  const selects = ['new-test-folder', 'parse-test-folder'];
+  selects.forEach(sid => {
+    const sel = $id(sid); if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">عام (بدون مجلد)</option>';
+    Object.entries(AppFolders).forEach(([fid, f]) => {
+      const opt = document.createElement('option');
+      opt.value = fid;
+      opt.textContent = (f.icon || '📁') + ' ' + (f.name || 'بدون اسم');
+      if (fid === cur) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+/* ── عرض قسم المجلدات في الرئيسية ── */
+function renderFoldersSection() {
+  const sec = $id('folders-section');
+  const grid = $id('folders-grid');
+  if (!sec || !grid) return;
+
+  const entries = Object.entries(AppFolders);
+  if (!entries.length) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+
+  // إخفاء عرض محتوى مجلد إن كان مفتوحاً
+  const fqv = $id('folder-quizzes-view');
+  const tg = $id('tests-grid');
+  if (currentFolderView) {
+    // أبقِ العرض الحالي
+  } else {
+    if (fqv) fqv.style.display = 'none';
+    if (tg) tg.style.display = '';
+  }
+
+  const frag = document.createDocumentFragment();
+  entries.forEach(([fid, f]) => {
+    const quizCount = AppState.tests.filter(t => t.folderId === fid).length;
+    const card = document.createElement('div');
+    card.className = 'folder-card';
+    card.onclick = () => openFolderView(fid);
+    card.innerHTML = `
+      <button class="folder-card-del admin-only-inline" onclick="event.stopPropagation();requestDeleteFolder('${fid}')">🗑️</button>
+      <div class="folder-card-icon">${escapeHtml(f.icon || '📁')}</div>
+      <div class="folder-card-name">${escapeHtml(f.name || 'مجلد')}</div>
+      <div class="folder-card-count">${quizCount} اختبار</div>`;
+    frag.appendChild(card);
+  });
+  grid.innerHTML = ''; grid.appendChild(frag);
+  // تطبيق رؤية admin-only-inline
+  document.querySelectorAll('.admin-only-inline').forEach(e => e.style.display = isAdminMode ? '' : 'none');
+}
+
+/* ── فتح محتوى مجلد ── */
+function openFolderView(fid) {
+  currentFolderView = fid;
+  const folder = AppFolders[fid];
+  if (!folder) return;
+
+  const fqv = $id('folder-quizzes-view');
+  const tg = $id('tests-grid');
+  const grid = $id('folder-quizzes-grid');
+  const title = $id('folder-view-title');
+  const foldersGrid = $id('folders-grid');
+
+  if (foldersGrid) foldersGrid.style.display = 'none';
+  if (tg) tg.style.display = 'none';
+  if (fqv) fqv.style.display = 'block';
+  if (title) title.textContent = (folder.icon || '📁') + ' ' + folder.name;
+
+  // عرض اختبارات هذا المجلد
+  const folderTests = AppState.tests.filter(t => t.folderId === fid);
+  const { scores } = AppState;
+  const frag = document.createDocumentFragment();
+
+  if (!folderTests.length) {
+    const e = document.createElement('div'); e.className = 'quizzes-empty';
+    e.innerHTML = '<div class="empty-icon">📭</div><h3>لا توجد اختبارات في هذا المجلد</h3>';
+    frag.appendChild(e);
+  }
+
+  folderTests.forEach((t, idx) => {
+    const sc = scores[t.id];
+    let badge = '<span class="test-badge badge-new">جديد</span>';
+    let bar = '';
+    if (sc !== undefined) {
+      badge = sc >= 70 ? '<span class="test-badge badge-done">مكتمل ✓</span>' : '<span class="test-badge badge-retry">راجع أخطاءك</span>';
+      const cls = sc >= 80 ? 'fill-green' : sc >= 60 ? 'fill-yellow' : 'fill-red';
+      bar = `<div class="test-score-bar"><div class="test-score-fill ${cls}" style="width:${sc}%"></div></div>`;
+    }
+    const card = document.createElement('div');
+    card.className = 'test-card'; card.onclick = () => startQuiz(t.firebaseId);
+    card.innerHTML = `
+      <button class="test-card-del admin-only-inline" onclick="event.stopPropagation();requestDeleteTest('${t.firebaseId}')">🗑️ حذف</button>
+      <div class="test-card-top"><div class="test-num">${idx + 1}</div>${badge}</div>
+      <div class="test-title">${escapeHtml(t.name)}</div>
+      <div class="test-meta">
+        <span>📝 ${t.questions?.length || 0} سؤال</span>
+        <span>⏱️ ${t.timeLimit ? t.timeLimit + ' دقيقة' : 'بلا حد'}</span>
+        ${t.subject ? `<span>📚 ${escapeHtml(t.subject)}</span>` : ''}
+        ${sc !== undefined ? `<span style="color:${sc >= 70 ? 'var(--green)' : sc >= 50 ? 'var(--accent)' : 'var(--red)'}">🎯 ${sc}%</span>` : ''}
+      </div>${bar}`;
+    frag.appendChild(card);
+  });
+  if (grid) { grid.innerHTML = ''; grid.appendChild(frag); }
+  document.querySelectorAll('.admin-only-inline').forEach(e => e.style.display = isAdminMode ? '' : 'none');
+}
+
+/* ── إغلاق عرض المجلد ── */
+function closeFolderView() {
+  currentFolderView = null;
+  const fqv = $id('folder-quizzes-view');
+  const tg = $id('tests-grid');
+  const foldersGrid = $id('folders-grid');
+  if (fqv) fqv.style.display = 'none';
+  if (tg) tg.style.display = '';
+  if (foldersGrid) foldersGrid.style.display = '';
+}
+
+/* ── مودال إنشاء مجلد ── */
+function openCreateFolderModal() {
+  if (!isAdminMode) { showToast('يجب تسجيل الدخول كأدمن', 'error'); return; }
+  setVal('folder-name-input', '');
+  selectedFolderEmoji = '📁';
+  document.querySelectorAll('.folder-emoji-opt').forEach(e => e.classList.remove('selected'));
+  document.querySelector('.folder-emoji-opt')?.classList.add('selected');
+  openModal('create-folder-modal');
+  setTimeout(() => $id('folder-name-input')?.focus(), 120);
+}
+
+function selectFolderEmoji(el, emoji) {
+  document.querySelectorAll('.folder-emoji-opt').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedFolderEmoji = emoji;
+}
+
+async function saveFolder() {
+  if (!isAdminMode) { showToast('يجب تسجيل الدخول كأدمن', 'error'); return; }
+  const name = $id('folder-name-input')?.value.trim();
+  if (!name) { showToast('أدخل اسم المجلد', 'error'); return; }
+  try {
+    await dbSaveFolder({ name, icon: selectedFolderEmoji, createdAt: Date.now() });
+    closeModal('create-folder-modal');
+    showToast('تم إنشاء المجلد ✓');
+    renderAdminFoldersList();
+  } catch (e) { showToast(e.message || 'حدث خطأ', 'error'); }
+}
+
+/* ── حذف مجلد ── */
+function requestDeleteFolder(fid) {
+  if (!isAdminMode) return;
+  if (!confirm('هل تريد حذف هذا المجلد؟ لن تُحذف الاختبارات بداخله.')) return;
+  dbDeleteFolder(fid).then(() => {
+    showToast('تم حذف المجلد ✓');
+    if (currentFolderView === fid) closeFolderView();
+  }).catch(e => showToast(e.message, 'error'));
+}
+
+/* ── قائمة المجلدات في لوحة الأدمن ── */
+function renderAdminFoldersList() {
+  const container = $id('admin-folders-list'); if (!container) return;
+  const entries = Object.entries(AppFolders);
+  if (!entries.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>لا توجد مجلدات بعد — أنشئ مجلداً جديداً</p></div>';
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  entries.forEach(([fid, f]) => {
+    const quizCount = AppState.tests.filter(t => t.folderId === fid).length;
+    const item = document.createElement('div'); item.className = 'admin-folder-item';
+    item.innerHTML = `
+      <div class="admin-folder-item-info">
+        <div class="admin-folder-item-icon">${escapeHtml(f.icon || '📁')}</div>
+        <div>
+          <div class="admin-folder-item-name">${escapeHtml(f.name || 'مجلد')}</div>
+          <div class="admin-folder-item-meta">${quizCount} اختبار • أُنشئ ${new Date(f.createdAt || Date.now()).toLocaleDateString('ar-SA')}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:7px">
+        <button onclick="requestDeleteFolder('${fid}')" class="btn btn-secondary" style="font-size:0.8rem;padding:7px 12px;color:var(--red)">🗑️ حذف</button>
+      </div>`;
+    frag.appendChild(item);
+  });
+  container.innerHTML = ''; container.appendChild(frag);
+}
+
+/* ── تعديل saveTest لإضافة folderId ── */
+const _originalSaveTest = saveTest;
+window.saveTest = async function() {
+  if (!isAdminMode) { showToast('يجب تسجيل الدخول كأدمن', 'error'); return; }
+  const name = $id('new-test-name')?.value.trim();
+  if (!name) { showToast('أدخل اسم الاختبار', 'error'); return; }
+  if (!AppState.builderQuestions.length) { showToast('أضف سؤالاً على الأقل', 'error'); return; }
+  if (!AppState.builderQuestions.every(q => q.text.trim() && q.choices.every(c => c.trim()))) {
+    showToast('أكمل جميع الأسئلة والخيارات', 'error'); return;
+  }
+  const folderId = $id('new-test-folder')?.value || '';
+  const data = {
+    name, subject: $id('new-test-subject')?.value.trim() || '',
+    timeLimit: parseInt($id('new-test-time')?.value) || 0,
+    folderId,
+    questions: AppState.builderQuestions.map(q => ({
+      text: q.text, choices: [...q.choices],
+      correctAnswers: q.correctAnswers?.length ? q.correctAnswers : [q.correct],
+      correct: q.correctAnswers?.length ? q.correctAnswers[0] : q.correct,
+      multiCorrect: q.multiCorrect || false, note: q.note || '', image: q.image || ''
+    })), createdAt: Date.now()
+  };
+  const btn = $id('save-test-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'جارٍ الحفظ...'; }
+  try {
+    await dbSaveQuiz(data); showToast('تم حفظ الاختبار ✓');
+    setVal('new-test-name', ''); setVal('new-test-subject', ''); setVal('new-test-time', '10');
+    const fs = $id('new-test-folder'); if (fs) fs.value = '';
+    AppState.builderQuestions = []; renderBuilder();
+    setTimeout(() => showPage('home'), 900);
+  } catch (e) { showToast(e.message || 'حدث خطأ', 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = '💾 حفظ الاختبار'; } }
+};
+
+/* ── تعديل saveParsedTest لإضافة folderId ── */
+const _originalSaveParsed = saveParsedTest;
+window.saveParsedTest = async function() {
+  if (!isAdminMode) { showToast('يجب تسجيل الدخول كأدمن', 'error'); return; }
+  const name = $id('parse-test-name')?.value.trim();
+  if (!name) { showToast('أدخل اسم الاختبار', 'error'); return; }
+  if (!AppState.parsedQuestions.length) { showToast('لا توجد أسئلة', 'error'); return; }
+  const folderId = $id('parse-test-folder')?.value || '';
+  const data = {
+    name, subject: $id('parse-test-subject')?.value.trim() || '',
+    timeLimit: parseInt($id('parse-test-time')?.value) || 0,
+    folderId,
+    questions: AppState.parsedQuestions.map(q => ({
+      text: q.text, choices: [...q.choices],
+      correctAnswers: q.correctAnswers || [q.correct || 0],
+      correct: (q.correctAnswers || [q.correct || 0])[0],
+      multiCorrect: (q.correctAnswers || []).length > 1, note: q.note || ''
+    })), createdAt: Date.now()
+  };
+  const btn = $id('save-parsed-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'جارٍ الحفظ...'; }
+  try {
+    await dbSaveQuiz(data); showToast(`تم حفظ "${name}" ✓`);
+    setVal('parse-input', ''); setVal('bulk-answers-input', ''); setVal('parse-test-name', ''); setVal('parse-test-subject', '');
+    const pf = $id('parse-test-folder'); if (pf) pf.value = '';
+    const pr = $id('parse-preview'); if (pr) pr.style.display = 'none';
+    AppState.parsedQuestions = []; setTimeout(() => showPage('home'), 900);
+  } catch (e) { showToast(e.message || 'حدث خطأ', 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = '💾 حفظ الاختبار'; } }
+};
+
+/* ── تعديل switchAdminTab لإضافة تبويبي folders و pdf ── */
+const _originalSwitchAdminTab = switchAdminTab;
+window.switchAdminTab = function(tab, ev) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+  if (ev?.currentTarget) ev.currentTarget.classList.add('active');
+  $id('admin-' + tab)?.classList.add('active');
+  if (tab === 'manage') renderManageList();
+  if (tab === 'settings') loadAdminSettings();
+  if (tab === 'folders') { renderAdminFoldersList(); }
+  if (tab === 'pdf') { /* PDF tab ready */ }
+};
+
+/* ── تحديث renderHome لإظهار المجلدات ── */
+const _originalRenderHome = renderHome;
+window.renderHome = function() {
+  const { tests, scores, errors, goal } = AppState;
+  const done = Object.keys(scores).length;
+  const vals = Object.values(scores);
+  const avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+  setText('stat-total', tests.length);
+  setText('stat-done', done);
+  setText('stat-avg', avg !== null ? avg + '%' : '—');
+  setText('stat-errors', errors.length);
+  renderGoal(done);
+  renderFoldersSection();
+  renderTestsGrid();
+};
+
+/* ── تعديل initApp لتشغيل مستمع المجلدات ── */
+const _originalInitApp = initApp;
+window.initApp = function() {
+  initTheme(); updatePomoSettings(); attachFirebaseListener(); attachFoldersListener();
+  onAuthStateChange((user, isAdmin) => {
+    applyAdminUI(user, isAdmin);
+    if ($id('page-home')?.classList.contains('active')) renderHome();
+  });
+};
+// استبدال المستمع الأصلي
+document.removeEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', window.initApp);
+
+
+/* ============================================================
+   ميزة 2: استيراد PDF واقتصاص الأسئلة
+============================================================ */
+
+let pdfDoc = null;
+let pdfCurrentPage = 1;
+let pdfCropper = null;
+let pdfCroppedDataURL = null;
+
+async function handlePdfUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.type !== 'application/pdf') { showToast('يرجى رفع ملف PDF فقط', 'error'); return; }
+
+  const zone = $id('pdf-upload-zone');
+  const txt = $id('pdf-upload-text');
+  if (zone) zone.classList.add('has-file');
+  if (txt) txt.textContent = '✅ ' + file.name;
+
+  const arrayBuffer = await file.arrayBuffer();
+  try {
+    if (typeof pdfjsLib === 'undefined') { showToast('مكتبة PDF.js لم تُحمَّل بعد — أعد المحاولة', 'error'); return; }
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    pdfCurrentPage = 1;
+    await renderPdfPage(pdfCurrentPage);
+    const pc = $id('pdf-page-controls');
+    if (pc) pc.style.display = 'block';
+    const cp = $id('pdf-cropped-preview');
+    if (cp) cp.style.display = 'none';
+    showToast(`تم تحميل الـ PDF — ${pdfDoc.numPages} صفحة ✓`);
+  } catch (e) {
+    console.error(e);
+    showToast('فشل قراءة الملف: ' + e.message, 'error');
+  }
+}
+
+async function renderPdfPage(pageNum) {
+  if (!pdfDoc) return;
+  const page = await pdfDoc.getPage(pageNum);
+  const scale = 1.5;
+  const viewport = page.getViewport({ scale });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  const ctx = canvas.getContext('2d');
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  const dataURL = canvas.toDataURL('image/jpeg', 0.92);
+
+  // إعداد Cropper.js
+  if (pdfCropper) { pdfCropper.destroy(); pdfCropper = null; }
+  const imgEl = $id('pdf-crop-img');
+  if (imgEl) {
+    imgEl.src = dataURL;
+    imgEl.onload = () => {
+      if (typeof Cropper === 'undefined') { showToast('مكتبة Cropper.js لم تُحمَّل', 'error'); return; }
+      pdfCropper = new Cropper(imgEl, {
+        viewMode: 1, dragMode: 'crop', autoCropArea: 0.5,
+        responsive: true, background: false,
+        guides: true, highlight: true
+      });
+    };
+  }
+  setText('pdf-page-info', `صفحة ${pageNum} / ${pdfDoc.numPages}`);
+}
+
+async function changePdfPage(dir) {
+  if (!pdfDoc) return;
+  const newPage = pdfCurrentPage + dir;
+  if (newPage < 1 || newPage > pdfDoc.numPages) return;
+  pdfCurrentPage = newPage;
+  await renderPdfPage(pdfCurrentPage);
+}
+
+function cropPdfSelection() {
+  if (!pdfCropper) { showToast('حدد منطقة الاقتصاص أولاً', 'error'); return; }
+  const canvas = pdfCropper.getCroppedCanvas({ maxWidth: 800, maxHeight: 600, imageSmoothingQuality: 'high' });
+  if (!canvas) { showToast('لم يتم التحديد بعد', 'error'); return; }
+
+  // ضغط إلى JPEG < 100KB
+  let quality = 0.85;
+  let dataURL = canvas.toDataURL('image/jpeg', quality);
+  while (dataURL.length > 100 * 1024 * 1.37 && quality > 0.2) {
+    quality -= 0.1;
+    dataURL = canvas.toDataURL('image/jpeg', quality);
+  }
+
+  pdfCroppedDataURL = dataURL;
+  const preview = $id('pdf-cropped-preview');
+  const img = $id('pdf-cropped-img');
+  if (preview) preview.style.display = 'block';
+  if (img) img.src = dataURL;
+
+  const sizeKB = Math.round(dataURL.length * 0.75 / 1024);
+  showToast(`تم الاقتصاص ✓ حجم الصورة: ~${sizeKB}KB`);
+}
+
+function resetPdfCropper() {
+  if (pdfCropper) pdfCropper.reset();
+  const preview = $id('pdf-cropped-preview');
+  if (preview) preview.style.display = 'none';
+  pdfCroppedDataURL = null;
+}
+
+function cropAnotherPdf() {
+  if (pdfCropper) pdfCropper.reset();
+  const preview = $id('pdf-cropped-preview');
+  if (preview) preview.style.display = 'none';
+  pdfCroppedDataURL = null;
+}
+
+function insertPdfImageToBuilder() {
+  if (!pdfCroppedDataURL) { showToast('لا توجد صورة مقتصّة', 'error'); return; }
+  // أضف سؤالاً جديداً مع الصورة في بيلدر الإضافة
+  AppState.builderQuestions.push({
+    text: '', choices: ['', '', '', ''],
+    correct: 0, correctAnswers: [0],
+    multiCorrect: false, note: '', image: pdfCroppedDataURL
+  });
+  renderBuilder();
+  // انتقل لتبويب الإضافة
+  switchAdminTab('add', null);
+  document.querySelectorAll('.admin-tab').forEach((t, i) => {
+    if (i === 0) t.classList.add('active'); else t.classList.remove('active');
+  });
+  showToast('تمت إضافة الصورة للسؤال الجديد ✓');
+  // scroll للبيلدر
+  setTimeout(() => $id('questions-builder')?.scrollIntoView({ behavior: 'smooth' }), 200);
+}
+
+
+/* ============================================================
+   ميزة 3: مصحح ورقة الإجابات (OMR Bubble Sheet Grader)
+============================================================ */
+
+let omrImageData = null;
+
+function openOmrPanel() {
+  const panel = $id('omr-panel');
+  const quizPage = document.querySelector('.quiz-page');
+  if (panel) panel.style.display = 'block';
+  if (quizPage) quizPage.style.display = 'none';
+  panel?.scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeOmrPanel() {
+  const panel = $id('omr-panel');
+  const quizPage = document.querySelector('.quiz-page');
+  if (panel) panel.style.display = 'none';
+  if (quizPage) quizPage.style.display = 'block';
+  // إعادة تهيئة
+  const canvas = $id('omr-canvas'); if (canvas) canvas.style.display = 'none';
+  const proc = $id('omr-processing'); if (proc) proc.style.display = 'none';
+  const res = $id('omr-results-preview'); if (res) res.style.display = 'none';
+  const txt = $id('omr-upload-text'); if (txt) txt.textContent = '📷 اضغط لرفع الصورة';
+}
+
+async function handleOmrUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('يرجى رفع صورة فقط', 'error'); return; }
+
+  const proc = $id('omr-processing');
+  const txt = $id('omr-upload-text');
+  if (txt) txt.textContent = '⏳ جارٍ التحليل...';
+  if (proc) proc.style.display = 'block';
+
+  const img = new Image();
+  img.onload = () => processOmrImage(img);
+  img.onerror = () => { showToast('فشل تحميل الصورة', 'error'); if (proc) proc.style.display = 'none'; };
+  img.src = URL.createObjectURL(file);
+}
+
+function processOmrImage(img) {
+  const canvas = $id('omr-canvas');
+  const proc = $id('omr-processing');
+  if (!canvas) return;
+
+  const MAX_W = 800;
+  const scale = Math.min(1, MAX_W / img.width);
+  canvas.width = Math.round(img.width * scale);
+  canvas.height = Math.round(img.height * scale);
+
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  // تحليل البابل شيت بدون OpenCV (pixel analysis)
+  gradeOmrWithPixels(ctx, canvas.width, canvas.height);
+  canvas.style.display = 'block';
+  if (proc) proc.style.display = 'none';
+
+  const txt = $id('omr-upload-text');
+  if (txt) txt.textContent = '✅ تم رفع الصورة';
+}
+
+function gradeOmrWithPixels(ctx, W, H) {
+  const { currentTest } = AppState;
+  if (!currentTest) return;
+  const questions = currentTest.questions;
+  const numQ = questions.length;
+
+  // تقسيم الصورة إلى شبكة أسئلة وخيارات (A B C D)
+  // المنطقة الفعلية للإجابات: 15%-85% عرضاً، 10%-90% ارتفاعاً
+  const marginX = Math.round(W * 0.1);
+  const marginY = Math.round(H * 0.08);
+  const usableW = W - 2 * marginX;
+  const usableH = H - 2 * marginY;
+  const numCols = 4; // A B C D
+  const rowH = usableH / Math.max(numQ, 1);
+  const colW = usableW / numCols;
+
+  const detectedAnswers = [];
+  const letters = ['أ', 'ب', 'ج', 'د'];
+  const darkThreshold = 110; // أقل من هذا يُعدّ داكناً
+  const fillRatio = 0.35;    // 35% من الدوائر داكنة = محددة
+
+  for (let qi = 0; qi < numQ; qi++) {
+    const rowY = marginY + qi * rowH;
+    let bestCol = -1;
+    let bestDensity = 0;
+    const densities = [];
+
+    for (let ci = 0; ci < numCols; ci++) {
+      const colX = marginX + ci * colW;
+      // منطقة الدائرة: مركز الخلية مع هامش
+      const bx = Math.round(colX + colW * 0.2);
+      const by = Math.round(rowY + rowH * 0.15);
+      const bw = Math.round(colW * 0.6);
+      const bh = Math.round(rowH * 0.7);
+      const bx2 = Math.min(bx + bw, W);
+      const by2 = Math.min(by + bh, H);
+
+      const imgData = ctx.getImageData(bx, by, bx2 - bx, by2 - by);
+      const pixels = imgData.data;
+      let darkCount = 0;
+      const total = (bx2 - bx) * (by2 - by);
+
+      for (let p = 0; p < pixels.length; p += 4) {
+        const gray = 0.299 * pixels[p] + 0.587 * pixels[p+1] + 0.114 * pixels[p+2];
+        if (gray < darkThreshold) darkCount++;
+      }
+      const density = total > 0 ? darkCount / total : 0;
+      densities.push(density);
+      if (density > bestDensity) { bestDensity = density; bestCol = ci; }
+    }
+
+    // تحقق من حد أدنى للملء (منع الإيجابيات الزائفة)
+    if (bestDensity < fillRatio) bestCol = -1;
+    detectedAnswers.push(bestCol);
+  }
+
+  // التحقق من جودة الصورة
+  const detected = detectedAnswers.filter(a => a !== -1).length;
+  if (detected < numQ * 0.5) {
+    showToast('⚠️ الإضاءة ضعيفة أو الصورة غير واضحة — تأكد من الإضاءة الجيدة', 'warning', 5000);
+  }
+
+  showOmrResults(detectedAnswers, questions, letters);
+}
+
+function showOmrResults(detectedAnswers, questions, letters) {
+  const container = $id('omr-results-preview'); if (!container) return;
+  const { currentTest } = AppState;
+
+  let correct = 0, wrong = 0, empty = 0;
+  const wrongList = [];
+
+  const rows = questions.map((q, i) => {
+    const det = detectedAnswers[i];
+    const correctIdxs = getCorrectAnswers(q);
+    let cls = 'omr-answer-empty', statusText = '—', statusIcon = '⬜';
+
+    if (det === -1 || det === undefined) {
+      empty++;
+      statusText = 'لم يُكتشف';
+    } else if (correctIdxs.includes(det)) {
+      correct++;
+      cls = 'omr-answer-correct';
+      statusText = letters[det] + ' — صحيح ✓';
+      statusIcon = '✅';
+    } else {
+      wrong++;
+      cls = 'omr-answer-wrong';
+      statusText = letters[det] + ' — خطأ ✗';
+      statusIcon = '❌';
+      wrongList.push({ testName: currentTest.name, testId: currentTest.id, qIndex: i, q, userAnswer: det, timestamp: Date.now(), attempts: getErrorAttemptCount(currentTest.id, i) + 1 });
+    }
+
+    return `<div class="omr-answer-row">
+      <div class="omr-answer-num">${i + 1}</div>
+      <div style="flex:1;font-size:0.82rem;color:var(--text2);font-family:'ThmanyahSerif',serif">${(q.text||'').substring(0,50)}${q.text?.length > 50 ? '...' : ''}</div>
+      <div class="omr-answer-detected ${cls}">${statusText}</div>
+    </div>`;
+  }).join('');
+
+  const pct = Math.round(correct / questions.length * 100);
+  const gColor = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--accent)' : 'var(--red)';
+
+  container.innerHTML = `
+    <div style="background:rgba(251,191,36,.06);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div style="font-family:'Foda',serif;font-size:2rem;color:${gColor}">${pct}%</div>
+        <div style="display:flex;gap:12px;font-size:0.82rem">
+          <span style="color:var(--green)">✅ ${correct} صحيح</span>
+          <span style="color:var(--red)">❌ ${wrong} خطأ</span>
+          <span style="color:var(--text3)">⬜ ${empty} فارغ</span>
+        </div>
+      </div>
+    </div>
+    <div style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">${rows}</div>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="applyOmrResults(${JSON.stringify(detectedAnswers).replace(/"/g,'&quot;')})" style="font-size:0.85rem">✅ تطبيق النتيجة وحفظها</button>
+    </div>`;
+  container.style.display = 'block';
+
+  // حفظ الأخطاء مسبقاً
+  if (wrongList.length) {
+    updateErrorTracking(wrongList);
+    showToast(`${wrongList.length} خطأ تم تسجيله في مجلد الأخطاء`);
+  }
+}
+
+function applyOmrResults(detectedAnswers) {
+  const { currentTest } = AppState;
+  if (!currentTest) return;
+  AppState.userAnswers = detectedAnswers.map(a => a === undefined ? null : a);
+  const qs = currentTest.questions;
+  let correct = 0, skipped = 0;
+  qs.forEach((q, i) => {
+    const ua = AppState.userAnswers[i];
+    if (ua === -1 || ua === null) skipped++;
+    else if (isAnswerCorrect(q, ua)) correct++;
+  });
+  const pct = Math.round(correct / qs.length * 100);
+  if (currentTest.id !== '__practice__') {
+    AppState.scores[currentTest.id] = pct;
+    localStorage.setItem('quizScores', JSON.stringify(AppState.scores));
+    dbSaveAnalytics(currentTest.id, { score: pct, correct, wrong: qs.length - correct - skipped, skipped, total: qs.length, elapsed: AppState.elapsedSecs, method: 'omr' });
+  }
+  closeOmrPanel();
+  clearInterval(AppState.timerInterval);
+  showResults(pct, correct, skipped, qs.length, AppState.elapsedSecs);
+}
+
+/* ── توليد نموذج البابل شيت كـ PDF مطبوع ── */
+function generateOmrTemplate() {
+  const { currentTest } = AppState;
+  if (!currentTest) { showToast('ابدأ اختباراً أولاً', 'error'); return; }
+  const numQ = currentTest.questions.length;
+  const letters = ['أ', 'ب', 'ج', 'د'];
+
+  // إنشاء HTML بسيط للطباعة
+  let html = `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
+    <title>نموذج البابل شيت — ${currentTest.name}</title>
+    <style>
+      body{font-family:Arial,sans-serif;direction:rtl;padding:30px;background:#fff;color:#000}
+      h2{text-align:center;margin-bottom:6px;font-size:18px}
+      .meta{text-align:center;font-size:13px;color:#555;margin-bottom:20px}
+      table{width:100%;border-collapse:collapse}
+      td,th{border:1px solid #ddd;padding:6px 10px;text-align:center;font-size:13px}
+      th{background:#f5f5f5;font-weight:bold}
+      .circle{display:inline-block;width:22px;height:22px;border-radius:50%;border:2px solid #333;line-height:18px;text-align:center;font-size:11px;cursor:pointer}
+      .anchor{width:20px;height:20px;background:#000;display:inline-block;border-radius:3px}
+      .corners{display:flex;justify-content:space-between;margin-bottom:20px}
+      @media print{button{display:none}}
+    </style></head><body>
+    <div class="corners">
+      <span class="anchor"></span><span></span><span class="anchor"></span>
+    </div>
+    <h2>📝 ورقة الإجابات — ${currentTest.name}</h2>
+    <div class="meta">اسم الطالب: _________________________ | التاريخ: _____________</div>
+    <table><tr><th>رقم السؤال</th>${letters.map(l => `<th>○ ${l}</th>`).join('')}</tr>`;
+
+  for (let i = 0; i < numQ; i++) {
+    html += `<tr><td style="font-weight:bold">${i + 1}</td>${letters.map(l => `<td><span class="circle">${l}</span></td>`).join('')}</tr>`;
+  }
+
+  html += `</table>
+    <div class="corners" style="margin-top:20px">
+      <span class="anchor"></span><span></span><span class="anchor"></span>
+    </div>
+    <div style="text-align:center;margin-top:14px;font-size:11px;color:#999">ظلّل الدائرة تظليماً كاملاً بقلم رصاص أو قلم أسود</div>
+    <script>window.print();<\/script></body></html>`;
+
+  const win = window.open('', '_blank');
+  if (win) { win.document.write(html); win.document.close(); }
+  else showToast('تعذّر فتح نافذة الطباعة — تحقق من إعدادات المتصفح', 'warning');
+}
+
