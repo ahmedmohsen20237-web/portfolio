@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>منصة الوسام التعليمية</title>
-  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -13,7 +12,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>window.addEventListener('load',function(){if(typeof pdfjsLib!=='undefined'){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}});</script>
+  <script>window.addEventListener('load',function(){if(typeof pdfjsLib!=='undefined')pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';});</script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -24,7 +23,7 @@
     <div class="loading-logo">🏆</div>
     <div class="loading-title">منصة الوسام التعليمية</div>
     <div class="loading-bar"><div class="loading-fill"></div></div>
-    <p class="loading-sub">جارٍ تحميل الاختبارات...</p>
+    <p class="loading-sub" id="loading-sub-text">جارٍ تحميل النظام...</p>
   </div>
 </div>
 
@@ -42,8 +41,10 @@
   </div>
   <nav class="header-nav">
     <button class="nav-btn ghost" onclick="showPage('home')"><i class="fa-solid fa-house" style="font-size:.8rem;margin-left:4px"></i><span>الرئيسية</span></button>
+    <button class="nav-btn ghost" onclick="showPage('banks')"><i class="fa-solid fa-database" style="font-size:.8rem;margin-left:4px"></i><span>بنك الأسئلة</span></button>
     <button class="nav-btn ghost" onclick="showPage('tools')"><i class="fa-solid fa-toolbox" style="font-size:.8rem;margin-left:4px"></i><span>الأدوات</span></button>
     <button class="nav-btn ghost" onclick="showPage('errors')"><i class="fa-solid fa-folder-open" style="font-size:.8rem;margin-left:4px"></i><span>أخطائي</span></button>
+    <button class="nav-btn ghost" onclick="showPage('analytics')"><i class="fa-solid fa-chart-line" style="font-size:.8rem;margin-left:4px"></i><span>إحصائيات</span></button>
     <button class="nav-btn gold" id="nav-admin-btn" style="display:none" onclick="showPage('admin')"><i class="fa-solid fa-gear" style="font-size:.8rem;margin-left:4px"></i><span>إدارة</span></button>
     <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="تبديل المظهر"><i class="fa-solid fa-sun" id="theme-icon"></i></button>
     <button class="admin-login-btn" id="admin-login-btn" onclick="handleAdminLogin()" title="دخول الأدمن"><i class="fa-solid fa-lock" id="admin-lock-icon"></i></button>
@@ -61,6 +62,7 @@
       <div class="stat-card"><div class="stat-val" id="stat-done">0</div><div class="stat-lbl">مكتمل</div></div>
       <div class="stat-card"><div class="stat-val" id="stat-avg">—</div><div class="stat-lbl">متوسط الدرجات</div></div>
       <div class="stat-card"><div class="stat-val" id="stat-errors">0</div><div class="stat-lbl">خطأ مسجّل</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-banks">0</div><div class="stat-lbl">بنك أسئلة</div></div>
     </div>
   </div>
   <div class="section">
@@ -103,7 +105,7 @@
     <div class="folders-grid" id="folders-grid"></div>
     <div id="folder-quizzes-view" style="display:none">
       <div class="folder-view-header">
-        <button class="btn btn-secondary" onclick="closeFolderView()" style="font-size:0.85rem;padding:9px 16px">🔙 عودة للمجلدات</button>
+        <button class="btn btn-secondary" onclick="closeFolderView()" style="font-size:0.85rem;padding:9px 16px">🔙 عودة</button>
         <div class="folder-view-title" id="folder-view-title">مجلد</div>
       </div>
       <div class="tests-grid" id="folder-quizzes-grid"></div>
@@ -112,6 +114,36 @@
   <div class="section">
     <div class="section-title">📋 الاختبارات</div>
     <div class="tests-grid" id="tests-grid"></div>
+  </div>
+</div>
+
+<!-- ==================== بنك الأسئلة ==================== -->
+<div id="page-banks" class="page">
+  <div style="max-width:1000px;margin:0 auto;padding:26px 20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+      <div>
+        <h2 style="font-family:'ThmanyahSans',sans-serif;font-weight:700;margin-bottom:4px">🗄️ بنك الأسئلة</h2>
+        <p style="color:var(--text2);font-size:0.88rem">إدارة ومراجعة وتصدير مجموعات الأسئلة</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" class="admin-only">
+        <button class="btn btn-secondary" onclick="openGenerateQuizModal()" style="font-size:0.85rem"><i class="fa-solid fa-wand-magic-sparkles" style="margin-left:5px"></i>توليد اختبار ذكي</button>
+        <button class="btn btn-primary" onclick="openCreateBankModal()" style="font-size:0.85rem"><i class="fa-solid fa-plus" style="margin-left:5px"></i>إنشاء بنك جديد</button>
+      </div>
+    </div>
+    <!-- شريط البحث والتصفية -->
+    <div class="bank-filter-bar">
+      <input class="form-input" id="bank-search" placeholder="🔍 بحث في الأسئلة والبنوك..." oninput="filterBanks()" style="flex:1;min-width:200px">
+      <select class="form-input" id="bank-filter-subject" onchange="filterBanks()" style="max-width:160px">
+        <option value="">كل المواد</option>
+      </select>
+      <select class="form-input" id="bank-filter-difficulty" onchange="filterBanks()" style="max-width:140px">
+        <option value="">كل المستويات</option>
+        <option value="easy">سهل</option>
+        <option value="medium">متوسط</option>
+        <option value="hard">صعب</option>
+      </select>
+    </div>
+    <div id="banks-container"></div>
   </div>
 </div>
 
@@ -182,6 +214,22 @@
   </div>
 </div>
 
+<!-- ==================== الإحصائيات ==================== -->
+<div id="page-analytics" class="page">
+  <div style="max-width:1000px;margin:0 auto;padding:26px 20px;">
+    <h2 style="font-family:'ThmanyahSans',sans-serif;font-weight:700;margin-bottom:6px">📊 لوحة الإحصائيات</h2>
+    <p style="color:var(--text2);font-size:0.88rem;margin-bottom:24px">تحليل شامل للأداء والتقدم</p>
+    <div id="analytics-container">
+      <div class="analytics-grid" id="analytics-kpi-grid"></div>
+      <div class="analytics-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+        <div class="analytics-card" id="analytics-hardest"></div>
+        <div class="analytics-card" id="analytics-subjects"></div>
+      </div>
+      <div class="analytics-card" id="analytics-timeline" style="margin-top:16px"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ==================== صفحة الاختبار ==================== -->
 <div id="page-quiz" class="page">
   <div class="quiz-page">
@@ -197,41 +245,27 @@
       <div class="q-progress-bar"><div class="q-progress-fill" id="q-progress-fill" style="width:0%"></div></div>
       <div class="q-counter" id="q-counter">0 / 0</div>
     </div>
-
-    <!-- شريط التنقل السريع بين الأسئلة -->
     <div class="q-nav-strip" id="q-nav-strip"></div>
-
     <div class="question-card" id="question-card">
       <div class="q-num" id="q-num"></div>
       <div class="q-text" id="q-text"></div>
-      <!-- صورة السؤال إن وجدت -->
       <img id="q-image-display" class="q-image-display" src="" alt="صورة السؤال" style="display:none"/>
-      <!-- ملاحظة المعلم تظهر أعلى الخيارات إن وُجدت -->
       <div class="teacher-note-pre" id="teacher-note-pre" style="display:none"></div>
       <div class="choices" id="choices-container"></div>
       <div class="teacher-note-box" id="teacher-note-box" style="display:none">
-        <strong>💡 ملاحظة المعلم:</strong>
-        <span id="teacher-note-text"></span>
+        <strong>💡 ملاحظة المعلم:</strong><span id="teacher-note-text"></span>
       </div>
     </div>
-
     <div class="quiz-actions">
       <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()">→ السابق</button>
       <button class="btn btn-secondary" id="skip-btn" onclick="skipQuestion()">تخطي ⏭️</button>
       <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">التالي ←</button>
     </div>
-
-    <!-- زر المراجعة النهائية -->
-    <div style="text-align:center;margin-top:12px;">
-      <button class="btn-review-final" id="review-final-btn" onclick="openFinalReview()">
-        📋 مراجعة الإجابات قبل التسليم
-      </button>
-      <button class="btn-omr" id="omr-tab-btn" onclick="openOmrPanel()" style="margin-right:10px">
-        📝 تصحيح البابل شيت
-      </button>
+    <div style="text-align:center;margin-top:12px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
+      <button class="btn-review-final" id="review-final-btn" onclick="openFinalReview()">📋 مراجعة الإجابات قبل التسليم</button>
+      <button class="btn-omr" onclick="openOmrPanel()">📝 تصحيح البابل شيت</button>
     </div>
   </div>
-
   <!-- لوحة OMR -->
   <div id="omr-panel" style="display:none;max-width:680px;margin:0 auto;padding:0 20px 30px">
     <div class="omr-card">
@@ -300,11 +334,11 @@
     <h2 style="font-family:'ThmanyahSans',sans-serif;font-weight:700;margin-bottom:6px">⚙️ لوحة إدارة الاختبارات</h2>
     <p style="color:var(--accent);font-size:0.82rem;margin-bottom:18px"><i class="fa-solid fa-unlock-keyhole" style="margin-left:5px"></i>وضع الأدمن مفعّل</p>
     <div class="admin-tabs">
-      <button class="admin-tab active" onclick="switchAdminTab('add',event)">➕ إضافة اختبار</button>
+      <button class="admin-tab active" onclick="switchAdminTab('add',event)">➕ إضافة</button>
       <button class="admin-tab" onclick="switchAdminTab('parse',event)">🤖 استيراد ذكي</button>
-      <button class="admin-tab" onclick="switchAdminTab('manage',event)">📋 إدارة الاختبارات</button>
-      <button class="admin-tab" onclick="switchAdminTab('folders',event)">📁 المجلدات</button>
-      <button class="admin-tab" onclick="switchAdminTab('pdf',event)">📄 استيراد PDF</button>
+      <button class="admin-tab" onclick="switchAdminTab('ai-pdf',event)">🧠 AI PDF</button>
+      <button class="admin-tab" onclick="switchAdminTab('manage',event)">📋 إدارة</button>
+      <button class="admin-tab" onclick="switchAdminTab('folders',event)">📁 مجلدات</button>
       <button class="admin-tab" onclick="switchAdminTab('settings',event)">⚙️ إعدادات</button>
     </div>
 
@@ -312,17 +346,15 @@
     <div id="admin-add" class="admin-tab-content active">
       <div class="form-group"><label class="form-label">اسم الاختبار *</label><input class="form-input" id="new-test-name" placeholder="مثال: الزلازل والسكري" /></div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-        <div class="form-group"><label class="form-label">المادة / الموضوع</label><input class="form-input" id="new-test-subject" placeholder="مثال: العلوم" /></div>
-        <div class="form-group"><label class="form-label">⏱️ وقت الاختبار (دقائق)</label><input class="form-input" id="new-test-time" type="number" min="0" value="10" /></div>
+        <div class="form-group"><label class="form-label">المادة</label><input class="form-input" id="new-test-subject" placeholder="مثال: العلوم" /></div>
+        <div class="form-group"><label class="form-label">⏱️ الوقت (دقائق)</label><input class="form-input" id="new-test-time" type="number" min="0" value="10" /></div>
         <div class="form-group"><label class="form-label">📁 المجلد</label>
-          <select class="form-input" id="new-test-folder">
-            <option value="">عام (بدون مجلد)</option>
-          </select>
+          <select class="form-input" id="new-test-folder"><option value="">عام</option></select>
         </div>
       </div>
       <div class="section-title" style="margin-bottom:10px;font-size:0.88rem">الأسئلة</div>
       <div class="questions-builder" id="questions-builder"></div>
-      <button class="btn btn-secondary" onclick="addQuestionBuilder()" style="margin-bottom:18px;width:100%">➕ إضافة سؤال يدوياً</button>
+      <button class="btn btn-secondary" onclick="addQuestionBuilder()" style="margin-bottom:18px;width:100%">➕ إضافة سؤال</button>
       <div class="answer-map-section" id="answer-map-section" style="display:none">
         <h4>✅ تحديد الإجابات الصحيحة</h4>
         <p>يمكنك تحديد الإجابات الصحيحة هنا دفعةً واحدة.</p>
@@ -338,25 +370,82 @@
       </div>
       <div class="form-group"><label class="form-label">اسم الاختبار *</label><input class="form-input" id="parse-test-name" placeholder="مثال: درس الجملة الاسمية" /></div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-        <div class="form-group"><label class="form-label">المادة</label><input class="form-input" id="parse-test-subject" placeholder="مثال: اللغة العربية" /></div>
-        <div class="form-group"><label class="form-label">⏱️ وقت الاختبار (دقائق)</label><input class="form-input" id="parse-test-time" type="number" min="0" value="10" /></div>
+        <div class="form-group"><label class="form-label">المادة</label><input class="form-input" id="parse-test-subject" /></div>
+        <div class="form-group"><label class="form-label">⏱️ الوقت</label><input class="form-input" id="parse-test-time" type="number" min="0" value="10" /></div>
         <div class="form-group"><label class="form-label">📁 المجلد</label>
-          <select class="form-input" id="parse-test-folder">
-            <option value="">عام (بدون مجلد)</option>
-          </select>
+          <select class="form-input" id="parse-test-folder"><option value="">عام</option></select>
         </div>
       </div>
       <div class="form-group"><label class="form-label">📝 الصق نص الأسئلة هنا</label><textarea class="form-input parse-textarea" id="parse-input" rows="8" placeholder="مثال:&#10;س1: ما هو أكبر كوكب في المجموعة الشمسية؟&#10;أ) الأرض&#10;ب) المريخ&#10;ج) المشتري&#10;د) زحل"></textarea></div>
       <div class="answer-bulk">
-        <label>✍️ الإجابات الصحيحة (اختياري) — مفصولة بمسافة أو فاصلة:</label>
-        <textarea id="bulk-answers-input" rows="2" placeholder="مثال: ج ب أ د   أو   C B A D   أو   3 2 1 4"></textarea>
-        <small>مثال: الأول جوابه "ج" والثاني "ب": اكتب ج ب   أو   C B   أو   3 2</small>
+        <label>✍️ الإجابات الصحيحة (اختياري):</label>
+        <textarea id="bulk-answers-input" rows="2" placeholder="مثال: ج ب أ د"></textarea>
       </div>
       <button class="btn btn-primary" onclick="parseQuestions()" style="width:100%;margin-bottom:14px">🔍 تحليل النص</button>
       <div class="parse-result-preview" id="parse-preview">
-        <h4 id="parse-preview-title">✅ تم التحليل — حدد الإجابات الصحيحة</h4>
+        <h4 id="parse-preview-title">✅ تم التحليل</h4>
         <div id="parse-questions-list"></div>
         <button class="btn btn-primary" id="save-parsed-btn" onclick="saveParsedTest()" style="width:100%;margin-top:14px">💾 حفظ الاختبار</button>
+      </div>
+    </div>
+
+    <!-- تبويب AI PDF — الميزة الرئيسية الجديدة -->
+    <div id="admin-ai-pdf" class="admin-tab-content">
+      <div class="ai-pdf-hero">
+        <div class="ai-pdf-icon">🧠</div>
+        <h3>مستورد PDF الذكي</h3>
+        <p>ارفع ملف PDF وسيقوم الذكاء الاصطناعي تلقائياً باستخراج الأسئلة وتحديد الإجابات الصحيحة</p>
+      </div>
+
+      <!-- الخطوة 1: رفع الملف -->
+      <div class="ai-step" id="ai-step-1">
+        <div class="ai-step-header"><span class="ai-step-num">1</span> رفع ملف PDF</div>
+        <label class="pdf-upload-zone" id="ai-pdf-upload-zone">
+          <div class="pdf-upload-icon">📄</div>
+          <span id="ai-pdf-upload-text">اسحب ملف PDF هنا أو اضغط للاختيار</span>
+          <span style="font-size:0.75rem;color:var(--text3);margin-top:4px">يدعم: عربي، إنجليزي، صور ممسوحة ضوئياً</span>
+          <input type="file" accept="application/pdf" id="ai-pdf-file-input" style="display:none" onchange="handleAIPdfUpload(event)">
+        </label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px">
+          <div class="form-group"><label class="form-label">اسم الاختبار *</label><input class="form-input" id="ai-test-name" placeholder="اسم الاختبار"></div>
+          <div class="form-group"><label class="form-label">المادة</label><input class="form-input" id="ai-test-subject" placeholder="مثال: العلوم"></div>
+          <div class="form-group"><label class="form-label">📁 المجلد</label>
+            <select class="form-input" id="ai-test-folder"><option value="">عام</option></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- الخطوة 2: معالجة الصفحات -->
+      <div class="ai-step" id="ai-step-2" style="display:none">
+        <div class="ai-step-header"><span class="ai-step-num">2</span> معالجة الصفحات</div>
+        <div id="ai-pages-preview" class="ai-pages-grid"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:10px">
+          <span id="ai-pages-count" style="color:var(--text2);font-size:0.85rem"></span>
+          <button class="btn btn-primary" id="ai-analyze-btn" onclick="runAIAnalysis()" style="font-size:0.88rem">
+            <i class="fa-solid fa-wand-magic-sparkles" style="margin-left:6px"></i>تحليل بالذكاء الاصطناعي
+          </button>
+        </div>
+      </div>
+
+      <!-- الخطوة 3: نتائج التحليل -->
+      <div class="ai-step" id="ai-step-3" style="display:none">
+        <div class="ai-step-header"><span class="ai-step-num">3</span> مراجعة النتائج</div>
+        <div id="ai-analysis-progress" style="display:none">
+          <div class="ai-progress-bar-wrap">
+            <div class="ai-progress-bar-fill" id="ai-progress-fill" style="width:0%"></div>
+          </div>
+          <p id="ai-progress-text" style="text-align:center;color:var(--text2);font-size:0.85rem;margin-top:8px">جارٍ التحليل...</p>
+        </div>
+        <div id="ai-results-container"></div>
+        <div id="ai-save-section" style="display:none;margin-top:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+            <div id="ai-results-summary" style="color:var(--text2);font-size:0.88rem"></div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary" onclick="aiEditAll()" style="font-size:0.85rem">✏️ مراجعة الكل</button>
+              <button class="btn btn-primary" id="ai-save-btn" onclick="saveAIQuiz()" style="font-size:0.88rem">💾 حفظ الاختبار</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -368,47 +457,10 @@
     <!-- تبويب المجلدات -->
     <div id="admin-folders" class="admin-tab-content">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <p style="color:var(--text2);font-size:0.88rem">إنشاء مجلدات لتصنيف الاختبارات وعرضها منظّمة</p>
-        <button class="btn btn-primary" onclick="openCreateFolderModal()" style="font-size:0.85rem;padding:9px 18px">📁 إنشاء مجلد جديد</button>
+        <p style="color:var(--text2);font-size:0.88rem">إنشاء مجلدات لتصنيف الاختبارات</p>
+        <button class="btn btn-primary" onclick="openCreateFolderModal()" style="font-size:0.85rem">📁 إنشاء مجلد جديد</button>
       </div>
       <div id="admin-folders-list"></div>
-    </div>
-
-    <!-- تبويب استيراد PDF -->
-    <div id="admin-pdf" class="admin-tab-content">
-      <div style="background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.18);border-radius:11px;padding:14px;margin-bottom:18px">
-        <p style="font-size:0.84rem;color:var(--text2);line-height:1.7">📄 <strong style="color:var(--accent)">استيراد PDF:</strong> ارفع ملف PDF وحدد منطقة السؤال باقتصاصها ثم أضفها كصورة للسؤال.</p>
-      </div>
-      <div class="form-group">
-        <label class="form-label">📤 رفع ملف PDF</label>
-        <label class="pdf-upload-zone" id="pdf-upload-zone">
-          <span id="pdf-upload-text">🗂️ اضغط لاختيار ملف PDF</span>
-          <input type="file" accept="application/pdf" id="pdf-file-input" style="display:none" onchange="handlePdfUpload(event)">
-        </label>
-      </div>
-      <div id="pdf-page-controls" style="display:none;margin-bottom:14px">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-          <button class="btn btn-secondary" onclick="changePdfPage(-1)" style="font-size:0.85rem;padding:8px 14px">← السابق</button>
-          <span id="pdf-page-info" style="color:var(--text2);font-size:0.85rem">صفحة 1 / 1</span>
-          <button class="btn btn-secondary" onclick="changePdfPage(1)" style="font-size:0.85rem;padding:8px 14px">التالي →</button>
-          <span style="color:var(--text3);font-size:0.8rem">🖱️ اسحب لتحديد منطقة السؤال</span>
-        </div>
-        <div style="position:relative;overflow:hidden;border-radius:var(--radius-sm);border:1px solid var(--border2)">
-          <img id="pdf-crop-img" src="" alt="صفحة PDF" style="max-width:100%;display:block">
-        </div>
-        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="cropPdfSelection()" id="pdf-crop-btn" style="font-size:0.85rem">✂️ اقتصاص واستخدام</button>
-          <button class="btn btn-secondary" onclick="resetPdfCropper()" style="font-size:0.85rem">🔄 إعادة التحديد</button>
-        </div>
-      </div>
-      <div id="pdf-cropped-preview" style="display:none;margin-top:14px">
-        <p style="font-size:0.82rem;color:var(--green);margin-bottom:8px">✅ تم الاقتصاص — سيتم إضافة هذه الصورة للسؤال التالي في البيلدر</p>
-        <img id="pdf-cropped-img" style="max-width:100%;max-height:200px;border-radius:10px;border:1.5px solid var(--green);object-fit:contain">
-        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="insertPdfImageToBuilder()" style="font-size:0.85rem">➕ إضافة للبيلدر</button>
-          <button class="btn btn-secondary" onclick="cropAnotherPdf()" style="font-size:0.85rem">✂️ اقتصاص منطقة أخرى</button>
-        </div>
-      </div>
     </div>
 
     <!-- تبويب الإعدادات -->
@@ -420,18 +472,18 @@
           <label class="toggle-switch"><input type="checkbox" id="setting-categorized-errors" onchange="saveAdminSettings()"><span class="toggle-slider"></span></label>
         </div>
         <div class="settings-row">
-          <div class="settings-row-info"><h4>عرض ملاحظات المعلم أثناء السؤال</h4><p>إظهار ملاحظات المعلم مباشرةً مع عرض السؤال (إن وُجدت)</p></div>
+          <div class="settings-row-info"><h4>عرض ملاحظات المعلم أثناء السؤال</h4><p>إظهار ملاحظات المعلم مباشرةً مع السؤال</p></div>
           <label class="toggle-switch"><input type="checkbox" id="setting-show-notes-live" checked onchange="saveAdminSettings()"><span class="toggle-slider"></span></label>
         </div>
       </div>
       <div class="settings-card" style="border-color:rgba(239,68,68,0.2)">
-        <h3 style="color:var(--red)">🔒 الأمان — Firebase Authentication</h3>
+        <h3 style="color:var(--red)">🔒 الأمان</h3>
         <div class="settings-row">
           <div class="settings-row-info"><h4>الجلسة الحالية</h4><p id="admin-user-email-settings">—</p></div>
           <button class="btn btn-secondary" onclick="logoutAdmin()" style="font-size:0.83rem;color:var(--red)">تسجيل الخروج 🔒</button>
         </div>
-        <div class="settings-row"><div class="settings-row-info"><h4>📋 قواعد Firebase المطلوبة</h4><p>انسخ إلى Firebase Console ← Realtime Database ← Rules</p></div></div>
-        <div style="background:var(--surface2);border-radius:9px;padding:14px;font-size:0.75rem;font-family:monospace;color:var(--green);line-height:1.8;white-space:pre-wrap;overflow-x:auto">{"rules":{"quizzes":{".read":true,".write":"auth != null"},"analytics":{".read":"auth != null",".write":true}}}</div>
+        <div class="settings-row"><div class="settings-row-info"><h4>📋 قواعد Firebase</h4><p>انسخ إلى Firebase Console ← Rules</p></div></div>
+        <div style="background:var(--surface2);border-radius:9px;padding:14px;font-size:0.75rem;font-family:monospace;color:var(--green);line-height:1.8;white-space:pre-wrap;overflow-x:auto">{"rules":{"quizzes":{".read":true,".write":"auth != null"},"folders":{".read":true,".write":"auth != null"},"banks":{".read":true,".write":"auth != null"},"analytics":{".read":"auth != null",".write":true}}}</div>
       </div>
     </div>
   </div>
@@ -477,14 +529,13 @@
   </div>
 </div>
 
-<!-- مودال تعديل الاختبار -->
 <div class="modal-overlay" id="edit-quiz-modal">
   <div class="modal" style="max-width:800px;width:95%;max-height:90vh;overflow-y:auto;">
     <h3>✏️ تعديل الاختبار</h3>
     <div class="form-group"><label class="form-label">اسم الاختبار *</label><input class="form-input" id="edit-test-name" /></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="form-group"><label class="form-label">المادة</label><input class="form-input" id="edit-test-subject" /></div>
-      <div class="form-group"><label class="form-label">⏱️ وقت الاختبار (دقائق)</label><input class="form-input" id="edit-test-time" type="number" min="0" /></div>
+      <div class="form-group"><label class="form-label">⏱️ الوقت (دقائق)</label><input class="form-input" id="edit-test-time" type="number" min="0" /></div>
     </div>
     <div class="section-title" style="margin-bottom:10px;font-size:0.88rem">الأسئلة</div>
     <div class="questions-builder" id="edit-questions-builder"></div>
@@ -496,20 +547,18 @@
   </div>
 </div>
 
-<!-- مودال المراجعة النهائية قبل التسليم -->
 <div class="modal-overlay" id="final-review-modal">
   <div class="modal" style="max-width:700px;width:95%;max-height:90vh;overflow-y:auto;">
     <h3>📋 مراجعة إجاباتك قبل التسليم</h3>
     <p style="color:var(--text3);font-size:0.85rem;margin-bottom:16px" id="final-review-summary"></p>
     <div id="final-review-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:50vh;overflow-y:auto;"></div>
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('final-review-modal')">← تعديل الإجابات</button>
+      <button class="btn btn-secondary" onclick="closeModal('final-review-modal')">← تعديل</button>
       <button class="btn btn-primary" onclick="submitQuiz()" style="background:var(--green);">✅ تسليم الاختبار</button>
     </div>
   </div>
 </div>
 
-<!-- مودال تسجيل دخول الأدمن -->
 <div class="modal-overlay" id="admin-login-modal">
   <div class="modal" style="max-width:400px">
     <div class="admin-modal-content">
@@ -527,18 +576,12 @@
   </div>
 </div>
 
-<div class="toast-container" id="toast-container"></div>
-
 <!-- مودال إنشاء مجلد -->
 <div class="modal-overlay" id="create-folder-modal">
   <div class="modal" style="max-width:420px">
     <h3>📁 إنشاء مجلد جديد</h3>
-    <div class="form-group">
-      <label class="form-label">اسم المجلد *</label>
-      <input class="form-input" id="folder-name-input" placeholder="مثال: الفصل الأول — العلوم" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">أيقونة المجلد</label>
+    <div class="form-group"><label class="form-label">اسم المجلد *</label><input class="form-input" id="folder-name-input" placeholder="مثال: الفصل الأول" /></div>
+    <div class="form-group"><label class="form-label">الأيقونة</label>
       <div id="folder-emoji-picker" style="display:flex;flex-wrap:wrap;gap:8px;padding:10px;background:var(--surface2);border-radius:11px;border:1px solid var(--border2)">
         <span class="folder-emoji-opt selected" onclick="selectFolderEmoji(this,'📁')">📁</span>
         <span class="folder-emoji-opt" onclick="selectFolderEmoji(this,'📚')">📚</span>
@@ -554,10 +597,71 @@
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('create-folder-modal')">إلغاء</button>
-      <button class="btn btn-primary" onclick="saveFolder()">💾 إنشاء المجلد</button>
+      <button class="btn btn-primary" onclick="saveFolder()">💾 إنشاء</button>
     </div>
   </div>
 </div>
+
+<!-- مودال إنشاء بنك أسئلة -->
+<div class="modal-overlay" id="create-bank-modal">
+  <div class="modal" style="max-width:460px">
+    <h3>🗄️ إنشاء بنك أسئلة جديد</h3>
+    <div class="form-group"><label class="form-label">اسم البنك *</label><input class="form-input" id="bank-name-input" placeholder="مثال: بنك الرياضيات — الصف الثالث" /></div>
+    <div class="form-group"><label class="form-label">الوصف</label><textarea class="form-input" id="bank-desc-input" rows="2" placeholder="وصف اختياري للبنك"></textarea></div>
+    <div class="form-group"><label class="form-label">المادة</label><input class="form-input" id="bank-subject-input" placeholder="مثال: الرياضيات" /></div>
+    <div class="form-group"><label class="form-label">الاختبارات المضمّنة</label>
+      <div id="bank-quizzes-selector" style="max-height:200px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border2);border-radius:11px;padding:10px;display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('create-bank-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveBank()">💾 إنشاء البنك</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال توليد اختبار ذكي -->
+<div class="modal-overlay" id="generate-quiz-modal">
+  <div class="modal" style="max-width:520px">
+    <h3>🪄 توليد اختبار ذكي</h3>
+    <div class="form-group"><label class="form-label">اسم الاختبار الجديد *</label><input class="form-input" id="gen-quiz-name" placeholder="اختبار مولّد تلقائياً" /></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label class="form-label">عدد الأسئلة</label><input class="form-input" id="gen-question-count" type="number" min="1" max="100" value="10" /></div>
+      <div class="form-group"><label class="form-label">المستوى</label>
+        <select class="form-input" id="gen-difficulty">
+          <option value="mixed">متنوع</option>
+          <option value="easy">سهل</option>
+          <option value="medium">متوسط</option>
+          <option value="hard">صعب</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">اختر البنوك المصدر</label>
+      <div id="gen-banks-selector" style="max-height:180px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border2);border-radius:11px;padding:10px;display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:7px;font-size:0.84rem;cursor:pointer"><input type="checkbox" id="gen-randomize-q" checked style="accent-color:var(--accent)"> ترتيب عشوائي للأسئلة</label>
+      <label style="display:flex;align-items:center;gap:7px;font-size:0.84rem;cursor:pointer"><input type="checkbox" id="gen-randomize-a" checked style="accent-color:var(--accent)"> ترتيب عشوائي للخيارات</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('generate-quiz-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="generateSmartQuiz()">🪄 توليد الاختبار</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال مراجعة سؤال AI -->
+<div class="modal-overlay" id="ai-question-edit-modal">
+  <div class="modal" style="max-width:640px;width:95%;max-height:90vh;overflow-y:auto;">
+    <h3>✏️ تعديل سؤال AI</h3>
+    <div id="ai-edit-question-form"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('ai-question-edit-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveAIQuestionEdit()">✅ حفظ التعديل</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
 <script src="app.js"></script>
 </body>
 </html>

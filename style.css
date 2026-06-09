@@ -558,3 +558,88 @@ body.admin-mode .folder-card-del{display:block}
 @media(max-width:640px){
   .folders-grid{grid-template-columns:repeat(2,1fr)}
 }
+
+/* ============================================================
+   ميزات متقدمة — AI PDF، بنك الأسئلة، الإحصائيات
+============================================================ */
+
+/* ── AI PDF Importer ── */
+.ai-pdf-hero{text-align:center;padding:28px 20px;background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(251,191,36,.06));border:1px solid rgba(99,102,241,.2);border-radius:var(--radius);margin-bottom:20px}
+.ai-pdf-icon{font-size:3rem;margin-bottom:10px}
+.ai-pdf-hero h3{font-family:'Foda',serif;font-weight:normal;font-size:1.6rem;color:var(--accent);margin-bottom:6px}
+.ai-pdf-hero p{color:var(--text2);font-size:0.86rem;max-width:480px;margin:0 auto}
+.ai-step{background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.ai-step-header{display:flex;align-items:center;gap:10px;font-family:'ThmanyahSans',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:14px;color:var(--text)}
+.ai-step-num{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent3));color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:900;flex-shrink:0}
+.ai-pages-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.ai-page-thumb{background:var(--surface2);border:2px solid var(--border2);border-radius:10px;overflow:hidden;position:relative;cursor:pointer;transition:border-color .2s}
+.ai-page-thumb:hover,.ai-page-thumb.selected{border-color:var(--accent)}
+.ai-page-thumb canvas{width:100%;display:block}
+.ai-page-label{font-size:0.7rem;text-align:center;padding:4px;color:var(--text3);font-family:'ThmanyahSans',sans-serif}
+.ai-page-check{position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:5px;background:var(--accent);color:#0f172a;display:none;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700}
+.ai-page-thumb.selected .ai-page-check{display:flex}
+.ai-progress-bar-wrap{height:8px;background:var(--surface3);border-radius:999px;overflow:hidden;margin-bottom:8px}
+.ai-progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue2),var(--accent));border-radius:999px;transition:width .4s ease}
+
+/* AI Question Cards */
+.ai-question-card{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:16px;margin-bottom:10px;transition:border-color .2s}
+.ai-question-card.confirmed{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.04)}
+.ai-question-card.needs-review{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.04)}
+.ai-question-card.ai-error{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.04)}
+.ai-question-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.ai-question-num{font-family:'ThmanyahSans',sans-serif;font-weight:700;font-size:0.82rem;color:var(--accent)}
+.ai-confidence-badge{display:flex;align-items:center;gap:5px;font-size:0.72rem;font-family:'ThmanyahSans',sans-serif;padding:3px 10px;border-radius:999px}
+.ai-confidence-high{background:rgba(16,185,129,.12);color:var(--green)}
+.ai-confidence-med{background:rgba(251,191,36,.12);color:var(--accent)}
+.ai-confidence-low{background:rgba(239,68,68,.12);color:var(--red)}
+.ai-question-text{font-family:'ThmanyahSerif',serif;font-weight:700;font-size:0.92rem;margin-bottom:10px;line-height:1.6}
+.ai-choices-preview{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.ai-choice-row{display:flex;align-items:center;gap:8px;font-size:0.82rem;padding:5px 10px;border-radius:7px;background:var(--surface3)}
+.ai-choice-row.correct{background:rgba(16,185,129,.12);color:var(--green)}
+.ai-choice-letter{width:22px;height:22px;border-radius:6px;background:rgba(251,191,36,.1);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;font-family:'ThmanyahSans',sans-serif;flex-shrink:0}
+.ai-question-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.ai-question-img{max-width:100%;max-height:180px;border-radius:9px;border:1px solid var(--border2);object-fit:contain;margin-bottom:8px;display:block}
+
+/* ── بنك الأسئلة ── */
+.bank-filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+.bank-card{background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:20px;margin-bottom:14px;transition:border-color .2s}
+.bank-card:hover{border-color:rgba(251,191,36,.3)}
+.bank-card-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.bank-card-title{font-family:'ThmanyahSans',sans-serif;font-weight:700;font-size:1rem}
+.bank-card-meta{font-size:0.78rem;color:var(--text3);display:flex;gap:10px;flex-wrap:wrap}
+.bank-card-meta span{background:var(--surface2);padding:2px 9px;border-radius:6px}
+.bank-card-actions{display:flex;gap:7px;flex-wrap:wrap}
+.bank-quizzes-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.bank-quiz-row{background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.bank-quiz-name{font-size:0.88rem;font-weight:700;font-family:'ThmanyahSans',sans-serif}
+.bank-quiz-meta{font-size:0.74rem;color:var(--text3)}
+.bank-empty{text-align:center;padding:44px 20px;color:var(--text3)}
+.bank-empty .icon{font-size:2.8rem;margin-bottom:10px}
+
+/* ── الإحصائيات ── */
+.analytics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.analytics-kpi{background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:18px;text-align:center}
+.analytics-kpi-val{font-family:'Foda',serif;font-weight:normal;font-size:2.2rem;letter-spacing:.02em}
+.analytics-kpi-lbl{font-size:0.74rem;color:var(--text3);margin-top:3px;font-family:'ThmanyahSans',sans-serif}
+.analytics-card{background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:18px}
+.analytics-card h4{font-family:'ThmanyahSans',sans-serif;font-weight:700;font-size:0.9rem;margin-bottom:12px;color:var(--accent)}
+.analytics-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.analytics-bar-label{font-size:0.78rem;color:var(--text2);min-width:100px;text-align:right}
+.analytics-bar-bg{flex:1;height:8px;background:var(--surface3);border-radius:999px;overflow:hidden}
+.analytics-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent3),var(--accent));transition:width .6s ease}
+.analytics-bar-pct{font-size:0.74rem;color:var(--accent);font-family:'ThmanyahSans',sans-serif;min-width:36px;text-align:left}
+.analytics-hardest-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border2)}
+.analytics-hardest-item:last-child{border-bottom:none}
+.analytics-hardest-rank{width:24px;height:24px;border-radius:7px;background:rgba(239,68,68,.12);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;font-family:'ThmanyahSans',sans-serif;flex-shrink:0}
+
+/* ── Bank Quiz Selector ── */
+.bank-quiz-selector-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:0.84rem}
+.bank-quiz-selector-item:hover{background:rgba(251,191,36,.06)}
+.bank-quiz-selector-item input[type="checkbox"]{accent-color:var(--accent);width:15px;height:15px;flex-shrink:0}
+
+@media(max-width:640px){
+  .analytics-grid{grid-template-columns:1fr 1fr}
+  .analytics-row{grid-template-columns:1fr!important}
+  .ai-pages-grid{grid-template-columns:repeat(3,1fr)}
+  .bank-filter-bar{flex-direction:column}
+}
